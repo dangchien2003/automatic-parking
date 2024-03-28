@@ -13,5 +13,3 @@ public class testController {
         return  List.of("iphone", "abc");
     }
 }
-
-
