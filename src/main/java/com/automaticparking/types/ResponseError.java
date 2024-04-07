@@ -4,8 +4,8 @@ import java.util.Map;
 
 public class ResponseError {
     public ResponseError(Map<String, String> message) {
-        this.Message = message;
+        this.message = message;
     }
-    public final Boolean Success = false;
-    public Map<String, String> Message;
+    public final Boolean success = false;
+    public Map<String, String> message;
 }

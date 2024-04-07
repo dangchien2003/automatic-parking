@@ -64,7 +64,7 @@ public class ResponseApi {
         return badRequestApi(arrKey, arrValue);
     }
     protected ResponseEntity<?> badRequestApi(String value) {
-        String[] arrKey = {"Error"};
+        String[] arrKey = {"error"};
         String [] arrValue = {value};
         return badRequestApi(arrKey, arrValue);
     }
@@ -78,7 +78,7 @@ public class ResponseApi {
     }
     protected ResponseEntity<?> Error(HttpStatus status, String value) {
         Map<String, String> errors =new HashMap<>();
-        errors.put("Error", value);
+        errors.put("error", value);
 
         return ResponseEntity.status(status.value()).body(resError(errors));
     }
