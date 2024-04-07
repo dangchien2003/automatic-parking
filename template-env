@@ -1,7 +1,16 @@
 # SQL
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USERNAME=root
+DB_HOST=
+DB_PORT=
+DB_USERNAME=
 DB_PASSWORD=
-DATABASE=test
-SHOW_SQL=true
+DATABASE=
+
+#hibernate
+SHOW_SQL=
+
+# password
+PASSWORD_STAFF=
+
+# encryption
+ALGORITHM=
+
