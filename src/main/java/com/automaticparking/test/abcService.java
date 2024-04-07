@@ -1,4 +1,4 @@
-package model.test;
+package com.automaticparking.test;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
