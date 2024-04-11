@@ -14,7 +14,7 @@ import java.security.Key;
 import java.util.Date;
 
 public class JWT<T> {
-    
+
     // Tạo khóa từ chuỗi SECRET_KEY
     private final Key key = new SecretKeySpec("ledangchienledangchienledangchienledangchien".getBytes(), SignatureAlgorithm.HS256.getJcaName());
     private ObjectMapper objectMapper = new ObjectMapper();
