@@ -44,6 +44,23 @@ public class StaffService {
         }
     }
 
+    public Staff getOneStaffByEmail(String email) {
+        Session session = hibernateUtil.getSessionFactory().openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+
+            String sql = "SELECT * FROM staff WHERE email = :email";
+            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
+            query.setParameter("email", email);
+            Staff staff = query.uniqueResult();
+            tr.commit();
+            session.close();
+            return staff;
+        }catch (Exception e) {
+            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
     public BigInteger countAdmin() {
         Session session = hibernateUtil.getSessionFactory().openSession();
         try {

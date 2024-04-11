@@ -1,10 +1,9 @@
-package util;
+package encrypt;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
-public class Encrypt {
+public class Hash {
 
     public Boolean compareHash(String value, String Hash) {
         String hashValue = this.hash(value);

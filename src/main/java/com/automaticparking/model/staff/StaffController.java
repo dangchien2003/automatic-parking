@@ -3,8 +3,10 @@ package com.automaticparking.model.staff;
 import com.automaticparking.model.staff.dto.CreateStaffDto;
 import javax.validation.Valid;
 
+import com.automaticparking.model.staff.dto.LoginDto;
 import com.automaticparking.types.ResponseException;
 import com.automaticparking.types.ResponseSuccess;
+import encrypt.JWT;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +14,15 @@ import util.ResponseApi;
 import validation.DateValid;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
 @RequestMapping("staff")
 public class StaffController extends ResponseApi {
+    private final StaffService staffService = new StaffService();
     @PostMapping("create-admin")
     ResponseEntity<?> createAdmin(@Valid @RequestBody CreateStaffDto createStaff)  {
         try {
@@ -52,5 +57,37 @@ public class StaffController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
+
+    @PostMapping("login")
+    ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto){
+        // check length email
+        if(loginDto.email.trim().length() < 10) {
+            return badRequestApi("email", "Email must not be less than 8 characters");
+        }
+
+        // check length password
+        if(loginDto.password.trim().length() < 8) {
+            return badRequestApi("password", "Password must not be less than 8 characters");
+        }
+
+        Staff staff = staffService.getOneStaffByEmail(loginDto.email);
+
+        if(staff.getBlock() == 1) {
+            return Error(HttpStatus.UNAUTHORIZED, "Account access has been restricted");
+        }
+
+        JWT<Staff> jwt = new JWT<>();
+        String stoken = jwt.createJWT(staff);
+
+        ResponseSuccess<Staff> response = new ResponseSuccess<>();
+
+        Map<String, String> cookies = new HashMap<>();
+        cookies.put("stoken", stoken);
+        response.cookies = cookies;
+        response.data = staff;
+        return ResponseEntity.ok().body(response);
+    }
+
+
 
 }
