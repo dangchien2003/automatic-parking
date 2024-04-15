@@ -11,6 +11,7 @@ import encrypt.JWT;
 import io.jsonwebtoken.Claims;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import util.Genarate;
 import util.hibernateUtil;
 
@@ -20,10 +21,6 @@ import java.util.Map;
 @SpringBootApplication
 public class AutomaticParkingApplication {
 	public static void main(String[] args) {
-
-
-
-
 		SpringApplication.run(AutomaticParkingApplication.class, args);
 		new configDB();
 

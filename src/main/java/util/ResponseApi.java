@@ -1,6 +1,7 @@
 package util;
 
 import com.automaticparking.types.ResponseError;
+import com.automaticparking.types.ResponseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -81,5 +82,10 @@ public class ResponseApi {
         errors.put("error", value);
 
         return ResponseEntity.status(status.value()).body(resError(errors));
+    }
+
+    @ExceptionHandler(ResponseException.class)
+    public ResponseEntity<?> handleInterceptorException(ResponseException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(ex.getMessage());
     }
 }
