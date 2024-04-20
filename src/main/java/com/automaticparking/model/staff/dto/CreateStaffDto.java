@@ -17,4 +17,7 @@ public class CreateStaffDto {
     @NotBlank
     public String birthday;
 
+    @NotBlank
+    public String name;
+
 }

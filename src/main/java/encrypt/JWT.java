@@ -45,13 +45,18 @@ public class JWT<T> {
     }
 
     public Claims decodeJWT(String jwt) {
-        // Giải mã JWT
-        Jws<Claims> claimsJws = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(jwt);
+        try {
+            // Giải mã JWT
+            Jws<Claims> claimsJws = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(jwt);
 
-        // Trả về thông tin trong JWT
-        return claimsJws.getBody();
+            // Trả về thông tin trong JWT
+            return claimsJws.getBody();
+        }catch(Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 }

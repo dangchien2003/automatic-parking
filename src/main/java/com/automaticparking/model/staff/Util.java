@@ -13,9 +13,11 @@ public class Util {
 
     public static Staff getDefaultStaff() {
         Staff staff = new Staff();
+        Long nowTimeStamp = Genarate.getTimeStamp();
         staff.setBlock(0);
-        staff.setCreateAt(Genarate.getTimeStamp());
+        staff.setCreateAt(nowTimeStamp);
         staff.setSid(Util.genarateSid());
+        staff.setLastLogin(nowTimeStamp);
         return staff;
     }
 

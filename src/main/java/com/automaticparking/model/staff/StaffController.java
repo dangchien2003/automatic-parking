@@ -7,6 +7,7 @@ import com.automaticparking.model.staff.dto.LoginDto;
 import com.automaticparking.types.ResponseException;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.JWT;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +44,7 @@ public class StaffController extends ResponseApi {
             }
 
             Staff staff = Util.getDefaultStaff();
-            staff = Util.setStaff(staff, 1, "Admin", createStaff.birthday, createStaff.email);
+            staff = Util.setStaff(staff, 1, createStaff.name, createStaff.birthday, createStaff.email);
 
             Boolean created = staffService.createStaff(staff);
 
@@ -72,6 +73,10 @@ public class StaffController extends ResponseApi {
 
         Staff staff = staffService.getOneStaffByEmail(loginDto.email);
 
+        if(staff == null) {
+            return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
+        }
+
         if(staff.getBlock() == 1) {
             return Error(HttpStatus.UNAUTHORIZED, "Account access has been restricted");
         }
@@ -88,6 +93,39 @@ public class StaffController extends ResponseApi {
         return ResponseEntity.ok().body(response);
     }
 
+    @PostMapping("create")
+    ResponseEntity<?> createStaff(@Valid @RequestBody CreateStaffDto createStaff, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
 
+            // Kiểm tra admin
+            if(!staffDataToken.get("admin").equals("1")) {
+                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
+            }
 
+            DateValid dateValid = new DateValid();
+            if(!dateValid.isValidDate(createStaff.birthday)) {
+                return badRequestApi("Birthday", "Non-compliant birthday format 'yyyy-MM-dd'");
+            }
+
+            StaffService staffService = new StaffService();
+
+            List<Staff> staffs = staffService.getStaffByEmail(createStaff.getEmail());
+            if(!staffs.isEmpty()) return Error(HttpStatus.CONFLICT,  "Email đã tồn tại");
+
+            Staff staff = Util.getDefaultStaff();
+            staff = Util.setStaff(staff, 0, createStaff.name, createStaff.birthday, createStaff.email);
+
+            Boolean created = staffService.createStaff(staff);
+
+            if(!created) {
+                return internalServerError("Cannot create staff");
+            }
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<Staff>();
+            responseSuccess.data = staff;
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
+        }catch (ResponseException e) {
+            return internalServerError(e.getMessage());
+        }
+    }
 }
