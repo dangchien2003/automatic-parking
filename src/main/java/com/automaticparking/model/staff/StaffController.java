@@ -156,7 +156,7 @@ public class StaffController extends ResponseApi {
     }
 
     @PatchMapping("lock/{sid}")
-    ResponseEntity<?> lock(@PathVariable String sid, HttpServletRequest request) {
+    ResponseEntity<?> lockStaff(@PathVariable String sid, HttpServletRequest request) {
         try {
             Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
 
@@ -172,10 +172,8 @@ public class StaffController extends ResponseApi {
             Staff staff = staffService.getOneStaffBySid(sid);
 
             if(staff == null) {{
-                return Error(HttpStatus.NOT_FOUND, "The account not exist");
+                return Error(HttpStatus.NOT_FOUND, "Sid not exist");
             }}
-            System.out.println(staff.getSid());
-            System.out.println(staffDataToken.get("sid"));
             if(staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
                 return Error(HttpStatus.BAD_REQUEST, "Not block your self");
             }
@@ -191,6 +189,55 @@ public class StaffController extends ResponseApi {
             Boolean updated = staffService.updateStaff(staff);
             if(!updated) {
                 return Error(HttpStatus.BAD_REQUEST, "Cannot block account. Please checking sid");
+            }
+
+            Map<String, String> dataResponse = new HashMap<>();
+            dataResponse.put("sid", staff.getSid());
+            dataResponse.put("email", staff.getEmail());
+
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<Map<String, String>>();
+            responseSuccess.data = dataResponse;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @PatchMapping("unlock/{sid}")
+    ResponseEntity<?> UnLockStaff(@PathVariable String sid, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+
+            // Kiểm tra admin
+            if(!staffDataToken.get("admin").equals("1")) {
+                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
+            }
+
+            if(sid.length() < 20) {
+                return badRequestApi("sid", "Sid is not long enough");
+            }
+
+            Staff staff = staffService.getOneStaffBySid(sid);
+
+            if(staff == null) {{
+                return Error(HttpStatus.NOT_FOUND, "Sid not exist");
+            }}
+
+            if(staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
+                return Error(HttpStatus.BAD_REQUEST, "Cannot unlock your self");
+            }
+
+            if(staff.getBlock() == 0) {
+                return Error(HttpStatus.CONFLICT, "The account has been unlocked before");
+            }
+
+            // set block
+            staff.setBlock(0);
+            staff.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = staffService.updateStaff(staff);
+            if(!updated) {
+                return Error(HttpStatus.BAD_REQUEST, "Cannot unlock account. Please checking sid");
             }
 
             Map<String, String> dataResponse = new HashMap<>();
