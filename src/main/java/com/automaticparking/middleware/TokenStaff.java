@@ -73,6 +73,7 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor  {
         }
 
         StaffService staffService = new StaffService();
+        /*get info staff from DB*/
         Staff staffInfo = staffService.getOneStaffByEmail(staffDataToken.get("email"));
 
         // kiểm tra tài khoản bị block

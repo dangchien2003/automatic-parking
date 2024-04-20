@@ -77,4 +77,38 @@ public class StaffService {
         }
     }
 
+    public Staff getOneStaffBySid(String sid) {
+        Session session = hibernateUtil.getSessionFactory().openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+
+            String sql = "SELECT * FROM staff WHERE sid = :sid";
+            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
+            query.setParameter("sid", sid);
+            Staff staff = query.uniqueResult();
+            tr.commit();
+            session.close();
+            return staff;
+        }catch (Exception e) {
+            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
+    public Boolean updateStaff(Staff staff) {
+        Session session = hibernateUtil.getSessionFactory().openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+            session.update(staff);
+            tr.commit();
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
+        }
+        finally {
+            session.close();
+        }
+        return true;
+
+    }
+
 }

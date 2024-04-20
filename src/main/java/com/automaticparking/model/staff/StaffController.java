@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import util.Genarate;
 import util.ResponseApi;
 import validation.DateValid;
 
@@ -54,43 +55,47 @@ public class StaffController extends ResponseApi {
             ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<Staff>();
             responseSuccess.data = staff;
             return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
-        }catch (ResponseException e) {
+        }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
     }
 
     @PostMapping("login")
     ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto){
-        // check length email
-        if(loginDto.email.trim().length() < 10) {
-            return badRequestApi("email", "Email must not be less than 8 characters");
+        try {
+            // check length email
+            if(loginDto.email.trim().length() < 10) {
+                return badRequestApi("email", "Email must not be less than 8 characters");
+            }
+
+            // check length password
+            if(loginDto.password.trim().length() < 8) {
+                return badRequestApi("password", "Password must not be less than 8 characters");
+            }
+
+            Staff staff = staffService.getOneStaffByEmail(loginDto.email);
+
+            if(staff == null) {
+                return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
+            }
+
+            if(staff.getBlock() == 1) {
+                return Error(HttpStatus.UNAUTHORIZED, "Account access has been restricted");
+            }
+
+            JWT<Staff> jwt = new JWT<>();
+            String stoken = jwt.createJWT(staff);
+
+            ResponseSuccess<Staff> response = new ResponseSuccess<>();
+
+            Map<String, String> cookies = new HashMap<>();
+            cookies.put("stoken", stoken);
+            response.cookies = cookies;
+            response.data = staff;
+            return ResponseEntity.ok().body(response);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
-
-        // check length password
-        if(loginDto.password.trim().length() < 8) {
-            return badRequestApi("password", "Password must not be less than 8 characters");
-        }
-
-        Staff staff = staffService.getOneStaffByEmail(loginDto.email);
-
-        if(staff == null) {
-            return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
-        }
-
-        if(staff.getBlock() == 1) {
-            return Error(HttpStatus.UNAUTHORIZED, "Account access has been restricted");
-        }
-
-        JWT<Staff> jwt = new JWT<>();
-        String stoken = jwt.createJWT(staff);
-
-        ResponseSuccess<Staff> response = new ResponseSuccess<>();
-
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("stoken", stoken);
-        response.cookies = cookies;
-        response.data = staff;
-        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("create")
@@ -125,7 +130,7 @@ public class StaffController extends ResponseApi {
             ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<Staff>();
             responseSuccess.data = staff;
             return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
-        }catch (ResponseException e) {
+        }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
     }
@@ -145,8 +150,59 @@ public class StaffController extends ResponseApi {
             ResponseSuccess<List<Staff>> responseSuccess = new ResponseSuccess<List<Staff>>();
             responseSuccess.data = staffs;
             return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
-        }catch (ResponseException e) {
+        }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
     }
+
+    @PatchMapping("lock/{sid}")
+    ResponseEntity<?> lock(@PathVariable String sid, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+
+            // Kiểm tra admin
+            if(!staffDataToken.get("admin").equals("1")) {
+                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
+            }
+
+            if(sid.length() < 20) {
+                return badRequestApi("sid", "Sid is not long enough");
+            }
+
+            Staff staff = staffService.getOneStaffBySid(sid);
+
+            if(staff == null) {{
+                return Error(HttpStatus.NOT_FOUND, "The account not exist");
+            }}
+            System.out.println(staff.getSid());
+            System.out.println(staffDataToken.get("sid"));
+            if(staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
+                return Error(HttpStatus.BAD_REQUEST, "Not block your self");
+            }
+
+            if(staff.getBlock() == 1) {
+                return Error(HttpStatus.CONFLICT, "The account has been locked before");
+            }
+
+            // set block
+            staff.setBlock(1);
+            staff.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = staffService.updateStaff(staff);
+            if(!updated) {
+                return Error(HttpStatus.BAD_REQUEST, "Cannot block account. Please checking sid");
+            }
+
+            Map<String, String> dataResponse = new HashMap<>();
+            dataResponse.put("sid", staff.getSid());
+            dataResponse.put("email", staff.getEmail());
+
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<Map<String, String>>();
+            responseSuccess.data = dataResponse;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
 }
