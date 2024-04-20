@@ -9,10 +9,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class ConfigMiddleware implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // staff
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/create");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/get-all");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/lock/{sid}");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/unlock/{sid}");
+
+        // cash
+        registry.addInterceptor(new TokenStaff()).addPathPatterns("/cash/get-all");
 
 
 

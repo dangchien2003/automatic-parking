@@ -33,7 +33,7 @@ public class StaffService {
             Transaction tr = session.beginTransaction();
 
             String sql = "SELECT * FROM staff WHERE admin != 1";
-            NativeQuery<Staff> query = session.createNativeQuery(sql);
+            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
             List<Staff> staff = query.list();
             tr.commit();
             session.close();

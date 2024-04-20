@@ -1,8 +1,8 @@
 package config;
 
+import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.staff.Staff;
 import io.github.cdimascio.dotenv.Dotenv;
-import com.automaticparking.test.abcEntity;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -26,8 +26,9 @@ public class configDB {
         try {
             metadataSources = new MetadataSources(standardServiceRegistry);
             // all entity
-             metadataSources.addAnnotatedClass(abcEntity.class);
             metadataSources.addAnnotatedClass(Staff.class);
+            metadataSources.addAnnotatedClass(Cash.class);
+
 
             System.out.println("hibernate OK");
         } catch (Exception e) {
