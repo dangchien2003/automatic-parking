@@ -34,8 +34,8 @@ public class StaffController extends ResponseApi {
 
             StaffService staffService = new StaffService();
 
-            List<Staff> staffs = staffService.getStaffByEmail(createStaff.getEmail());
-            if(!staffs.isEmpty()) return Error(HttpStatus.CONFLICT,  "Email đã tồn tại");
+            Staff staffs = staffService.getOneStaffByEmail(createStaff.getEmail());
+            if(staffs != null) return Error(HttpStatus.CONFLICT,  "Email đã tồn tại");
 
             BigInteger countAdmins = staffService.countAdmin();
             int countAdminsInteger = countAdmins.intValue();
@@ -110,13 +110,14 @@ public class StaffController extends ResponseApi {
 
             StaffService staffService = new StaffService();
 
-            List<Staff> staffs = staffService.getStaffByEmail(createStaff.getEmail());
-            if(!staffs.isEmpty()) return Error(HttpStatus.CONFLICT,  "Email đã tồn tại");
+            Staff staff = staffService.getOneStaffByEmail(createStaff.getEmail());
+            if(staff != null) return Error(HttpStatus.CONFLICT,  "Email đã tồn tại");
 
-            Staff staff = Util.getDefaultStaff();
-            staff = Util.setStaff(staff, 0, createStaff.name, createStaff.birthday, createStaff.email);
+            // tạo staff
+            Staff dataStaff = Util.getDefaultStaff();
+            staff = Util.setStaff(dataStaff, 0, createStaff.name, createStaff.birthday, createStaff.email);
 
-            Boolean created = staffService.createStaff(staff);
+            Boolean created = staffService.createStaff(dataStaff);
 
             if(!created) {
                 return internalServerError("Cannot create staff");
@@ -124,6 +125,26 @@ public class StaffController extends ResponseApi {
             ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<Staff>();
             responseSuccess.data = staff;
             return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
+        }catch (ResponseException e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @GetMapping("get-all")
+    ResponseEntity<?> getAllStaff(HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+
+            // Kiểm tra admin
+            if(!staffDataToken.get("admin").equals("1")) {
+                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
+            }
+
+            List<Staff> staffs = staffService.getAllStaff();
+
+            ResponseSuccess<List<Staff>> responseSuccess = new ResponseSuccess<List<Staff>>();
+            responseSuccess.data = staffs;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
         }catch (ResponseException e) {
             return internalServerError(e.getMessage());
         }

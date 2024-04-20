@@ -100,7 +100,6 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor  {
         }
 
         request.setAttribute("staffDataToken", staffDataToken);
-        System.out.println( request.getAttribute("staffDataToken"));
         return true;
     }
 

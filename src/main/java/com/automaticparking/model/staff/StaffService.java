@@ -27,14 +27,13 @@ public class StaffService {
         return  true;
     }
 
-    public List<Staff> getStaffByEmail(String email) {
+    public List<Staff> getAllStaff() {
         Session session = hibernateUtil.getSessionFactory().openSession();
         try {
             Transaction tr = session.beginTransaction();
 
-            String sql = "SELECT * FROM staff WHERE email = :email";
+            String sql = "SELECT * FROM staff WHERE admin != 1";
             NativeQuery<Staff> query = session.createNativeQuery(sql);
-            query.setParameter("email", email);
             List<Staff> staff = query.list();
             tr.commit();
             session.close();

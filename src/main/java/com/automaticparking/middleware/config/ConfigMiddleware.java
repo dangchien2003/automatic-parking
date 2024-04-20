@@ -10,5 +10,7 @@ public class ConfigMiddleware implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/create");
+        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/get-all");
+
     }
 }
