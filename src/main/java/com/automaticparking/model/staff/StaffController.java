@@ -101,13 +101,6 @@ public class StaffController extends ResponseApi {
     @PostMapping("create")
     ResponseEntity<?> createStaff(@Valid @RequestBody CreateStaffDto createStaff, HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
-
-            // Kiểm tra admin
-            if(!staffDataToken.get("admin").equals("1")) {
-                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
-            }
-
             DateValid dateValid = new DateValid();
             if(!dateValid.isValidDate(createStaff.birthday)) {
                 return badRequestApi("Birthday", "Non-compliant birthday format 'yyyy-MM-dd'");
@@ -138,13 +131,6 @@ public class StaffController extends ResponseApi {
     @GetMapping("get-all")
     ResponseEntity<?> getAllStaff(HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
-
-            // Kiểm tra admin
-            if(!staffDataToken.get("admin").equals("1")) {
-                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
-            }
-
             List<Staff> staffs = staffService.getAllStaff();
 
             ResponseSuccess<List<Staff>> responseSuccess = new ResponseSuccess<List<Staff>>();
@@ -160,20 +146,16 @@ public class StaffController extends ResponseApi {
         try {
             Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
 
-            // Kiểm tra admin
-            if(!staffDataToken.get("admin").equals("1")) {
-                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
-            }
-
             if(sid.length() < 20) {
                 return badRequestApi("sid", "Sid is not long enough");
             }
 
             Staff staff = staffService.getOneStaffBySid(sid);
 
-            if(staff == null) {{
+            if(staff == null) {
                 return Error(HttpStatus.NOT_FOUND, "Sid not exist");
-            }}
+            }
+
             if(staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
                 return Error(HttpStatus.BAD_REQUEST, "Not block your self");
             }
@@ -207,11 +189,6 @@ public class StaffController extends ResponseApi {
     ResponseEntity<?> UnLockStaff(@PathVariable String sid, HttpServletRequest request) {
         try {
             Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
-
-            // Kiểm tra admin
-            if(!staffDataToken.get("admin").equals("1")) {
-                return Error(HttpStatus.UNAUTHORIZED, "Not have access");
-            }
 
             if(sid.length() < 20) {
                 return badRequestApi("sid", "Sid is not long enough");
