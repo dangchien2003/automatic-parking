@@ -111,4 +111,22 @@ public class StaffService {
 
     }
 
+    public List<Staff> getListStaffByEmailAndSid(String sid, String email) {
+        Session session = hibernateUtil.getSessionFactory().openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+
+            String sql = "SELECT * FROM staff WHERE sid = :sid or email = :email";
+            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
+            query.setParameter("sid", sid);
+            query.setParameter("email", email);
+            List<Staff> staff = query.list();
+            tr.commit();
+            session.close();
+            return staff;
+        }catch (Exception e) {
+            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
 }

@@ -5,6 +5,7 @@ import javax.validation.Valid;
 
 import com.automaticparking.model.staff.dto.LoginDto;
 import com.automaticparking.types.ResponseException;
+import com.automaticparking.model.staff.dto.UpdateStaffDto;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.JWT;
 import jakarta.servlet.http.HttpServletRequest;
@@ -77,6 +78,12 @@ public class StaffController extends ResponseApi {
 
             if(staff == null) {
                 return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
+            }
+
+            Hash hash = new Hash();
+
+            if(!hash.compareHash(loginDto.password, staff.getPassword())) {
+                return badRequestApi("password", "Incorrect password");
             }
 
             if(staff.getBlock() == 1) {
@@ -223,6 +230,98 @@ public class StaffController extends ResponseApi {
 
             ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<Map<String, String>>();
             responseSuccess.data = dataResponse;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @PatchMapping("change-password")
+    ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto changePassword, HttpServletRequest request) {
+        try {
+            if(!changePassword.confirmPassword.equals(changePassword.newPassword)) {
+                return badRequestApi("password", "Confirm password and new password must be the same");
+            }
+
+            if(changePassword.oldPassword.equals(changePassword.newPassword)) {
+                return badRequestApi("password", "Old password and new password cannot be the same");
+            }
+
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+            String sid = staffDataToken.get("sid");
+            Staff staff = staffService.getOneStaffBySid(sid);
+            Hash hash = new Hash();
+            if(!hash.compareHash(changePassword.oldPassword, staff.getPassword())) {
+                return badRequestApi("password", "Incorrect password");
+            }
+
+            String hashNewPassword = hash.hash(changePassword.newPassword);
+
+            if(hashNewPassword == null) {
+                throw new Exception("Password encryption error");
+            }
+
+            staff.setPassword(hashNewPassword);
+            staff.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = staffService.updateStaff(staff);
+            if(!updated) {
+                throw new Exception("Update error");
+            }
+
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+
+    }
+
+
+    @PutMapping("update/{sid}")
+    ResponseEntity<?> updateStaff(@Valid @RequestBody UpdateStaffDto updateStaff, @PathVariable String sid) {
+        try {
+            if(sid.length() < 20) {
+                return badRequestApi("sid", "Sid is not long enough");
+            }
+
+            DateValid dateValid = new DateValid();
+            if(!dateValid.isValidDate(updateStaff.birthday)) {
+                return badRequestApi("Birthday", "Non-compliant birthday format 'yyyy-MM-dd'");
+            }
+
+            List<Staff> staffs = staffService.getListStaffByEmailAndSid(sid, updateStaff.email);
+
+            if(staffs.size() > 2) {
+                return Error(HttpStatus.CONFLICT, "An unknown error. Please contact us");
+            }
+
+            if(staffs.size() == 2) {
+                return Error(HttpStatus.CONFLICT, "Email already exists");
+            }
+
+            if(staffs.isEmpty() || !staffs.get(0).getSid().equals(sid)) {
+                return Error(HttpStatus.NOT_FOUND, "Not found staff");
+            }
+
+            if(staffs.get(0).getEmail().equals(updateStaff.email) && staffs.get(0).getBirthday().equals(updateStaff.birthday) && staffs.get(0).getName().equals(updateStaff.name)) {
+                return badRequestApi("The information has not changed");
+            }
+
+            Staff dataUpdate = staffs.get(0);
+
+            dataUpdate.setName(updateStaff.name);
+            dataUpdate.setEmail(updateStaff.email);
+            dataUpdate.setBirthday(updateStaff.birthday);
+            dataUpdate.setLastLogin(Genarate.getTimeStamp());
+            Boolean updated = staffService.updateStaff(dataUpdate);
+
+            if(!updated) {
+               throw new Exception("Update error");
+            }
+
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = dataUpdate;
             return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());

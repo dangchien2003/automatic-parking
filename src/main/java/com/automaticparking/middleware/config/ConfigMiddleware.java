@@ -10,17 +10,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class ConfigMiddleware implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/create");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/get-all");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/lock/{sid}");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/unlock/{sid}");
+        // staff token
+        registry.addInterceptor(new TokenStaff())
+                .addPathPatterns("/staff/create")
+                .addPathPatterns("/staff/get-all")
+                .addPathPatterns("/staff/lock/{sid}")
+                .addPathPatterns("/staff/unlock/{sid}")
+                .addPathPatterns("/staff/update/{sid}")
+                .addPathPatterns("/staff/change-password")
+                .addPathPatterns("/cash/not-approve/get-all")
+                .addPathPatterns("/cash/approve");
 
-
-        // admin
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/create");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/get-all");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/lock/{sid}");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/unlock/{sid}");
-
+        // router admin
+        registry.addInterceptor(new Admin())
+                .addPathPatterns("/staff/create")
+                .addPathPatterns("/staff/get-all")
+                .addPathPatterns("/staff/lock/{sid}")
+                .addPathPatterns("/staff/unlock/{sid}")
+                .addPathPatterns("/staff/update/{sid}")
+                .addPathPatterns("/cash/not-approve/get-all");
     }
 }
