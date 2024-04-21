@@ -5,14 +5,16 @@ import com.automaticparking.types.ResponseException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.http.HttpStatus;
 import util.hibernateUtil;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class CashService {
-    public List<Cash> getAllCashNotApproved() {
+    public List<Cash> getAllCashNotApprove() {
         Session session = hibernateUtil.getSessionFactory().openSession();
         try {
             Transaction tr = session.beginTransaction();
@@ -23,6 +25,31 @@ public class CashService {
             tr.commit();
             session.close();
             return cashs;
+        }catch (Exception e) {
+            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
+    public Integer approveListCash(Long[] listId, Long approveAt, String personApprove) {
+        Session session = hibernateUtil.getSessionFactory().openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+            String sql = "UPDATE Cash SET acceptAt = :acceptAt, acceptBy = :acceptBy WHERE stt IN (:listId) and acceptAt IS NULL and cancelAt IS NULL";
+            Query query = session.createQuery(sql);
+            query.setParameter("acceptAt", approveAt);
+            query.setParameter("acceptBy", personApprove);
+            query.setParameter("listId", Arrays.asList(listId));
+            Integer rowsAffected = query.executeUpdate();
+
+            // kiem tra so luong id đã update
+            if(rowsAffected != listId.length) {
+                tr.rollback();
+            }else {
+                tr.commit();
+            }
+
+            session.close();
+            return rowsAffected;
         }catch (Exception e) {
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
