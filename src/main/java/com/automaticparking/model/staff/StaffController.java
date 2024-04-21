@@ -1,11 +1,13 @@
 package com.automaticparking.model.staff;
 
 import com.automaticparking.model.cash.Cash;
+import com.automaticparking.model.staff.dto.ChangePasswordDto;
 import com.automaticparking.model.staff.dto.CreateStaffDto;
 import javax.validation.Valid;
 
 import com.automaticparking.model.staff.dto.LoginDto;
 import com.automaticparking.types.ResponseSuccess;
+import encrypt.Hash;
 import encrypt.JWT;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -78,10 +80,16 @@ public class StaffController extends ResponseApi {
             if(staff == null) {
                 return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
             }
+            Hash hash = new Hash();
+
+            if(!hash.compareHash(loginDto.password, staff.getPassword())) {
+                return badRequestApi("password", "Incorrect password");
+            }
 
             if(staff.getBlock() == 1) {
                 return Error(HttpStatus.UNAUTHORIZED, "Account access has been restricted");
             }
+
 
             JWT<Staff> jwt = new JWT<>();
             String stoken = jwt.createJWT(staff);
@@ -221,12 +229,57 @@ public class StaffController extends ResponseApi {
             dataResponse.put("sid", staff.getSid());
             dataResponse.put("email", staff.getEmail());
 
-            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<Map<String, String>>();
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = dataResponse;
             return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
     }
+
+    @PatchMapping("change-password")
+    ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto changePassword, HttpServletRequest request) {
+        try {
+            if(!changePassword.confirmPassword.equals(changePassword.newPassword)) {
+                return badRequestApi("password", "Confirm password and new password must be the same");
+            }
+
+            if(changePassword.oldPassword.equals(changePassword.newPassword)) {
+                return badRequestApi("password", "Old password and new password cannot be the same");
+            }
+
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+            String sid = staffDataToken.get("sid");
+            Staff staff = staffService.getOneStaffBySid(sid);
+            Hash hash = new Hash();
+            if(!hash.compareHash(changePassword.oldPassword, staff.getPassword())) {
+                return badRequestApi("password", "Incorrect password");
+            }
+
+            String hashNewPassword = hash.hash(changePassword.newPassword);
+
+            System.out.println(hashNewPassword);
+            System.out.println(staff.getPassword());
+            System.out.println(staff.getEmail());
+            if(hashNewPassword == null) {
+                throw new Exception("Password encryption error");
+            }
+
+            staff.setPassword(hashNewPassword);
+            staff.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = staffService.updateStaff(staff);
+            if(!updated) {
+                throw new Exception("Update error");
+            }
+
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+
+    }
+
 
 }

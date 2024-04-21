@@ -15,6 +15,7 @@ public class ConfigMiddleware implements WebMvcConfigurer {
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/get-all");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/lock/{sid}");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/unlock/{sid}");
+        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/change-password");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/cash/not-approve/get-all");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/cash/approve");
 
