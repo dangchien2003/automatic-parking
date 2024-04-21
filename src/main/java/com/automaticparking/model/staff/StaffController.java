@@ -1,12 +1,11 @@
 package com.automaticparking.model.staff;
 
-import com.automaticparking.model.cash.Cash;
+
 import com.automaticparking.model.staff.dto.ChangePasswordDto;
 import com.automaticparking.model.staff.dto.CreateStaffDto;
 import javax.validation.Valid;
 
 import com.automaticparking.model.staff.dto.LoginDto;
-import com.automaticparking.types.ResponseException;
 import com.automaticparking.model.staff.dto.UpdateStaffDto;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.Hash;
@@ -82,12 +81,6 @@ public class StaffController extends ResponseApi {
             if(staff == null) {
                 return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
             }
-            Hash hash = new Hash();
-
-            if(!hash.compareHash(loginDto.password, staff.getPassword())) {
-                return badRequestApi("password", "Incorrect password");
-            }
-
             Hash hash = new Hash();
 
             if(!hash.compareHash(loginDto.password, staff.getPassword())) {
