@@ -6,6 +6,8 @@ import com.automaticparking.model.staff.dto.CreateStaffDto;
 import javax.validation.Valid;
 
 import com.automaticparking.model.staff.dto.LoginDto;
+import com.automaticparking.types.ResponseException;
+import com.automaticparking.model.staff.dto.UpdateStaffDto;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.Hash;
 import encrypt.JWT;
@@ -80,6 +82,12 @@ public class StaffController extends ResponseApi {
             if(staff == null) {
                 return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
             }
+            Hash hash = new Hash();
+
+            if(!hash.compareHash(loginDto.password, staff.getPassword())) {
+                return badRequestApi("password", "Incorrect password");
+            }
+
             Hash hash = new Hash();
 
             if(!hash.compareHash(loginDto.password, staff.getPassword())) {
@@ -258,9 +266,6 @@ public class StaffController extends ResponseApi {
 
             String hashNewPassword = hash.hash(changePassword.newPassword);
 
-            System.out.println(hashNewPassword);
-            System.out.println(staff.getPassword());
-            System.out.println(staff.getEmail());
             if(hashNewPassword == null) {
                 throw new Exception("Password encryption error");
             }
@@ -281,5 +286,55 @@ public class StaffController extends ResponseApi {
 
     }
 
+
+    @PutMapping("update/{sid}")
+    ResponseEntity<?> updateStaff(@Valid @RequestBody UpdateStaffDto updateStaff, @PathVariable String sid) {
+        try {
+            if(sid.length() < 20) {
+                return badRequestApi("sid", "Sid is not long enough");
+            }
+
+            DateValid dateValid = new DateValid();
+            if(!dateValid.isValidDate(updateStaff.birthday)) {
+                return badRequestApi("Birthday", "Non-compliant birthday format 'yyyy-MM-dd'");
+            }
+
+            List<Staff> staffs = staffService.getListStaffByEmailAndSid(sid, updateStaff.email);
+
+            if(staffs.size() > 2) {
+                return Error(HttpStatus.CONFLICT, "An unknown error. Please contact us");
+            }
+
+            if(staffs.size() == 2) {
+                return Error(HttpStatus.CONFLICT, "Email already exists");
+            }
+
+            if(staffs.isEmpty() || !staffs.get(0).getSid().equals(sid)) {
+                return Error(HttpStatus.NOT_FOUND, "Not found staff");
+            }
+
+            if(staffs.get(0).getEmail().equals(updateStaff.email) && staffs.get(0).getBirthday().equals(updateStaff.birthday) && staffs.get(0).getName().equals(updateStaff.name)) {
+                return badRequestApi("The information has not changed");
+            }
+
+            Staff dataUpdate = staffs.get(0);
+
+            dataUpdate.setName(updateStaff.name);
+            dataUpdate.setEmail(updateStaff.email);
+            dataUpdate.setBirthday(updateStaff.birthday);
+            dataUpdate.setLastLogin(Genarate.getTimeStamp());
+            Boolean updated = staffService.updateStaff(dataUpdate);
+
+            if(!updated) {
+               throw new Exception("Update error");
+            }
+
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = dataUpdate;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
 
 }

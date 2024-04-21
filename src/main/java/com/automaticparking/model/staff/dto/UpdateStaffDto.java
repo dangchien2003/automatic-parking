@@ -1,13 +1,11 @@
 package com.automaticparking.model.staff.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 import javax.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 
-@Data
-public class CreateStaffDto {
+public class UpdateStaffDto {
     @Valid
 
     @NotBlank
