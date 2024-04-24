@@ -10,7 +10,9 @@ import com.automaticparking.model.staff.dto.UpdateStaffDto;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.Hash;
 import encrypt.JWT;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -64,7 +66,7 @@ public class StaffController extends ResponseApi {
     }
 
     @PostMapping("login")
-    ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto){
+    ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto, HttpServletResponse response){
         try {
             // check length email
             if(loginDto.email.trim().length() < 10) {
@@ -98,10 +100,18 @@ public class StaffController extends ResponseApi {
             Map<String, String> cookies = new HashMap<>();
             cookies.put("SToken", stoken);
 
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-            response.cookies = cookies;
-            response.data = staff;
-            return ResponseEntity.ok().body(response);
+            Cookie cookie = new Cookie("SToken", stoken);
+            cookie.setAttribute("HttpOnly", "True");
+            cookie.setAttribute("SameSite", "None");
+            cookie.setAttribute("Partitioned", "True");
+
+            cookie.setMaxAge(3600);
+            response.addCookie(cookie);
+
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.cookies = cookies;
+            responseSuccess.data = staff;
+            return ResponseEntity.ok().body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
