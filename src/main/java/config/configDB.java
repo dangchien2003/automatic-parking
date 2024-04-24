@@ -1,6 +1,7 @@
 package config;
 
 import com.automaticparking.model.cash.Cash;
+import com.automaticparking.model.customer.Customer;
 import com.automaticparking.model.staff.Staff;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.hibernate.boot.MetadataSources;
@@ -28,6 +29,8 @@ public class configDB {
             // all entity
             metadataSources.addAnnotatedClass(Staff.class);
             metadataSources.addAnnotatedClass(Cash.class);
+            metadataSources.addAnnotatedClass(Customer.class);
+
 
 
             System.out.println("hibernate OK");

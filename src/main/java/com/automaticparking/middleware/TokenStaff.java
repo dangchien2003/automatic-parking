@@ -16,10 +16,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import util.Cookies;
 import util.Genarate;
-import util.ResponseApi;
+import response.ResponseApi;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component

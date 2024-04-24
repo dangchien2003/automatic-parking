@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import util.Genarate;
-import util.ResponseApi;
+import response.ResponseApi;
 import validation.DateValid;
 
 import java.math.BigInteger;
@@ -95,10 +95,10 @@ public class StaffController extends ResponseApi {
             JWT<Staff> jwt = new JWT<>();
             String stoken = jwt.createJWT(staff);
 
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("stoken", stoken);
+            cookies.put("SToken", stoken);
+
+            ResponseSuccess<Staff> response = new ResponseSuccess<>();
             response.cookies = cookies;
             response.data = staff;
             return ResponseEntity.ok().body(response);
