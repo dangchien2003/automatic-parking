@@ -24,6 +24,17 @@ public class Customer {
     @Column
     private Integer block;
 
+    @Column
+    private Long lastLogin;
+
+    public Long getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Long lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
     public Customer() {
     }
 
