@@ -6,15 +6,14 @@ import com.automaticparking.model.staff.Staff;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.Hash;
 import encrypt.JWT;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
 import util.Genarate;
-
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +52,7 @@ public class CustomerController extends ResponseApi {
     }
 
     @PostMapping("login")
-    ResponseEntity<?> login(@Valid @RequestBody RegisterDto dataLogin) {
+    ResponseEntity<?> login(@Valid @RequestBody RegisterDto dataLogin, HttpServletResponse response) {
         try {
             Customer customer = customerService.getCustomerByEmail(dataLogin.email);
 
@@ -76,6 +75,11 @@ public class CustomerController extends ResponseApi {
             Map<String, String> cookies = new HashMap<>();
             cookies.put("UToken", utoken);
 
+            Cookie cookie = new Cookie("UToken", utoken);
+            cookie.setAttribute("HttpOnly", "True");
+            cookie.setMaxAge(3600);
+            response.addCookie(cookie);
+
             ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
             responseSuccess.cookies = cookies;
             responseSuccess.data = customer;
@@ -84,5 +88,4 @@ public class CustomerController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
-
 }
