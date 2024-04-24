@@ -77,6 +77,9 @@ public class CustomerController extends ResponseApi {
 
             Cookie cookie = new Cookie("UToken", utoken);
             cookie.setAttribute("HttpOnly", "True");
+            cookie.setAttribute("SameSite", "None");
+            cookie.setAttribute("Partitioned", "True");
+
             cookie.setMaxAge(3600);
             response.addCookie(cookie);
 
