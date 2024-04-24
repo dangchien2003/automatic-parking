@@ -104,7 +104,6 @@ public class StaffController extends ResponseApi {
             cookie.setAttribute("HttpOnly", "True");
             cookie.setAttribute("SameSite", "None");
             cookie.setAttribute("Partitioned", "True");
-
             cookie.setMaxAge(3600);
             response.addCookie(cookie);
 
