@@ -1,4 +1,4 @@
-package util;
+package response;
 
 import com.automaticparking.types.ResponseError;
 import com.automaticparking.types.ResponseException;

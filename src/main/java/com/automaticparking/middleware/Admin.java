@@ -1,11 +1,6 @@
 package com.automaticparking.middleware;
 
-import com.automaticparking.model.staff.Staff;
-import com.automaticparking.model.staff.StaffService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import encrypt.JWT;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,12 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import util.Cookies;
-import util.Genarate;
-import util.ResponseApi;
+import response.ResponseApi;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component

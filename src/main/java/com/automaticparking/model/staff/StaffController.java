@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import util.Genarate;
-import util.ResponseApi;
+import response.ResponseApi;
 import validation.DateValid;
 
 import java.math.BigInteger;
