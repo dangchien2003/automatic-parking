@@ -1,19 +1,28 @@
 package com.automaticparking.model.customer;
 
 
+import com.automaticparking.model.customer.dto.ForgetPassword;
 import com.automaticparking.model.customer.dto.RegisterDto;
-import com.automaticparking.model.staff.Staff;
+import com.automaticparking.model.mailer.MailService;
+import com.automaticparking.model.mailer.MailTemplate;
+import com.automaticparking.model.mailer.Render;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.Hash;
 import encrypt.JWT;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.Email;
+import net.bytebuddy.implementation.bytecode.Throw;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
 import util.Genarate;
+import util.Random;
+
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +31,14 @@ import java.util.Map;
 @RequestMapping("customer")
 public class CustomerController extends ResponseApi {
     private final CustomerService customerService = new CustomerService();
+    private final MailService mailService;
+
+    private final Render mailRender;
+    @Autowired
+    public CustomerController(MailService mailService, Render mailRender) {
+        this.mailService = mailService;
+        this.mailRender = mailRender;
+    }
 
     @PostMapping("register")
     ResponseEntity<?> createAdmin(@Valid @RequestBody RegisterDto registerDto)  {
@@ -91,4 +108,105 @@ public class CustomerController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
+
+    @PostMapping("forget")
+    ResponseEntity<?> forget(@Valid @RequestBody ForgetPassword forgetPassword) {
+        try {
+
+            Customer customer = customerService.getCustomerByEmail(forgetPassword.email);
+
+            if(customer == null) {
+                return badRequestApi("Email not exist");
+            }
+
+            // set data token
+            forgetPassword.lastLogin = customer.getLastLogin();
+
+            JWT<ForgetPassword> jwt = new JWT<>();
+            String forgetToken = jwt.createJWT(forgetPassword);
+
+            // get template
+            String html = mailRender.customerForget(forgetToken);
+
+            // set conten mail
+            MailTemplate mailTemplate = new MailTemplate();
+            mailTemplate.setSubject("Quên mật khẩu");
+            mailTemplate.setTo(forgetPassword.email);
+            mailTemplate.setHtml(html);
+
+            // send
+            Boolean send = mailService.sendEmail(mailTemplate);
+
+            if(!send) {
+                throw new Exception("Error send mail");
+            }
+
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @GetMapping("forget/{forgetToken}")
+    ResponseEntity<?> acceptForget(@Valid @PathVariable String forgetToken) {
+        try {
+            JWT<ForgetPassword> jwt = new JWT<>();
+            Claims dataToken = jwt.decodeJWT(forgetToken);
+
+            if(dataToken == null) {
+                return badRequestApi("Invalid token");
+            }
+
+            Map<String, String> dataForget = Genarate.getMapFromJson(dataToken.getSubject());
+
+            String email = dataForget.get("email");
+
+            if(email.trim().isEmpty()) {
+                return badRequestApi("Invalid email");
+            }
+
+            Customer customer = customerService.getCustomerByEmail(email);
+            if(customer == null) {
+                return badRequestApi("Email not exist");
+            }
+
+            if(dataForget.get("lastLogin") == null || customer.getLastLogin() != Long.parseLong(dataForget.get("lastLogin"))) {
+                return badRequestApi("Token has expired");
+            }
+
+            String newPassword = Random.generateRandomString(10);
+
+            Hash hash = new Hash();
+            String hashNewPassword = hash.hash(newPassword);
+
+            customer.setPassword(hashNewPassword);
+            customer.setLastLogin(Genarate.getTimeStamp());
+            Boolean updated = customerService.updateCustomer(customer);
+            if(!updated) {
+                throw new Exception("Error update");
+            }
+
+            String html = mailRender.customerNewPassword(newPassword);
+
+            MailTemplate mailTemplate = new MailTemplate();
+            mailTemplate.setSubject("Cập nhật mật khẩu");
+            mailTemplate.setHtml(html);
+            mailTemplate.setTo(email);
+
+            // send
+            Boolean send = mailService.sendEmail(mailTemplate);
+            if (!send) {
+                throw new Exception("Error send mail");
+            }
+
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+
+
 }

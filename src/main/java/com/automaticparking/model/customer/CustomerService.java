@@ -41,4 +41,21 @@ public class CustomerService {
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
+
+    public Boolean updateCustomer(Customer customer) {
+        Session session = hibernateUtil.getSessionFactory().openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+            session.update(customer);
+            tr.commit();
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return false;
+        }
+        finally {
+            session.close();
+        }
+        return true;
+
+    }
 }
