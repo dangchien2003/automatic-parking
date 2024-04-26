@@ -1,5 +1,5 @@
 # Sử dụng OpenJDK 11 làm base image
-FROM openjdk:11
+FROM openjdk:17
 
 # Set thư mục làm việc mặc định trong Docker container
 WORKDIR /app
