@@ -1,22 +1,11 @@
 package com.automaticparking;
 
 
-import com.automaticparking.model.staff.Staff;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import config.configDB;
-import com.automaticparking.test.abcService;
-import encrypt.JWT;
-import io.jsonwebtoken.Claims;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
-import util.Genarate;
 import util.hibernateUtil;
-
-import java.io.IOException;
-import java.util.Map;
 
 @SpringBootApplication
 public class AutomaticParkingApplication {

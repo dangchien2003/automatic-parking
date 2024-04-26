@@ -1,6 +1,5 @@
 package com.automaticparking.model.customer;
 
-import com.automaticparking.model.staff.Staff;
 import com.automaticparking.types.ResponseException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -10,7 +9,7 @@ import util.hibernateUtil;
 
 public class CustomerService {
     public Boolean saveCustomer(Customer dataCustomer) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
             session.save(dataCustomer);
@@ -26,7 +25,7 @@ public class CustomerService {
     }
 
     public Customer getCustomerByEmail(String email) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
 
@@ -43,7 +42,7 @@ public class CustomerService {
     }
 
     public Boolean updateCustomer(Customer customer) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
             session.update(customer);

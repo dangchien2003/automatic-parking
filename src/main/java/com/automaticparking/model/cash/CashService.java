@@ -1,12 +1,11 @@
 package com.automaticparking.model.cash;
 
-import com.automaticparking.model.staff.Staff;
+
 import com.automaticparking.types.ResponseException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
-import org.hibernate.type.StandardBasicTypes;
 import org.springframework.http.HttpStatus;
 import util.hibernateUtil;
 
@@ -15,7 +14,7 @@ import java.util.List;
 
 public class CashService {
     public List<Cash> getAllCashNotApprove() {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
 
@@ -31,7 +30,7 @@ public class CashService {
     }
 
     public Integer approveListCash(Long[] listId, Long approveAt, String personApprove) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
             String sql = "UPDATE Cash SET acceptAt = :acceptAt, acceptBy = :acceptBy WHERE stt IN (:listId) and acceptAt IS NULL and cancelAt IS NULL";

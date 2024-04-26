@@ -12,7 +12,7 @@ import java.util.List;
 
 public class StaffService {
     public Boolean createStaff(Staff staff) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
             session.save(staff);
@@ -28,7 +28,7 @@ public class StaffService {
     }
 
     public List<Staff> getAllStaff() {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
 
@@ -44,7 +44,7 @@ public class StaffService {
     }
 
     public Staff getOneStaffByEmail(String email) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
 
@@ -61,7 +61,7 @@ public class StaffService {
     }
 
     public BigInteger countAdmin() {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
 
@@ -78,7 +78,7 @@ public class StaffService {
     }
 
     public Staff getOneStaffBySid(String sid) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
 
@@ -95,7 +95,7 @@ public class StaffService {
     }
 
     public Boolean updateStaff(Staff staff) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
             session.update(staff);
@@ -112,7 +112,7 @@ public class StaffService {
     }
 
     public List<Staff> getListStaffByEmailAndSid(String sid, String email) {
-        Session session = hibernateUtil.getSessionFactory().openSession();
+        Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
 
