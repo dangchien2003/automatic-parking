@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import util.CustomDotENV;
 import util.Genarate;
 import response.ResponseApi;
 import validation.DateValid;
@@ -95,7 +96,7 @@ public class StaffController extends ResponseApi {
 
 
             JWT<Staff> jwt = new JWT<>();
-            String stoken = jwt.createJWT(staff);
+            String stoken = jwt.createJWT(staff, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
 
             Map<String, String> cookies = new HashMap<>();
             cookies.put("SToken", stoken);

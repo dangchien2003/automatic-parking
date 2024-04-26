@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
+import util.CustomDotENV;
 import util.Genarate;
 import util.Random;
 
@@ -84,7 +85,7 @@ public class CustomerController extends ResponseApi {
             }
 
             JWT<Customer> jwt = new JWT<>();
-            String utoken = jwt.createJWT(customer);
+            String utoken = jwt.createJWT(customer, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
 
             Map<String, String> cookies = new HashMap<>();
             cookies.put("UToken", utoken);
@@ -120,7 +121,7 @@ public class CustomerController extends ResponseApi {
             forgetPassword.lastLogin = customer.getLastLogin();
 
             JWT<ForgetPassword> jwt = new JWT<>();
-            String forgetToken = jwt.createJWT(forgetPassword);
+            String forgetToken = jwt.createJWT(forgetPassword, Long.parseLong(CustomDotENV.get("FORGET_PASSWORD_SECOND_TOKEN")));
 
             // get template
             String html = mailRender.customerForget(forgetToken);

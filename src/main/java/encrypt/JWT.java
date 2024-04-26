@@ -20,14 +20,14 @@ public class JWT<T> {
     private ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public String createJWT(T data)  {
+    public String createJWT(T data, long second)  {
         try {
             // Thời gian hiện tại
             long nowMillis = System.currentTimeMillis();
             Date now = new Date(nowMillis);
 
             // Thời gian hết hạn
-            long expMillis = nowMillis + Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN"))*1000;
+            long expMillis = nowMillis + second*1000;
             Date exp = new Date(expMillis);
 
             String userJson = objectMapper.writeValueAsString(data);

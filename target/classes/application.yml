@@ -7,12 +7,12 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: chienka0003@gmail.com
-    password: gvbe xmnb fdqs esxr
+    password: yfdm azjk wlki aget
     properties:
       mail:
         smtp:
-        auth: true
-        starttls.enable: true
+          auth: true
+          starttls.enable: true
   # thymeleaf
   thymeleaf:
     prefix: classpath:/templates/
