@@ -102,7 +102,7 @@ public class StaffController extends ResponseApi {
             cookies.put("SToken", stoken);
 
             Cookie cookie = new Cookie("SToken", stoken);
-            cookie.setAttribute("Path", "/");
+            cookie.setAttribute("Path", "/*");
             cookie.setAttribute("HttpOnly", "True");
             cookie.setAttribute("SameSite", "None");
             cookie.setAttribute("Partitioned", "True");
