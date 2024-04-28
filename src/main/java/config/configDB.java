@@ -1,6 +1,6 @@
 package config;
 
-import com.automaticparking.model.cash.Cash;
+import com.automaticparking.model.cash.staff.Cash;
 import com.automaticparking.model.customer.Customer;
 import com.automaticparking.model.staff.Staff;
 import io.github.cdimascio.dotenv.Dotenv;

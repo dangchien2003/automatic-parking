@@ -1,4 +1,4 @@
-package com.automaticparking.model.cash.dto;
+package com.automaticparking.model.cash.staff.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
