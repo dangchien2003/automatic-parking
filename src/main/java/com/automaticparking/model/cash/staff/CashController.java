@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/staff/cash")
+@RequestMapping("/staff")
 public class CashController extends ResponseApi {
     private final CashService cashService = new CashService();
-    @GetMapping("not-approve/get-all")
+    @GetMapping("cash/not-approve/get-all")
     ResponseEntity<?> getAllCashNotApprove() {
         try {
             List<Cash> cashs = cashService.getAllCashNotApprove();
@@ -29,7 +29,7 @@ public class CashController extends ResponseApi {
         }
     }
 
-    @PatchMapping("approve")
+    @PatchMapping("cash/approve")
     ResponseEntity<?> getAllCash(@Valid @RequestBody ApproveDto approve, HttpServletRequest request) {
         try {
 
