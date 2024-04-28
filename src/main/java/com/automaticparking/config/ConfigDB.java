@@ -75,7 +75,7 @@ public class ConfigDB {
         properties.setProperty("hibernate.connection.password", dbPass);
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         properties.setProperty("hibernate.show_sql", showSql);
-        properties.setProperty("hibernate.connection.pool_size", "10");
+        properties.setProperty("hibernate.connection.pool_size", "20");
 
         return properties;
     }

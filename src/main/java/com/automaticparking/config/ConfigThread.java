@@ -20,7 +20,7 @@ public class ConfigThread {
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("Async-");
         executor.initialize();
-        System.out.println("Thread OK");
+        System.out.println("Thread OK max 20");
         return executor;
     }
 }
