@@ -1,4 +1,4 @@
-package com.automaticparking.model.cash;
+package com.automaticparking.model.cash.staff;
 
 import javax.persistence.*;
 
