@@ -107,6 +107,7 @@ public class CustomerController extends ResponseApi {
         }
     }
 
+
     @PostMapping("forget")
     ResponseEntity<?> forget(@Valid @RequestBody ForgetPassword forgetPassword) {
         try {
@@ -132,13 +133,7 @@ public class CustomerController extends ResponseApi {
             mailTemplate.setTo(forgetPassword.email);
             mailTemplate.setHtml(html);
 
-            // send
-            Boolean send = mailService.sendEmail(mailTemplate);
-
-            if(!send) {
-                throw new Exception("Error send mail");
-            }
-
+            mailService.sendEmail(mailTemplate);
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.ok().body(responseSuccess);
         }catch (Exception e) {
@@ -192,11 +187,7 @@ public class CustomerController extends ResponseApi {
             mailTemplate.setHtml(html);
             mailTemplate.setTo(email);
 
-            // send
-            Boolean send = mailService.sendEmail(mailTemplate);
-            if (!send) {
-                throw new Exception("Error send mail");
-            }
+            mailService.sendEmail(mailTemplate);
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.ok().body(responseSuccess);

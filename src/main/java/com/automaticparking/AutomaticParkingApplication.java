@@ -1,8 +1,5 @@
 package com.automaticparking;
 
-
-
-import config.configDB;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import util.hibernateUtil;
@@ -11,7 +8,6 @@ import util.hibernateUtil;
 public class AutomaticParkingApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(AutomaticParkingApplication.class, args);
-		new configDB();
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {

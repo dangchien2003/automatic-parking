@@ -20,16 +20,14 @@ public class Render {
         Context context = new Context();
         context.setVariable("forget_token", forgetToken);
 
-        String htmlContent = templateEngine.process("mail/forgetPassword", context);
-        return htmlContent;
+        return templateEngine.process("mail/forgetPassword", context);
     }
 
     public String customerNewPassword(String newPassword) {
         Context context = new Context();
         context.setVariable("newPassword", newPassword);
 
-        String htmlContent = templateEngine.process("mail/newPassword", context);
-        return htmlContent;
+        return templateEngine.process("mail/newPassword", context);
     }
 
 }
