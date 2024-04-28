@@ -1,4 +1,5 @@
 E:\code\SPRING\automatic-parking\src\main\java\encrypt\Hash.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigThread.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\Staff.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Genarate.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\mailer\MailService.java
@@ -11,7 +12,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\middleware\A
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\dto\CreateStaffDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseSuccess.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\dto\ApproveDto.java
-E:\code\SPRING\automatic-parking\src\main\java\config\configDB.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigDB.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\RegisterDto.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Random.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\Cash.java
