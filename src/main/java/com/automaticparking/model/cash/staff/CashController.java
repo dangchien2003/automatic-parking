@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/staff")
+@RequestMapping("staff")
 public class CashController extends ResponseApi {
     private final CashService cashService = new CashService();
     @GetMapping("cash/not-approve/get-all")
