@@ -1,4 +1,4 @@
-package config;
+package com.automaticparking.config;
 
 import com.automaticparking.model.cash.staff.Cash;
 import com.automaticparking.model.customer.Customer;
@@ -8,21 +8,19 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.SessionFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import java.util.Properties;
 
 @Configuration
-public class configDB {
+public class ConfigDB {
     private static MetadataSources metadataSources;
     Dotenv dotenv = Dotenv.load();
-    public configDB() {
-        metadataSources = null;
-        setup();
-    }
-
-    private final void setup() {
+    @Bean
+    public SessionFactory setup() {
         Properties properties = null;
-        switch (dotenv.get("ACTIVE")) {
+        String active = dotenv.get("ACTIVE");
+        switch (active) {
             case "dev":
                 properties = createHibernatePropertiesDev();
                 break;
@@ -30,8 +28,7 @@ public class configDB {
                 properties = createHibernateProperties();
                 break;
             default:
-                System.out.println("cannot found active");
-                return;
+                System.out.println("Cannot found active");
         }
         StandardServiceRegistry standardServiceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(properties)
@@ -44,13 +41,14 @@ public class configDB {
             metadataSources.addAnnotatedClass(Cash.class);
             metadataSources.addAnnotatedClass(Customer.class);
 
-
-
-            System.out.println("hibernate OK");
+            System.out.println("Hibernate "+ active +" setup OK");
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(standardServiceRegistry);
-            System.out.println("Lỗi setup hibernate");
+            System.out.println("Error add entity");
+            return null;
         }
+        return metadataSources.buildMetadata().buildSessionFactory();
+
     }
 
     public static void AddEntity(Class<?> add) {
@@ -97,8 +95,7 @@ public class configDB {
         properties.setProperty("hibernate.connection.password", dbPass);
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         properties.setProperty("hibernate.show_sql", showSql);
-        properties.setProperty("hibernate.connection.pool_size", "10");
-
+        properties.setProperty("hibernate.connection.pool_size", "20");
         return properties;
     }
 }

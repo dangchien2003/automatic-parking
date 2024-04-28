@@ -16,6 +16,9 @@ spring:
   # thymeleaf
   thymeleaf:
     prefix: classpath:/templates/
+  datasource:
+    hikari:
+      maximum-pool-size: 30
 
 server:
   port: 8080
