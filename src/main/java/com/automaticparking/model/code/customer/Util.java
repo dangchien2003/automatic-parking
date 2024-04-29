@@ -1,4 +1,4 @@
-package com.automaticparking.model.code;
+package com.automaticparking.model.code.customer;
 
 import com.automaticparking.model.shopQr.QrShop;
 import util.CustomRandom;

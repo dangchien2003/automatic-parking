@@ -1,4 +1,4 @@
-package com.automaticparking.model.code;
+package com.automaticparking.model.code.customer;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

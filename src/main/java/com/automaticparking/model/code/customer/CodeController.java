@@ -1,8 +1,8 @@
-package com.automaticparking.model.code;
+package com.automaticparking.model.code.customer;
 
 import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.cash.customer.CashCustomerService;
-import com.automaticparking.model.code.dto.BuyCodeDto;
+import com.automaticparking.model.code.customer.dto.BuyCodeDto;
 import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.shopQr.QrShopService;
 import com.automaticparking.types.ResponseSuccess;

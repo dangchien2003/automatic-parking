@@ -1,4 +1,4 @@
-package com.automaticparking.model.code;
+package com.automaticparking.model.code.customer;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;

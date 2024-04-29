@@ -1,4 +1,4 @@
-package com.automaticparking.model.code.dto;
+package com.automaticparking.model.code.customer.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
