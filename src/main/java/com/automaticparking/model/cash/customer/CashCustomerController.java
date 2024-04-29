@@ -5,14 +5,12 @@ import com.automaticparking.model.cash.customer.dto.InputMoneyDto;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
 import util.Genarate;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -39,6 +37,29 @@ public class CashCustomerController extends ResponseApi {
             }
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @GetMapping("cash/all")
+    ResponseEntity<?> allMyHistory(HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
+
+            String uid = staffDataToken.get("uid");
+
+            List<Cash> history = cashCustomerService.getALlMyHistory(uid);
+
+            // hide field
+            for(Cash cash : history) {
+                cash.setAcceptBy("hide");
+                cash.setRecashBy("hide");
+            }
+
+            ResponseSuccess<List<Cash>> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = history;
             return ResponseEntity.ok().body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
