@@ -1,6 +1,7 @@
 package com.automaticparking.model.cash.staff;
 
 
+import com.automaticparking.model.cash.Cash;
 import com.automaticparking.types.ResponseException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -12,7 +13,7 @@ import util.hibernateUtil;
 import java.util.Arrays;
 import java.util.List;
 
-public class CashService {
+public class CashStaffService {
     public List<Cash> getAllCashNotApprove() {
         Session session = hibernateUtil.openSession();
         try {

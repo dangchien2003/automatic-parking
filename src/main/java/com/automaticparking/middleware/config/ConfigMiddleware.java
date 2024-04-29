@@ -1,6 +1,7 @@
 package com.automaticparking.middleware.config;
 
 import com.automaticparking.middleware.Admin;
+import com.automaticparking.middleware.TokenCustomer;
 import com.automaticparking.middleware.TokenStaff;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -26,5 +27,8 @@ public class ConfigMiddleware implements WebMvcConfigurer {
         registry.addInterceptor(new Admin()).addPathPatterns("/staff/lock/{sid}");
         registry.addInterceptor(new Admin()).addPathPatterns("/staff/unlock/{sid}");
         registry.addInterceptor(new Admin()).addPathPatterns("/staff/cash/not-approve/get-all");
+
+        // customer token
+        registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/cash/input-money");
     }
 }

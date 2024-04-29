@@ -12,6 +12,9 @@ import encrypt.JWT;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -85,12 +88,13 @@ public class CustomerController extends ResponseApi {
             }
 
             JWT<Customer> jwt = new JWT<>();
-            String utoken = jwt.createJWT(customer, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
+            String CToken = jwt.createJWT(customer, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
 
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("UToken", utoken);
+            cookies.put("CToken", CToken);
 
-            Cookie cookie = new Cookie("UToken", utoken);
+            Cookie cookie = new Cookie("CToken", CToken);
+            cookie.setAttribute("Path", "/customer");
             cookie.setAttribute("HttpOnly", "True");
             cookie.setAttribute("SameSite", "None");
             cookie.setAttribute("Partitioned", "True");
@@ -195,6 +199,8 @@ public class CustomerController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
+
+
 
 
 

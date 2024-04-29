@@ -1,5 +1,6 @@
 package com.automaticparking.model.cash.staff;
 
+import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.cash.staff.dto.ApproveDto;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,8 +16,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("staff")
-public class CashController extends ResponseApi {
-    private final CashService cashService = new CashService();
+public class CashStaffController extends ResponseApi {
+    private final CashStaffService cashService = new CashStaffService();
     @GetMapping("cash/not-approve/get-all")
     ResponseEntity<?> getAllCashNotApprove() {
         try {

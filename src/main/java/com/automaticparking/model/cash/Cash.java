@@ -1,4 +1,4 @@
-package com.automaticparking.model.cash.staff;
+package com.automaticparking.model.cash;
 
 import javax.persistence.*;
 
@@ -18,7 +18,7 @@ public class Cash {
     @Column
     private Integer money;
 
-    @Column(length = 20)
+    @Column(length = 30)
     private String stringCode;
 
     @Column
