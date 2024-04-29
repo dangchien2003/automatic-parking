@@ -1,6 +1,8 @@
 package com.automaticparking.model.customer;
 
 
+import com.automaticparking.model.cash.customer.CashCustomerService;
+import com.automaticparking.model.code.customer.CodeService;
 import com.automaticparking.model.customer.dto.ForgetPassword;
 import com.automaticparking.model.customer.dto.RegisterDto;
 import com.automaticparking.model.mailer.MailService;
@@ -29,6 +31,9 @@ import java.util.Map;
 @RequestMapping("customer")
 public class CustomerController extends ResponseApi {
     private final CustomerService customerService = new CustomerService();
+    private final CodeService codeService = new CodeService();
+    private final CashCustomerService cashCustomerService = new CashCustomerService();
+
     private final MailService mailService;
 
     private final Render mailRender;
@@ -196,9 +201,4 @@ public class CustomerController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
-
-
-
-
-
 }

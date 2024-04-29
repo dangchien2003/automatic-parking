@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 public class CodeService {
-    List<Code> getAllCodeUse(String uid) {
+    public List<Code> getAllCodeUse(String uid) {
         Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();

@@ -42,18 +42,8 @@ public class CodeController extends ResponseApi {
                 return badRequestApi("Qr not exist");
             }
 
-            // get history plus cash
-            List<Cash> historyCash = cashService.getALlMyHistoryOk(uid);
-
-            Integer totalMyCash = cashCustomerService.getTotalCash(historyCash);
-
-            // get history code used
-            List<Code> myCode = codeService.getAllCodeUse(uid);
-
-            Integer moneyUsed = codeService.getToTalMoneyUsed(myCode);
-
             // get remaining(số dư)
-            Integer remaining = totalMyCash - moneyUsed;
+            Integer remaining = cashCustomerService.getRemaining(uid);
 
             if(remaining < 0) {
                 System.out.println("Nhỏ hơn số tiền nạp");

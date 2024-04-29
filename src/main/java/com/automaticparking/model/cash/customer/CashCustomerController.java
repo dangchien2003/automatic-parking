@@ -11,15 +11,16 @@ import response.ResponseApi;
 import util.Genarate;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("customer")
+@RequestMapping("customer/cash")
 public class CashCustomerController extends ResponseApi {
     private CashCustomerService cashCustomerService = new CashCustomerService();
 
-    @PostMapping("cash/input-money")
+    @PostMapping("input-money")
     ResponseEntity<?> inputMoney(@Valid @RequestBody InputMoneyDto inputMoney,  HttpServletRequest request) {
         try {
             Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
@@ -44,7 +45,7 @@ public class CashCustomerController extends ResponseApi {
         }
     }
 
-    @GetMapping("cash/all")
+    @GetMapping("all")
     ResponseEntity<?> allMyHistory(HttpServletRequest request) {
         try {
             Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
@@ -61,6 +62,22 @@ public class CashCustomerController extends ResponseApi {
 
             ResponseSuccess<List<Cash>> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = history;
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @GetMapping("remaining")
+    ResponseEntity<?> getMyRemaining(HttpServletRequest request) {
+        try {
+            Map<String, String> customerDataToken = (Map <String, String>) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.get("uid");
+            Integer remaining = cashCustomerService.getRemaining(uid);
+            Map<String, Integer> mapData = new HashMap<>();
+            mapData.put("remaining", remaining);
+            ResponseSuccess<Map<String, Integer>> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = mapData;
             return ResponseEntity.ok().body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());

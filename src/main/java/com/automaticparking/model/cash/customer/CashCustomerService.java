@@ -1,6 +1,8 @@
 package com.automaticparking.model.cash.customer;
 
 import com.automaticparking.model.cash.Cash;
+import com.automaticparking.model.code.customer.Code;
+import com.automaticparking.model.code.customer.CodeService;
 import com.automaticparking.types.ResponseException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -13,6 +15,7 @@ import java.util.List;
 
 @Service
 public class CashCustomerService {
+    private final CodeService codeService = new CodeService();
     public Boolean saveCashHistory(Cash cash) {
         Session session = hibernateUtil.openSession();
         try {
@@ -71,5 +74,22 @@ public class CashCustomerService {
             }
         }
         return totalMyCash;
+    }
+
+    public Integer getRemaining(String uid) {
+        // get history plus cash
+        List<Cash> historyCash = getALlMyHistoryOk(uid);
+
+        Integer totalMyCash = getTotalCash(historyCash);
+
+        // get history code used
+        List<Code> myCode = codeService.getAllCodeUse(uid);
+
+        Integer moneyUsed = codeService.getToTalMoneyUsed(myCode);
+
+        // get remaining(số dư)
+        Integer remaining = totalMyCash - moneyUsed;
+
+        return remaining;
     }
 }

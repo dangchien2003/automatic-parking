@@ -16,27 +16,31 @@ public class ConfigMiddleware implements WebMvcConfigurer {
         TokenCustomer customer = new TokenCustomer();
 
         // staff token
-        registry.addInterceptor(staff).addPathPatterns("/staff/create");
-        registry.addInterceptor(staff).addPathPatterns("/staff/get-all");
-        registry.addInterceptor(staff).addPathPatterns("/staff/lock/{sid}");
-        registry.addInterceptor(staff).addPathPatterns("/staff/unlock/{sid}");
-        registry.addInterceptor(staff).addPathPatterns("/staff/change-password");
-        registry.addInterceptor(staff).addPathPatterns("/staff/cash/not-approve/get-all");
-        registry.addInterceptor(staff).addPathPatterns("/staff/cash/approve");
-        registry.addInterceptor(staff).addPathPatterns("/staff/shop-qr/create");
+        registry.addInterceptor(staff)
+                .addPathPatterns("/staff/create")
+                .addPathPatterns("/staff/get-all")
+                .addPathPatterns("/staff/lock/{sid}")
+                .addPathPatterns("/staff/unlock/{sid}")
+                .addPathPatterns("/staff/change-password")
+                .addPathPatterns("/staff/cash/not-approve/get-all")
+                .addPathPatterns("/staff/cash/approve")
+                .addPathPatterns("/staff/shop-qr/create");
 
         // router admin
-        registry.addInterceptor(admin).addPathPatterns("/staff/create");
-        registry.addInterceptor(admin).addPathPatterns("/staff/get-all");
-        registry.addInterceptor(admin).addPathPatterns("/staff/lock/{sid}");
-        registry.addInterceptor(admin).addPathPatterns("/staff/unlock/{sid}");
-        registry.addInterceptor(admin).addPathPatterns("/staff/cash/not-approve/get-all");
-        registry.addInterceptor(admin).addPathPatterns("/staff/shop-qr/create");
+        registry.addInterceptor(admin)
+                .addPathPatterns("/staff/create")
+                .addPathPatterns("/staff/get-all")
+                .addPathPatterns("/staff/lock/{sid}")
+                .addPathPatterns("/staff/unlock/{sid}")
+                .addPathPatterns("/staff/cash/not-approve/get-all")
+                .addPathPatterns("/staff/shop-qr/create");
 
         // customer token
-        registry.addInterceptor(customer).addPathPatterns("/customer/cash/input-money");
-        registry.addInterceptor(customer).addPathPatterns("/customer/cash/all");
-        registry.addInterceptor(customer).addPathPatterns("/customer/code/buy");
+        registry.addInterceptor(customer)
+                .addPathPatterns("/customer/cash/input-money")
+                .addPathPatterns("/customer/cash/all")
+                .addPathPatterns("/customer/cash/remaining")
+                .addPathPatterns("/customer/code/buy");
 
     }
 }
