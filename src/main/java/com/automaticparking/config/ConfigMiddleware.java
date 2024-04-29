@@ -11,29 +11,32 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class ConfigMiddleware implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // staff token
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/create");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/get-all");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/lock/{sid}");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/unlock/{sid}");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/change-password");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/cash/not-approve/get-all");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/cash/approve");
-        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/code/create");
+        TokenStaff staff = new TokenStaff();
+        Admin admin = new Admin();
+        TokenCustomer customer = new TokenCustomer();
 
+        // staff token
+        registry.addInterceptor(staff).addPathPatterns("/staff/create");
+        registry.addInterceptor(staff).addPathPatterns("/staff/get-all");
+        registry.addInterceptor(staff).addPathPatterns("/staff/lock/{sid}");
+        registry.addInterceptor(staff).addPathPatterns("/staff/unlock/{sid}");
+        registry.addInterceptor(staff).addPathPatterns("/staff/change-password");
+        registry.addInterceptor(staff).addPathPatterns("/staff/cash/not-approve/get-all");
+        registry.addInterceptor(staff).addPathPatterns("/staff/cash/approve");
+        registry.addInterceptor(staff).addPathPatterns("/staff/shop-qr/create");
 
         // router admin
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/create");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/get-all");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/lock/{sid}");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/unlock/{sid}");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/cash/not-approve/get-all");
-        registry.addInterceptor(new Admin()).addPathPatterns("/staff/code/create");
+        registry.addInterceptor(admin).addPathPatterns("/staff/create");
+        registry.addInterceptor(admin).addPathPatterns("/staff/get-all");
+        registry.addInterceptor(admin).addPathPatterns("/staff/lock/{sid}");
+        registry.addInterceptor(admin).addPathPatterns("/staff/unlock/{sid}");
+        registry.addInterceptor(admin).addPathPatterns("/staff/cash/not-approve/get-all");
+        registry.addInterceptor(admin).addPathPatterns("/staff/shop-qr/create");
 
         // customer token
-        registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/cash/input-money");
-        registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/cash/all");
-        registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/code/buy");
+        registry.addInterceptor(customer).addPathPatterns("/customer/cash/input-money");
+        registry.addInterceptor(customer).addPathPatterns("/customer/cash/all");
+        registry.addInterceptor(customer).addPathPatterns("/customer/code/buy");
 
     }
 }

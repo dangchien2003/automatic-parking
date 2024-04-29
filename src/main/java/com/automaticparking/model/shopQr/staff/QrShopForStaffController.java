@@ -1,6 +1,8 @@
-package com.automaticparking.model.shopQr;
+package com.automaticparking.model.shopQr.staff;
 
-import com.automaticparking.model.shopQr.dto.CreateQrCategoryDto;
+import com.automaticparking.model.shopQr.QrShop;
+import com.automaticparking.model.shopQr.QrShopService;
+import com.automaticparking.model.shopQr.staff.dto.CreateQrCategoryDto;
 import com.automaticparking.types.ResponseSuccess;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +15,8 @@ import response.ResponseApi;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("staff/code")
-public class QrShopController extends ResponseApi {
+@RequestMapping("staff/shop-qr")
+public class QrShopForStaffController extends ResponseApi {
 
     private final QrShopService qrShopService = new QrShopService();
     @PostMapping("create")
@@ -24,6 +26,7 @@ public class QrShopController extends ResponseApi {
             qr.setQrCategory(createData.qrCategory);
             qr.setPrice(createData.price);
             qr.setMaxAge(createData.maxAge);
+            qr.setHide(0);
 
             Boolean created = qrShopService.saveQrCategory(qr);
 

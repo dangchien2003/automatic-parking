@@ -14,9 +14,21 @@ public class QrShop {
     @Column
     private Integer price;
 
-    @Column Long maxAge;
+    @Column
+    private Long maxAge;
+
+    @Column
+    private Integer hide;
 
     public QrShop() {
+    }
+
+    public Integer getHide() {
+        return hide;
+    }
+
+    public void setHide(Integer hide) {
+        this.hide = hide;
     }
 
     public Long getMaxAge() {

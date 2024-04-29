@@ -1,4 +1,4 @@
-package com.automaticparking.model.shopQr.dto;
+package com.automaticparking.model.shopQr.staff.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
