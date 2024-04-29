@@ -4,6 +4,7 @@ import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.cash.customer.dto.InputMoneyDto;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
@@ -37,7 +38,7 @@ public class CashCustomerController extends ResponseApi {
             }
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
-            return ResponseEntity.ok().body(responseSuccess);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
