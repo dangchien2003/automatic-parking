@@ -6,7 +6,7 @@ import util.Genarate;
 
 public class Util {
     public String genarateQrId() {
-        return "CODE" + Genarate.getTimeStamp() + "_" + CustomRandom.randomLetters(4);
+        return "CODE_" + Genarate.getTimeStamp() + "_" + CustomRandom.randomLetters(4);
     }
 
     public Code setCode(String uid, QrShop qr, Integer discount) {
@@ -17,7 +17,7 @@ public class Util {
         code.setUid(uid);
         code.setBuyAt(now);
         code.setPrice(qr.getPrice()-discount);
-        code.setExpireAt(now + qr.getMaxAge());
+        code.setExpireAt(now + qr.getMaxAge()*1000);
         return code;
     }
 

@@ -19,6 +19,7 @@ public class ConfigMiddleware implements WebMvcConfigurer {
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/change-password");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/cash/not-approve/get-all");
         registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/cash/approve");
+        registry.addInterceptor(new TokenStaff()).addPathPatterns("/staff/code/create");
 
 
         // router admin
@@ -27,6 +28,7 @@ public class ConfigMiddleware implements WebMvcConfigurer {
         registry.addInterceptor(new Admin()).addPathPatterns("/staff/lock/{sid}");
         registry.addInterceptor(new Admin()).addPathPatterns("/staff/unlock/{sid}");
         registry.addInterceptor(new Admin()).addPathPatterns("/staff/cash/not-approve/get-all");
+        registry.addInterceptor(new Admin()).addPathPatterns("/staff/code/create");
 
         // customer token
         registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/cash/input-money");

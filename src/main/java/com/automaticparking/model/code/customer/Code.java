@@ -3,8 +3,10 @@ package com.automaticparking.model.code.customer;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "qr")
 public class Code {
     @Id
     private String qrid;

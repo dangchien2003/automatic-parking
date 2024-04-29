@@ -50,10 +50,13 @@ public class CodeController extends ResponseApi {
             }
 
             // get history code use
-            List<Code> myCode = codeService.getAllCodeUse(uid);
             Integer moneyUsed = 0;
-            for(Code code : myCode) {
-                moneyUsed += code.getPrice();
+            List<Code> myCode = codeService.getAllCodeUse(uid);
+
+            if(myCode != null) {
+                for(Code code : myCode) {
+                    moneyUsed += code.getPrice();
+                }
             }
 
             // get remaining(số dư)
@@ -66,7 +69,6 @@ public class CodeController extends ResponseApi {
             if(remaining < qr.getPrice()) {
                 return badRequestApi("The balance is not enough, please add more money");
             }
-
 
             Integer discount = 0;
             // mua code

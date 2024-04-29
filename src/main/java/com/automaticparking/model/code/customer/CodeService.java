@@ -14,8 +14,8 @@ public class CodeService {
     List<Code> getAllCodeUse(String uid) {
         Session session = hibernateUtil.openSession();
         try {
-            Transaction tr = session.getTransaction();
-            String sql = "SELECT * FROM qr WHERE uid = :uid and (cancleAt IS NULL and expireAt > :now) or (checkinAt IS NOT NULL)";
+            Transaction tr = session.beginTransaction();
+            String sql = "SELECT * FROM qr WHERE uid = :uid AND (cancleAt IS NULL AND expireAt > :now) or (checkinAt IS NOT NULL)";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
             query.setParameter("now", Genarate.getTimeStamp());
@@ -32,11 +32,11 @@ public class CodeService {
     Boolean saveCode(Code code) {
         Session session = hibernateUtil.openSession();
         try {
-            Transaction tr = session.getTransaction();
+            Transaction tr = session.beginTransaction();
             session.save(code);
             tr.commit();
         }catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getStackTrace());
             return false;
         }finally {
             session.close();

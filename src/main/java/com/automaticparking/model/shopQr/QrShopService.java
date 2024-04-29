@@ -11,7 +11,7 @@ public class QrShopService {
     public QrShop getOneQrById(String category) {
         Session session = hibernateUtil.openSession();
         try {
-            Transaction tr = session.getTransaction();
+            Transaction tr = session.beginTransaction();
             String sql = "SELECT * From shopqr where qrCategory = :qrCategory";
             NativeQuery<QrShop> query = session.createNativeQuery(sql, QrShop.class);
             query.setParameter("qrCategory", category);
@@ -23,5 +23,20 @@ public class QrShopService {
             System.out.println(e.getMessage());
             return null;
         }
+    }
+
+    public Boolean saveQrCategory(QrShop qr) {
+        Session session = hibernateUtil.openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+            session.save(qr);
+            tr.commit();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }finally {
+            session.close();
+        }
+        return true;
     }
 }
