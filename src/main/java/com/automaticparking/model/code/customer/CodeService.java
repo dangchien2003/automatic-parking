@@ -15,7 +15,7 @@ public class CodeService {
         Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
-            String sql = "SELECT * FROM qr WHERE uid = :uid AND (cancleAt IS NULL AND expireAt > :now) or (checkinAt IS NOT NULL)";
+            String sql = "SELECT * FROM qr WHERE uid = :uid AND (cancleAt IS NULL AND expireAt > :now) OR (checkinAt IS NOT NULL)";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
             query.setParameter("now", Genarate.getTimeStamp());
