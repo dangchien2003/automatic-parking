@@ -1,8 +1,11 @@
 package com.automaticparking.model.code.customer;
 
+import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.shopQr.QrShop;
 import util.CustomRandom;
 import util.Genarate;
+
+import java.util.List;
 
 public class Util {
     public String genarateQrId() {
@@ -20,5 +23,8 @@ public class Util {
         code.setExpireAt(now + qr.getMaxAge()*1000);
         return code;
     }
+
+
+
 
 }

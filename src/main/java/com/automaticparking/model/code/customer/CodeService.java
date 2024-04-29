@@ -1,5 +1,6 @@
 package com.automaticparking.model.code.customer;
 
+import com.automaticparking.model.cash.Cash;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
@@ -42,5 +43,15 @@ public class CodeService {
             session.close();
         }
         return true;
+    }
+
+    public Integer getToTalMoneyUsed(List<Code> codes) {
+        Integer totalMyCash =  0;
+        if(codes != null) {
+            for(Code code : codes) {
+                totalMyCash += code.getPrice();
+            }
+        }
+        return totalMyCash;
     }
 }

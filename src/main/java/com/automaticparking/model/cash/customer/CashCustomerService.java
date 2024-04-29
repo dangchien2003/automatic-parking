@@ -62,4 +62,14 @@ public class CashCustomerService {
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
+
+    public Integer getTotalCash(List<Cash> historyCash) {
+        Integer totalMyCash =  0;
+        if(historyCash != null) {
+            for(Cash cash : historyCash) {
+                totalMyCash += cash.getMoney();
+            }
+        }
+        return totalMyCash;
+    }
 }

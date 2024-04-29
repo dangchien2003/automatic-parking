@@ -24,8 +24,9 @@ import java.util.Map;
 public class CodeController extends ResponseApi {
 
     private final QrShopService qrShopService = new QrShopService();
-    private final CashCustomerService CashService = new CashCustomerService();
+    private final CashCustomerService cashService = new CashCustomerService();
     private final CodeService codeService = new CodeService();
+    private final CashCustomerService cashCustomerService = new CashCustomerService();
 
 
     @PostMapping("buy")
@@ -42,22 +43,14 @@ public class CodeController extends ResponseApi {
             }
 
             // get history plus cash
-            List<Cash> historyCash = CashService.getALlMyHistoryOk(uid);
+            List<Cash> historyCash = cashService.getALlMyHistoryOk(uid);
 
-            Integer totalMyCash =  0;
-            for(Cash cash : historyCash) {
-                totalMyCash += cash.getMoney();
-            }
+            Integer totalMyCash = cashCustomerService.getTotalCash(historyCash);
 
-            // get history code use
-            Integer moneyUsed = 0;
+            // get history code used
             List<Code> myCode = codeService.getAllCodeUse(uid);
 
-            if(myCode != null) {
-                for(Code code : myCode) {
-                    moneyUsed += code.getPrice();
-                }
-            }
+            Integer moneyUsed = codeService.getToTalMoneyUsed(myCode);
 
             // get remaining(số dư)
             Integer remaining = totalMyCash - moneyUsed;

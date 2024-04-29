@@ -19,7 +19,6 @@ public class QrShopForCustomerController extends ResponseApi {
     ResponseEntity<?> getAllCodeOK() {
         try {
             List<QrShop> listCodeOk = qrShopService.getAllCodeOk();
-            System.out.println(listCodeOk);
             ResponseSuccess<List<QrShop>> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = listCodeOk;
             return ResponseEntity.ok().body(responseSuccess);
