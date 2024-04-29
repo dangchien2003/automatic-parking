@@ -47,9 +47,9 @@ public class CashCustomerController extends ResponseApi {
     @GetMapping("cash/all")
     ResponseEntity<?> allMyHistory(HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
 
-            String uid = staffDataToken.get("uid");
+            String uid = customerDataToken.get("uid");
 
             List<Cash> history = cashCustomerService.getALlMyHistory(uid);
 

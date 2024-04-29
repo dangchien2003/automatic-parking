@@ -1,4 +1,4 @@
-package com.automaticparking.middleware.config;
+package com.automaticparking.config;
 
 import com.automaticparking.middleware.Admin;
 import com.automaticparking.middleware.TokenCustomer;
@@ -31,5 +31,7 @@ public class ConfigMiddleware implements WebMvcConfigurer {
         // customer token
         registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/cash/input-money");
         registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/cash/all");
+        registry.addInterceptor(new TokenCustomer()).addPathPatterns("/customer/code/buy");
+
     }
 }

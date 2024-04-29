@@ -45,4 +45,21 @@ public class CashCustomerService {
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
+
+    public List<Cash> getALlMyHistoryOk(String uid) {
+        Session session = hibernateUtil.openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+
+            String sql = "SELECT * FROM historycash where uid = :uid and acceptAt IS NOT NULL and recashBy IS NULL";
+            NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
+            query.setParameter("uid", uid);
+            List<Cash> cashs = query.list();
+            tr.commit();
+            session.close();
+            return cashs;
+        }catch (Exception e) {
+            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
 }

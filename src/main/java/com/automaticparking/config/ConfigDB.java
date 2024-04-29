@@ -1,7 +1,9 @@
 package com.automaticparking.config;
 
 import com.automaticparking.model.cash.Cash;
+import com.automaticparking.model.code.Code;
 import com.automaticparking.model.customer.Customer;
+import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.staff.Staff;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.hibernate.boot.MetadataSources;
@@ -40,7 +42,8 @@ public class ConfigDB {
             metadataSources.addAnnotatedClass(Staff.class);
             metadataSources.addAnnotatedClass(Cash.class);
             metadataSources.addAnnotatedClass(Customer.class);
-
+            metadataSources.addAnnotatedClass(QrShop.class);
+            metadataSources.addAnnotatedClass(Code.class);
             System.out.println("Hibernate "+ active +" setup OK");
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(standardServiceRegistry);
