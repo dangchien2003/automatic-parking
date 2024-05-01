@@ -20,6 +20,11 @@ spring:
     hikari:
       maximum-pool-size: 30
 
+#cache
+  cache:
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=5m
+
 server:
   port: 8080
 #  ssl:
