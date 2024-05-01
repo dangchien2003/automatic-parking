@@ -19,7 +19,7 @@ public class ConfigCache {
                     .expireAfterWrite(Long.parseLong(CustomDotENV.get("EXPIRE_CACHE_SECOND")), TimeUnit.SECONDS) // Thời gian sống của mỗi mục trong cache tính từ lúc ghi
 //                    .expireAfterAccess(Long.parseLong(CustomDotENV.get("EXPIRE_CACHE_SECOND")), TimeUnit.SECONDS) // Thời gian sống của mỗi mục trong cache tính từ lần cuối truy cập cache
                     .build();
-            System.out.println("Config cache OK");
+            System.out.println("Config cache ok");
             return cache;
         }catch (Exception e) {
             System.out.println(e.getMessage());
