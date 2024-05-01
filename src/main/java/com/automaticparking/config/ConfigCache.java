@@ -17,7 +17,7 @@ public class ConfigCache {
             Cache<String, Object> cache = Caffeine.newBuilder()
 //                    .maximumSize(Integer.parseInt(CustomDotENV.get("MAX_CACHE"))) // Số lượng mục tối đa trong cache
                     .expireAfterWrite(Long.parseLong(CustomDotENV.get("EXPIRE_CACHE_SECOND")), TimeUnit.SECONDS) // Thời gian sống của mỗi mục trong cache tính từ lúc ghi
-                    .expireAfterAccess(Long.parseLong(CustomDotENV.get("EXPIRE_CACHE_SECOND")), TimeUnit.SECONDS) // Thời gian sống của mỗi mục trong cache tính từ lần cuối truy cập cache
+//                    .expireAfterAccess(Long.parseLong(CustomDotENV.get("EXPIRE_CACHE_SECOND")), TimeUnit.SECONDS) // Thời gian sống của mỗi mục trong cache tính từ lần cuối truy cập cache
                     .build();
             System.out.println("Config cache OK");
             return cache;
