@@ -19,7 +19,7 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 30
-
+  Access-Control-Allow-Origin:
 #cache
   cache:
     caffeine:

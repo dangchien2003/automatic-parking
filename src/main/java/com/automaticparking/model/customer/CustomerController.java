@@ -99,6 +99,7 @@ public class CustomerController extends ResponseApi {
             cookie.setAttribute("Path", "/customer");
             cookie.setAttribute("HttpOnly", "True");
             cookie.setAttribute("SameSite", "None");
+            cookie.setAttribute("Secure", "false");
             cookie.setAttribute("Partitioned", "True");
 
             cookie.setMaxAge(3600);
