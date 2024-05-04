@@ -41,6 +41,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\s
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigDB.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\RegisterDto.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Random.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigCORS.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\customer\QrShopForCustomerController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseError.java
 E:\code\SPRING\automatic-parking\src\main\java\validation\DateValid.java
