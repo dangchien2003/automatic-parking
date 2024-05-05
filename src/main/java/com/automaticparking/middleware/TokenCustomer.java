@@ -24,6 +24,7 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor  {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
+
         Cookie[] cookies = request.getCookies();
         Cookies CookieUtil = new Cookies(cookies);
         Cookie Stoken = CookieUtil.getCookieByName("CToken");

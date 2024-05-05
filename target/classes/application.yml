@@ -19,17 +19,12 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 30
-  Access-Control-Allow-Origin:
-#cache
+  mvc:
+    dispatch-options-request: true
+  #cache
   cache:
     caffeine:
       spec: maximumSize=100,expireAfterWrite=5m
 
 server:
   port: 8080
-#  ssl:
-#    key-store: classpath:cert.p12
-#    key-store-password: chienkoi123
-#    ssl.key-password: chienkoi123
-#    keyStoreType: PKCS12
-

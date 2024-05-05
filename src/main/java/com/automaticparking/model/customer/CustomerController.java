@@ -98,6 +98,7 @@ public class CustomerController extends ResponseApi {
             Cookie cookie = new Cookie("CToken", CToken);
             cookie.setAttribute("Path", "/customer");
             cookie.setAttribute("HttpOnly", "True");
+            cookie.setAttribute("Secure", "True");
             cookie.setAttribute("SameSite", "None");
             cookie.setAttribute("Secure", "True");
             cookie.setAttribute("Partitioned", "True");
