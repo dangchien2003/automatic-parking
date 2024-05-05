@@ -20,9 +20,10 @@ spring:
         prefix: classpath:/templates/
 
 server:
-    port: 8888
-#  ssl:
-#    key-store: classpath:cert.p12
-#    key-store-password: chienkoi123
-#    ssl.key-password: chienkoi123
-#    keyStoreType: PKCS12
+    port: 8080
+    ssl:
+        enabled: true
+        key-store: classpath:parking.com.p12
+        key-store-password: 26012003
+        key-store-type: PKCS12
+        key-alias: parking
