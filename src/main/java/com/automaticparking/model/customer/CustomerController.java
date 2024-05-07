@@ -114,6 +114,12 @@ public class CustomerController extends ResponseApi {
         }
     }
 
+    @PostMapping("authentication")
+    ResponseEntity<?> authen() {
+        ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+        return ResponseEntity.ok().body(responseSuccess);
+    }
+
 
     @PostMapping("forget")
     ResponseEntity<?> forget(@Valid @RequestBody ForgetPassword forgetPassword) {

@@ -40,7 +40,8 @@ public class ConfigMiddleware implements WebMvcConfigurer {
                 .addPathPatterns("/customer/cash/input-money")
                 .addPathPatterns("/customer/cash/all")
                 .addPathPatterns("/customer/cash/remaining")
-                .addPathPatterns("/customer/code/buy");
+                .addPathPatterns("/customer/code/buy")
+                .addPathPatterns("/customer/authentication");
 
     }
 }
