@@ -7,4 +7,5 @@ FROM openjdk:17.0.1-jdk-slim
 WORKDIR /
 COPY --from=build /target/automatic-parking-0.0.1-SNAPSHOT.jar demo.jar
 EXPOSE 8080
+WORKDIR /
 ENTRYPOINT ["java", "-jar", "demo.jar"]
