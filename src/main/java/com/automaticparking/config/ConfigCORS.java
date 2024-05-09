@@ -13,7 +13,7 @@ public class ConfigCORS implements WebMvcConfigurer{
     public void addCorsMappings(CorsRegistry registry) {
 
         registry.addMapping("/**")
-                .allowedOrigins("https://localhost:3000", "http://localhost:3000", "https://*.onrender.com", "https://parking.com:3000", "http://parking.com:3000")
+                .allowedOrigins("https://localhost:3000", "http://localhost:3000", "https://fe-parking.onrender.com", "https://feparking.com:3000", "http://feparking.com:3000", "https://child1.feparking.com:3000", "http://child1.feparking.com:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
