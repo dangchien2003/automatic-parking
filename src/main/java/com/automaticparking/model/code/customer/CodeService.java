@@ -30,6 +30,24 @@ public class CodeService {
         }
     }
 
+    public List<Code> allBoughtCode(String uid, Integer limit) {
+        Session session = hibernateUtil.openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+            String sql = "SELECT * FROM qr WHERE uid = :uid ORDER BY buyAt DESC LIMIT 0, :limit";
+            NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
+            query.setParameter("uid", uid);
+            query.setParameter("limit", limit);
+            List<Code> boughtCode = query.list();
+            tr.commit();
+            session.close();
+            return boughtCode;
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
     Boolean saveCode(Code code) {
         Session session = hibernateUtil.openSession();
         try {
