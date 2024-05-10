@@ -115,6 +115,25 @@ public class CustomerController extends ResponseApi {
         }
     }
 
+    @PostMapping("logout")
+    ResponseEntity<?> logout(HttpServletResponse response) {
+        try {
+            Cookie cookie = new Cookie("CToken", "");
+            cookie.setAttribute("Path", "/customer");
+            cookie.setAttribute("HttpOnly", "True");
+            cookie.setAttribute("Secure", "True");
+            cookie.setAttribute("SameSite", "None");
+            cookie.setAttribute("Partitioned", "True");
+
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
     @PostMapping("authentication")
     ResponseEntity<?> authen() {
         ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
@@ -209,4 +228,6 @@ public class CustomerController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
+
+
 }

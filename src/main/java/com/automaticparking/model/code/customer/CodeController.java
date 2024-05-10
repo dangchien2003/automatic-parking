@@ -9,10 +9,7 @@ import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
 
 import javax.validation.Valid;
@@ -24,7 +21,6 @@ import java.util.Map;
 public class CodeController extends ResponseApi {
 
     private final QrShopService qrShopService = new QrShopService();
-    private final CashCustomerService cashService = new CashCustomerService();
     private final CodeService codeService = new CodeService();
     private final CashCustomerService cashCustomerService = new CashCustomerService();
 
@@ -67,6 +63,30 @@ public class CodeController extends ResponseApi {
             ResponseSuccess<Code> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = code;
             return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+    @GetMapping("bought")
+    ResponseEntity<?> getBoughtCode(HttpServletRequest request, @RequestParam(required = false) String quantity) {
+        try {
+            Map<String, String> customerDataToken = (Map <String, String>) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.get("uid");
+
+            Integer quantityLimit;
+            try{
+                quantityLimit = Integer.parseInt(quantity.trim());
+            }catch (Exception e){
+                quantityLimit = 1000000;
+            }
+
+            List<Code> boughtCode = codeService.allBoughtCode(uid, quantityLimit);
+            if(boughtCode == null) {
+                throw new Exception("Error get code");
+            }
+            ResponseSuccess<List<Code>> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = boughtCode;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
