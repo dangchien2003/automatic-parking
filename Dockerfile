@@ -1,6 +1,6 @@
 
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY ./target /app/target
+COPY ./target/automatic-parking-0.0.1-SNAPSHOT.jar /app/automatic-parking-0.0.1-SNAPSHOT.jar
 COPY ./.env /app/.env
-ENTRYPOINT ["java", "-jar", "target/automatic-parking-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "automatic-parking-0.0.1-SNAPSHOT.jar"]
