@@ -54,7 +54,7 @@ public class CashCustomerService {
         try {
             Transaction tr = session.beginTransaction();
 
-            String sql = "SELECT * FROM historycash where uid = :uid and acceptAt IS NOT NULL and recashBy IS NULL";
+            String sql = "SELECT * FROM historycash WHERE uid = :uid AND acceptAt IS NOT NULL AND recashAt IS NULL AND cancleAt IS NULL";
             NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
             query.setParameter("uid", uid);
             List<Cash> cashs = query.list();

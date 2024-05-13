@@ -25,16 +25,23 @@ public class Cash {
     private Long cashAt;
 
     @Column
-    private Long cancelAt;
+    private Long cancleAt;
 
     @Column
     private String recashBy;
+
+    @Column
+    private Long recashAt;
 
     @Column
     private Long acceptAt;
 
     @Column
     private String acceptBy;
+
+    public Long getRecashAt() {return recashAt; }
+
+    public void setRecashAt(Long recashAt) { this.recashAt = recashAt; }
 
     public Long getStt() {
         return stt;
@@ -76,12 +83,12 @@ public class Cash {
         this.cashAt = cashAt;
     }
 
-    public Long getCancelAt() {
-        return cancelAt;
+    public Long getCancleAt() {
+        return cancleAt;
     }
 
-    public void setCancelAt(Long cancelAt) {
-        this.cancelAt = cancelAt;
+    public void setCancleAt(Long cancleAt) {
+        this.cancleAt = cancleAt;
     }
 
     public String getRecashBy() {

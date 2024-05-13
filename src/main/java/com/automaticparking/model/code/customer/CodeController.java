@@ -42,7 +42,7 @@ public class CodeController extends ResponseApi {
             Integer remaining = cashCustomerService.getRemaining(uid);
 
             if(remaining < 0) {
-                System.out.println("Nhỏ hơn số tiền nạp");
+                System.out.println("Số dư nhỏ hơn 0");
             }
 
             if(remaining < qr.getPrice()) {

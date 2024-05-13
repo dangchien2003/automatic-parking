@@ -1,5 +1,9 @@
 ACTIVE = dev
 
+# host
+# HOST_FE=https://child1.feparking.com:3000
+HOST_FE=https://fe-parking.onrender.com
+
 # SQL
 DB_HOST=mysql-3270b040-chienboy03-5a1d.c.aivencloud.com
 DB_PORT=12367
