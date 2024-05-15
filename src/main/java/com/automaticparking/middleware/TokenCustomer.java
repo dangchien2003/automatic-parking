@@ -27,9 +27,9 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor  {
         Cookie[] cookies = request.getCookies();
         Cookies CookieUtil = new Cookies(cookies);
         Cookie Ctoken = CookieUtil.getCookieByName("CToken");
+
         if(Ctoken == null) {
-            System.out.println("k c token");
-            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Not found token"), HttpStatus.BAD_REQUEST);
+            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Not found token"), HttpStatus.OK);
 
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
