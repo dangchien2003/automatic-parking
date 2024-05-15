@@ -24,11 +24,11 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor  {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-
         Cookie[] cookies = request.getCookies();
         Cookies CookieUtil = new Cookies(cookies);
-        Cookie Stoken = CookieUtil.getCookieByName("CToken");
-        if(Stoken == null) {
+        Cookie Ctoken = CookieUtil.getCookieByName("CToken");
+        if(Ctoken == null) {
+            System.out.println("k c token");
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Not found token"), HttpStatus.BAD_REQUEST);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -40,7 +40,7 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor  {
             return false; // endpoint
         }
 
-        String token = Stoken.getValue();
+        String token = Ctoken.getValue();
         Boolean error = false;
         if(token.trim() == "") {
             error = true;

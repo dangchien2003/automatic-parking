@@ -27,6 +27,9 @@ public class Customer {
     @Column
     private Long lastLogin;
 
+    @Column
+    private Long createAt;
+
     public Long getLastLogin() {
         return lastLogin;
     }
@@ -68,5 +71,13 @@ public class Customer {
 
     public void setBlock(Integer block) {
         this.block = block;
+    }
+
+    public Long getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(Long createAt) {
+        this.createAt = createAt;
     }
 }
