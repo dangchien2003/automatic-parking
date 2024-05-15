@@ -37,6 +37,8 @@ public class ConfigMiddleware implements WebMvcConfigurer {
 
         // customer token
         registry.addInterceptor(customer)
+                .addPathPatterns("/customer/change-password")
+                .addPathPatterns("/customer/me")
                 .addPathPatterns("/customer/cash/input-money")
                 .addPathPatterns("/customer/cash/all")
                 .addPathPatterns("/customer/cash/remaining")

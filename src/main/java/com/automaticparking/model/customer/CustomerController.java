@@ -3,6 +3,7 @@ package com.automaticparking.model.customer;
 
 import com.automaticparking.model.cash.customer.CashCustomerService;
 import com.automaticparking.model.code.customer.CodeService;
+import com.automaticparking.model.customer.dto.ChangePasswordDto;
 import com.automaticparking.model.customer.dto.ForgetPassword;
 import com.automaticparking.model.customer.dto.RegisterDto;
 import com.automaticparking.model.mailer.MailService;
@@ -13,7 +14,9 @@ import encrypt.Hash;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +26,7 @@ import util.CustomDotENV;
 import util.Genarate;
 import util.Random;
 
-import javax.validation.Valid;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -223,6 +226,78 @@ public class CustomerController extends ResponseApi {
             mailService.sendEmail(mailTemplate);
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @GetMapping("me")
+    ResponseEntity<?> acceptForget( HttpServletRequest request) {
+        try {
+            Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = customerToken;
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+
+    @PatchMapping("change-password")
+    ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto dataPassword, HttpServletRequest request, HttpServletResponse response) {
+
+        try {
+            Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            String uid = customerToken.get("uid");
+
+            if(dataPassword.getNewPassword().equals(dataPassword.getOldPassword()) ) {
+                return badRequestApi("Password must not same");
+            }
+
+            if(!dataPassword.getNewPassword().equals(dataPassword.getConfirmPassword()) ) {
+                return badRequestApi("Confirm password not same");
+            }
+
+            Customer customer = customerService.getCustomerByUid(uid);
+
+            Hash hash = new Hash();
+            if(!customer.getPassword().equals(hash.hash(dataPassword.getOldPassword()))) {
+                return badRequestApi("Invalid password");
+            }
+
+            String hashNewPassword = hash.hash(dataPassword.getNewPassword());
+
+            customer.setPassword(hashNewPassword);
+            customer.setLastLogin(Genarate.getTimeStamp());
+
+            boolean updated = customerService.updateCustomer(customer);
+
+            if(!updated) {
+                throw new Exception("Error update");
+            }
+
+            JWT<Customer> jwt = new JWT<>();
+            String CToken = jwt.createJWT(customer, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
+
+            Map<String, String> cookies = new HashMap<>();
+            cookies.put("CToken", CToken);
+
+            Cookie cookie = new Cookie("CToken", CToken);
+            cookie.setAttribute("Path", "/customer");
+            cookie.setAttribute("HttpOnly", "True");
+            cookie.setAttribute("Secure", "True");
+            cookie.setAttribute("SameSite", "None");
+            cookie.setAttribute("Secure", "True");
+            cookie.setAttribute("Partitioned", "True");
+
+            cookie.setMaxAge(3600);
+            response.addCookie(cookie);
+
+            ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = customer;
+            responseSuccess.cookies = cookies;
             return ResponseEntity.ok().body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());

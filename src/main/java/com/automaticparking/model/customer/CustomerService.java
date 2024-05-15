@@ -41,6 +41,23 @@ public class CustomerService {
         }
     }
 
+    public Customer getCustomerByUid(String uid) {
+        Session session = hibernateUtil.openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+
+            String sql = "SELECT * FROM user WHERE uid = :uid";
+            NativeQuery<Customer> query = session.createNativeQuery(sql, Customer.class);
+            query.setParameter("uid", uid);
+            Customer customer = query.uniqueResult();
+            tr.commit();
+            session.close();
+            return customer;
+        }catch (Exception e) {
+            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
+    }
+
     public Boolean updateCustomer(Customer customer) {
         Session session = hibernateUtil.openSession();
         try {
