@@ -29,13 +29,12 @@ import util.Random;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 @RestController
 @RequestMapping("customer")
 public class CustomerController extends ResponseApi {
     private final CustomerService customerService = new CustomerService();
-    private final CodeService codeService = new CodeService();
-    private final CashCustomerService cashCustomerService = new CashCustomerService();
 
     private final MailService mailService;
 
