@@ -37,7 +37,7 @@ public class CashCustomerService {
         try {
             Transaction tr = session.beginTransaction();
 
-            String sql = "SELECT * FROM historycash where uid = :uid";
+            String sql = "SELECT * FROM historycash where uid = :uid ORDER BY cashAt DESC";
             NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
             query.setParameter("uid", uid);
             List<Cash> cashs = query.list();
