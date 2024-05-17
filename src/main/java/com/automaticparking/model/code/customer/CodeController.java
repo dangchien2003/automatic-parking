@@ -1,5 +1,6 @@
 package com.automaticparking.model.code.customer;
 
+import com.automaticparking.model.cache.CacheService;
 import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.cash.customer.CashCustomerService;
 import com.automaticparking.model.code.customer.dto.BuyCodeDto;
@@ -7,6 +8,7 @@ import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.shopQr.QrShopService;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import response.ResponseApi;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 @RestController
 @RequestMapping("customer/code")
@@ -23,6 +26,14 @@ public class CodeController extends ResponseApi {
     private final QrShopService qrShopService = new QrShopService();
     private final CodeService codeService = new CodeService();
     private final CashCustomerService cashCustomerService = new CashCustomerService();
+    private CacheService cacheService;
+    private Executor asyncExecutor;
+
+    @Autowired
+    public CodeController( Executor asyncExecutor, CacheService cacheService) {
+        this.asyncExecutor = asyncExecutor;
+        this.cacheService = cacheService;
+    }
 
 
     @PostMapping("buy")
@@ -60,6 +71,15 @@ public class CodeController extends ResponseApi {
                 throw new Exception("Error save code");
             }
 
+            // reset cache remaining
+            asyncExecutor.execute(() -> {
+                String keyCache = "remaining_" + uid;
+                Integer cacheRemaining = cacheService.getCache(keyCache);
+                if(cacheRemaining != null && cacheRemaining > 0) {
+                    cacheService.setCache(keyCache, cacheRemaining - code.getPrice());
+                }
+            });
+            
             ResponseSuccess<Code> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = code;
             return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
