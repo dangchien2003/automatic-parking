@@ -52,8 +52,9 @@ public class CustomerController extends ResponseApi {
             customer.setUid(Util.genarateUid());
 
             customer.setEmail(registerDto.email);
-
-            customer.setLastLogin(Genarate.getTimeStamp());
+            Long now = Genarate.getTimeStamp();
+            customer.setLastLogin(now);
+            customer.setCreateAt(now);
 
             Hash hash = new Hash();
             customer.setPassword(hash.hash(registerDto.password));
