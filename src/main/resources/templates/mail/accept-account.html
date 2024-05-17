@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Freeman&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: "Inter";
+        }
+
+        header {
+            background-color: #395063;
+        }
+
+        .container {
+            padding: 5px 15px;
+        }
+
+        .logo {
+            text-align: center;
+        }
+
+        .logo .box {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .size-logo {
+            max-width: 70px;
+        }
+
+        .logo-text {
+            font-family: "Briem Hand", cursive;
+            font-size: 30px;
+            color: white;
+            display: inline-block;
+        }
+
+        .accept {
+            text-align: center;
+        }
+
+        .accept button {
+            color: white;
+            background-color: #198754;
+            border: none;
+            height: 30px;
+            border-radius: 5px;
+        }
+
+        .accept p {
+            margin: 0;
+            font-size: 11px;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="logo">
+        <div class="box">
+            <img src="https://fe-parking.onrender.com/img/logo.png" alt="" class="size-logo">
+            <span class="logo-text">arking</span>
+        </div>
+    </div>
+</header>
+<div class="container">
+    <p>Cảm ơn bạn đã quan tâm đến dịch vụ auto parking của chúng tôi. Để tiếp tục sử dụng tài khoản vui lòng xác
+        thực
+        tài khoản của bạn.</p>
+    <p>Nếu không phải bạn vui lòng không xác thực và bỏ qua tin nhắn này.</p>
+    <p>Thân gửi.</p>
+    <div class="accept">
+        <a th:href="@{${host_fe}+'/accept-account/' + ${accept_token}}">
+            <button>Xác thực tài khoản</button>
+        </a>
+        <p>Hiệu lực trong vòng 1 giờ.</p>
+    </div>
+
+</div>
+</body>
+
+</html>

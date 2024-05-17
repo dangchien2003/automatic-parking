@@ -31,7 +31,7 @@ public class CashStaffController extends ResponseApi {
     }
 
     @PatchMapping("cash/approve")
-    ResponseEntity<?> getAllCash(@Valid @RequestBody ApproveDto approve, HttpServletRequest request) {
+    ResponseEntity<?> approveCash(@Valid @RequestBody ApproveDto approve, HttpServletRequest request) {
         try {
 
             if(!approve.listIdCash.getClass().isArray()) {
