@@ -34,7 +34,7 @@ public class CashStaffService {
         Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
-            String sql = "UPDATE Cash SET acceptAt = :acceptAt, acceptBy = :acceptBy WHERE stt IN (:listId) and acceptAt IS NULL and cancelAt IS NULL";
+            String sql = "UPDATE Cash SET acceptAt = :acceptAt, acceptBy = :acceptBy WHERE stt IN (:listId) and acceptAt IS NULL and cancleAt IS NULL";
             Query query = session.createQuery(sql);
             query.setParameter("acceptAt", approveAt);
             query.setParameter("acceptBy", personApprove);
