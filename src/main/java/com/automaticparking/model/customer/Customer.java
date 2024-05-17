@@ -30,6 +30,9 @@ public class Customer {
     @Column
     private Long createAt;
 
+    @Column
+    private Long acceptAt;
+
     public Long getLastLogin() {
         return lastLogin;
     }
@@ -79,5 +82,13 @@ public class Customer {
 
     public void setCreateAt(Long createAt) {
         this.createAt = createAt;
+    }
+
+    public Long getAcceptAt() {
+        return acceptAt;
+    }
+
+    public void setAcceptAt(Long acceptAt) {
+        this.acceptAt = acceptAt;
     }
 }

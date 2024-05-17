@@ -24,6 +24,15 @@ public class Render {
         return templateEngine.process("mail/forgetPassword", context);
     }
 
+    public String acceptAccountCustomer(String acceptToken) {
+
+        Context context = new Context();
+        context.setVariable("accept_token", acceptToken);
+        context.setVariable("host_fe", CustomDotENV.get("HOST_FE"));
+
+        return templateEngine.process("mail/accept-account", context);
+    }
+
     public String customerNewPassword(String newPassword) {
         Context context = new Context();
         context.setVariable("newPassword", newPassword);

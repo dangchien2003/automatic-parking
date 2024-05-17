@@ -39,10 +39,12 @@ public class CustomerController extends ResponseApi {
     private final MailService mailService;
 
     private final Render mailRender;
+    private Executor asyncExecutor;
     @Autowired
-    public CustomerController(MailService mailService, Render mailRender) {
+    public CustomerController(MailService mailService, Render mailRender,  Executor asyncExecutor) {
         this.mailService = mailService;
         this.mailRender = mailRender;
+        this.asyncExecutor = asyncExecutor;
     }
 
     @PostMapping("register")
@@ -67,8 +69,82 @@ public class CustomerController extends ResponseApi {
                 return badRequestApi("Email already exist");
             }
 
-            ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
+            // set payload
+            String token = "";
+            Map<String, String> payload = new HashMap<>();
+            payload.put("email", customer.getEmail());
+            payload.put("start", customer.getCreateAt().toString());
+
+            // get token
+            JWT<Map<String, String>> jwt = new JWT<>();
+            token = jwt.createJWT(payload, 3600);
+
+            // get template
+            String acceptHtml = mailRender.acceptAccountCustomer(token);
+
+            MailTemplate template = new MailTemplate();
+            template.setSubject("Xác thực tài khoản");
+            template.setTo(customer.getEmail());
+            template.setHtml(acceptHtml);
+
+            // sendEmail
+            mailService.sendEmail(template);
+
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @PatchMapping("accept-account")
+    ResponseEntity<?> acceptAccount(@RequestBody Map<String, String> data) {
+        try {
+            // get data
+            String token = data.get("token");
+
+            // check token
+            if(token.trim() == null) {
+                return badRequestApi("Token is null");
+            }
+
+            // decode
+            JWT<?> jwt = new JWT<>();
+            Claims dataToken = jwt.decodeJWT(token);
+
+            // check payload
+            if(dataToken == null) {
+                return badRequestApi("Invalid token");
+            }
+
+            // get map payload
+            Map<String, String> payload = Genarate.getMapFromJson(dataToken.getSubject());
+            String email = payload.get("email");
+
+            // get customer
+            Customer customer = customerService.getCustomerByEmail(email);
+
+            // check customer
+            if(customer == null) {
+                return badRequestApi("Account not exist");
+            }
+
+            if(customer.getAcceptAt() != null) {
+                return badRequestApi("Account accepted");
+            }
+
+            // set time accept
+            customer.setAcceptAt(Genarate.getTimeStamp());
+
+            // update
+            Boolean updated = customerService.updateCustomer(customer);
+
+            if(!updated) {
+                throw new Exception("Accept error");
+            }
+
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
@@ -86,6 +162,10 @@ public class CustomerController extends ResponseApi {
             Hash hash = new Hash();
             if(!hash.compareHash(dataLogin.password, customer.getPassword())) {
                 return badRequestApi("Incorrect password");
+            }
+
+            if(customer.getAcceptAt() == null) {
+                return Error(HttpStatus.BAD_REQUEST, "Unverified account");
             }
 
             if(customer.getBlock() == 1) {
