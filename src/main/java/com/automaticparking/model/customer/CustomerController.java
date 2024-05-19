@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("customer")
 public class CustomerController extends ResponseApi {
     private final CustomerService customerService = new CustomerService();
