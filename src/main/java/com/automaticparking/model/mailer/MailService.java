@@ -22,7 +22,6 @@ public class MailService {
     @Async
     public void sendEmail(MailTemplate mailTemplate) {
         asyncExecutor.execute(() -> {
-            System.out.println("acs");
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             try {
                 MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);

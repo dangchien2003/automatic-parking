@@ -20,7 +20,6 @@ public class Render {
         Context context = new Context();
         context.setVariable("forget_token", forgetToken);
         context.setVariable("host_fe", CustomDotENV.get("HOST_FE"));
-
         return templateEngine.process("mail/forgetPassword", context);
     }
 
