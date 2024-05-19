@@ -20,9 +20,9 @@ spring:
 
 server:
   port: 8080
-  ssl:
-    enabled: true
-    key-store: classpath:child1.p12
-    key-store-password: chienkoi123
-    key-store-type: PKCS12
-    key-alias: parking
+#  ssl:
+#    enabled: true
+#    key-store: classpath:child1.p12
+#    key-store-password: chienkoi123
+#    key-store-type: PKCS12
+#    key-alias: parking
