@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("customer")
 public class CustomerController extends ResponseApi {
     private final CustomerService customerService = new CustomerService();
@@ -149,6 +150,7 @@ public class CustomerController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
+
 
     @PostMapping("login")
     ResponseEntity<?> login(@Valid @RequestBody RegisterDto dataLogin, HttpServletResponse response) {

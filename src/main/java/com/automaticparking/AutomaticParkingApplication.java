@@ -2,6 +2,9 @@ package com.automaticparking;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import util.hibernateUtil;
 
 @SpringBootApplication
@@ -20,6 +23,17 @@ public class AutomaticParkingApplication {
 			System.out.println("closed database");
 			}
 		});
+	}
+
+	@Bean
+	public WebMvcConfigurer configurer() {
+		System.out.println("cors");
+		return  new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry reg) {
+				reg.addMapping("/**").allowedOrigins("*");
+			}
+		};
 	}
 }
 
