@@ -26,8 +26,8 @@ spring:
     caffeine:
       spec: maximumSize=100,expireAfterWrite=5m
 
-server:
-  port: 8080
+#server:
+#  port: 8080
 #  ssl:
 #    enabled: true
 #    key-store: classpath:child1.p12
