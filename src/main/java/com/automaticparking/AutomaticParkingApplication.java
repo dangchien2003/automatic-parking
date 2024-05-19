@@ -24,16 +24,5 @@ public class AutomaticParkingApplication {
 			}
 		});
 	}
-
-	@Bean
-	public WebMvcConfigurer configurer() {
-		System.out.println("cors");
-		return  new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry reg) {
-				reg.addMapping("/**").allowedOrigins("*");
-			}
-		};
-	}
 }
 
