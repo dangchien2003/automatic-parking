@@ -39,4 +39,14 @@ public class Render {
         return templateEngine.process("mail/newPassword", context);
     }
 
+    public String changeEmail(String tokenChange, String newEmail, String oldEmail) {
+        Context context = new Context();
+        context.setVariable("token", tokenChange);
+        context.setVariable("newEmail", newEmail);
+        context.setVariable("oldEmail", oldEmail);
+        context.setVariable("host_fe", CustomDotENV.get("HOST_FE"));
+
+        return templateEngine.process("mail/accept-change-email", context);
+    }
+
 }

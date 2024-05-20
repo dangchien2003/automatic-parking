@@ -3,9 +3,7 @@ package com.automaticparking.model.customer;
 
 import com.automaticparking.model.cash.customer.CashCustomerService;
 import com.automaticparking.model.code.customer.CodeService;
-import com.automaticparking.model.customer.dto.ChangePasswordDto;
-import com.automaticparking.model.customer.dto.ForgetPassword;
-import com.automaticparking.model.customer.dto.RegisterDto;
+import com.automaticparking.model.customer.dto.*;
 import com.automaticparking.model.mailer.MailService;
 import com.automaticparking.model.mailer.MailTemplate;
 import com.automaticparking.model.mailer.Render;
@@ -28,6 +26,7 @@ import util.Random;
 
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -378,6 +377,90 @@ public class CustomerController extends ResponseApi {
             ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = customer;
             responseSuccess.cookies = cookies;
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @PatchMapping("change-email")
+    ResponseEntity<?> changeEmail (HttpServletRequest request,@Valid @RequestBody ChangeEmailDto dataChange) {
+        try {
+            Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
+
+            // lower email
+            dataChange.newEmail = dataChange.newEmail.trim().toLowerCase(Locale.ROOT);
+            String oldEmail = customerToken.get("email").trim().toLowerCase(Locale.ROOT);
+
+            // check same email
+            if(oldEmail.equals(dataChange.newEmail)) {
+                return badRequestApi("email must not same");
+            }
+
+            // check new email exist
+            Customer customer = customerService.getCustomerByEmail(dataChange.newEmail);
+            if(customer != null) {
+                return badRequestApi("Email already exists");
+            }
+
+
+            Map<String, String> payload = new HashMap<>();
+            String uid = customerToken.get("uid");
+            payload.put("uid", uid);
+            payload.put("oldEmail", oldEmail);
+            payload.put("newEmail", dataChange.newEmail);
+
+            // token
+            JWT<Map<String, String>> jwt = new JWT<>();
+            String tokenChange = jwt.createJWT(payload, 60*10);
+
+            // html
+            String htmlTemplate = mailRender.changeEmail(tokenChange, dataChange.newEmail, oldEmail);
+
+            // form email
+            MailTemplate template = new MailTemplate();
+            template.setSubject("Thay đổi địa chỉ email");
+            template.setTo(oldEmail);
+            template.setHtml(htmlTemplate);
+
+            // send mail
+            mailService.sendEmail(template);
+
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @PatchMapping("accept-change-email")
+    ResponseEntity<?> acceptChangeEmail (@Valid @RequestBody AcceptChangeEmailDto data) {
+        try {
+            String token = data.tokenChange;
+
+            JWT<?> jwt = new JWT<>();
+            Claims claimsData = jwt.decodeJWT(token);
+            if(claimsData == null) {
+                return badRequestApi("Token invalid");
+            }
+
+            Map<String, String> mapData = Genarate.getMapFromJson(claimsData.getSubject());
+
+            Customer customer = customerService.getCustomerByUid(mapData.get("uid"));
+            if(customer == null) {
+                return badRequestApi("Account not exist");
+            }
+
+            // change info
+            customer.setEmail(mapData.get("newEmail"));
+            customer.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = customerService.updateCustomer(customer);
+            if(!updated) {
+                throw new Exception("Change error");
+            }
+
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.ok().body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
