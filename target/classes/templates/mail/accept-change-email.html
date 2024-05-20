@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>changeEmail</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Freeman&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: "Inter";
+        }
+
+        header {
+            background-color: #395063;
+        }
+
+        .container {
+            padding: 5px 15px;
+        }
+
+        .logo {
+            text-align: center;
+        }
+
+        .logo .box {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .size-logo {
+            max-width: 70px;
+        }
+
+        .logo-text {
+            font-family: "Briem Hand", cursive;
+            font-size: 30px;
+            color: white;
+            display: inline-block;
+        }
+
+        .accept {
+            text-align: center;
+        }
+
+        .accept button {
+            color: white;
+            background-color: #198754;
+            border: none;
+            height: 30px;
+            border-radius: 5px;
+            min-width: 150px;
+        }
+
+        .accept p {
+            margin: 0;
+            font-size: 11px;
+            padding: 5px;
+        }
+
+        #newEmail {
+            color: #29b976;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <div class="logo">
+        <div class="box">
+            <img src="https://fe-parking.onrender.com/img/logo.png" alt="" class="size-logo">
+            <span class="logo-text">arking</span>
+        </div>
+    </div>
+</header>
+<div class="container">
+    <p>Xin chào <span th:text="${oldEmail}"></span>.</p>
+    <p>Chúng tôi nhận được yêu cầu thay đổi email cho tài khoản auto parking của bạn sang địa chỉ email
+        <span th:text="${newEmail}" id="newEmail"></span>.
+    </p>
+    <p>Giúp chúng tôi xác nhận đó là bạn bằng cách nhấp vào nút "Tôi đồng ý" ở phía dưới</p>
+    <p>⚠️ Lưu ý rằng khi bạn chấp nhận đồng nghĩa rằng tài khoản email này của bạn sẽ bị xoá khỏi hệ thống.</p>
+    <div class="accept">
+        <a th:href="@{${host_fe}+'/change-email/' + ${token}}">
+            <button>Tôi đồng ý</button>
+        </a>
+        <p>Hiệu lực trong vòng 10 phút.</p>
+    </div>
+</div>
+</body>
+
+</html>
