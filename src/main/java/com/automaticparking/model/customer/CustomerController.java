@@ -391,6 +391,7 @@ public class CustomerController extends ResponseApi {
             // lower email
             dataChange.newEmail = dataChange.newEmail.trim().toLowerCase(Locale.ROOT);
             String oldEmail = customerToken.get("email").trim().toLowerCase(Locale.ROOT);
+            String lastLogin = customerToken.get("lastLogin");
 
             // check same email
             if(oldEmail.equals(dataChange.newEmail)) {
@@ -408,6 +409,7 @@ public class CustomerController extends ResponseApi {
             String uid = customerToken.get("uid");
             payload.put("uid", uid);
             payload.put("oldEmail", oldEmail);
+            payload.put("lastLogin", lastLogin);
             payload.put("newEmail", dataChange.newEmail);
 
             // token
@@ -449,6 +451,10 @@ public class CustomerController extends ResponseApi {
             Customer customer = customerService.getCustomerByUid(mapData.get("uid"));
             if(customer == null) {
                 return badRequestApi("Account not exist");
+            }
+
+            if(customer.getLastLogin() > Long.parseLong(mapData.get("lastLogin"))) {
+                return badRequestApi("Session has ended");
             }
 
             // change info
