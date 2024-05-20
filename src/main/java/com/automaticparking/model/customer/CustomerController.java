@@ -383,7 +383,7 @@ public class CustomerController extends ResponseApi {
         }
     }
 
-    @PatchMapping("change-email")
+    @PostMapping("change-email")
     ResponseEntity<?> changeEmail (HttpServletRequest request,@Valid @RequestBody ChangeEmailDto dataChange) {
         try {
             Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
@@ -394,7 +394,7 @@ public class CustomerController extends ResponseApi {
 
             // check same email
             if(oldEmail.equals(dataChange.newEmail)) {
-                return badRequestApi("email must not same");
+                return badRequestApi("Email must not same");
             }
 
             // check new email exist
@@ -427,7 +427,7 @@ public class CustomerController extends ResponseApi {
             mailService.sendEmail(template);
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
-            return ResponseEntity.ok().body(responseSuccess);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
         }
@@ -441,7 +441,7 @@ public class CustomerController extends ResponseApi {
             JWT<?> jwt = new JWT<>();
             Claims claimsData = jwt.decodeJWT(token);
             if(claimsData == null) {
-                return badRequestApi("Token invalid");
+                return badRequestApi("Invalid token");
             }
 
             Map<String, String> mapData = Genarate.getMapFromJson(claimsData.getSubject());
