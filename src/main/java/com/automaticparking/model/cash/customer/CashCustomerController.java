@@ -40,6 +40,9 @@ public class CashCustomerController extends ResponseApi {
             cash.setCashAt(Genarate.getTimeStamp());
             cash.setStringCode(uid);
 
+            // duyệt nạp tiền
+            cash.setAcceptAt(Long.parseLong("1"));
+
             Boolean create = cashCustomerService.saveCashHistory(cash);
 
             if(!create) {
