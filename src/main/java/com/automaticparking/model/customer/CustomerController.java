@@ -11,6 +11,7 @@ import com.automaticparking.types.ResponseSuccess;
 import encrypt.Hash;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,12 +39,10 @@ public class CustomerController extends ResponseApi {
     private final MailService mailService;
 
     private final Render mailRender;
-    private Executor asyncExecutor;
     @Autowired
-    public CustomerController(MailService mailService, Render mailRender,  Executor asyncExecutor) {
+    public CustomerController(MailService mailService, Render mailRender) {
         this.mailService = mailService;
         this.mailRender = mailRender;
-        this.asyncExecutor = asyncExecutor;
     }
 
     @PostMapping("register")
@@ -175,23 +174,59 @@ public class CustomerController extends ResponseApi {
             JWT<Customer> jwt = new JWT<>();
             String CToken = jwt.createJWT(customer, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
 
+            Cookie cookie1 = new Cookie("CToken", CToken);
+            cookie1.setAttribute("Path", "/customer");
+            cookie1.setAttribute("HttpOnly", "True");
+            cookie1.setAttribute("Secure", "True");
+            cookie1.setAttribute("SameSite", "None");
+            cookie1.setAttribute("Secure", "True");
+            cookie1.setAttribute("Partitioned", "True");
+            cookie1.setMaxAge(60*6);
+
+            response.addCookie(cookie1);
+
+            Long now  = Genarate.getTimeStamp();
+            Long dieToken = now + 6 * 60 * 1000;
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("CToken", CToken);
-
-            Cookie cookie = new Cookie("CToken", CToken);
-            cookie.setAttribute("Path", "/customer");
-            cookie.setAttribute("HttpOnly", "True");
-            cookie.setAttribute("Secure", "True");
-            cookie.setAttribute("SameSite", "None");
-            cookie.setAttribute("Secure", "True");
-            cookie.setAttribute("Partitioned", "True");
-
-            cookie.setMaxAge(3600);
-            response.addCookie(cookie);
+            cookies.put("ETok", dieToken + "->MA360");
 
             ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
             responseSuccess.cookies = cookies;
             responseSuccess.data = customer;
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("refresh/tok")
+    ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Map<String, String> data =  (Map<String, String>) request.getAttribute("customerDataToken");
+
+            JWT<Map<String, String>> jwt = new JWT<>();
+            String newToken = jwt.createJWT(data, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
+
+            // set cookie
+            Cookie cookie1 = new Cookie("CToken", newToken);
+            cookie1.setAttribute("Path", "/customer");
+            cookie1.setAttribute("HttpOnly", "True");
+            cookie1.setAttribute("Secure", "True");
+            cookie1.setAttribute("SameSite", "None");
+            cookie1.setAttribute("Secure", "True");
+            cookie1.setAttribute("Partitioned", "True");
+            cookie1.setMaxAge(60*6);
+
+            response.addCookie(cookie1);
+
+            Long now  = Genarate.getTimeStamp();
+            Long dieToken = now + 6 * 60 * 1000;
+            Map<String, String> cookies = new HashMap<>();
+            cookies.put("ETok", dieToken + "->MA360");
+
+            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.cookies = cookies;
             return ResponseEntity.ok().body(responseSuccess);
         }catch (Exception e) {
             return internalServerError(e.getMessage());
