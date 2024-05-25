@@ -4,6 +4,9 @@ ACTIVE = dev
 # HOST_FE=https://child1.feparking.com:3000
 HOST_FE=https://fe-parking.onrender.com
 
+# HOST_READ_PLATE =http://localhost:5000
+HOST_READ_PLATE =https://doc-bien-so.onrender.com
+
 # SQL
 DB_HOST=parking-chienboy03-5a1d.g.aivencloud.com
 DB_PORT=12367
@@ -16,6 +19,11 @@ DB_PORT_DEV=3306
 DB_USERNAME_DEV=root
 DB_PASSWORD_DEV=
 DATABASE_DEV=parking
+
+# cloudinary
+CLOUD_NAME=dis2ybh5i
+API_KEY=454546528841134
+API_SECRET=9EGyo9AW2yjcW0jJAPJsV7GAlkk
 
 #hibernate
 SHOW_SQL=false
