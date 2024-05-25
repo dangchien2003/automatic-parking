@@ -14,7 +14,10 @@ spring:
                   auth: true
                   starttls.enable: true
                   starttls.required: true
-
+    servlet:
+        multipart:
+            max-file-size: 10MB
+            max-request-size: 10MB
     # thymeleaf
     thymeleaf:
         prefix: classpath:/templates/
