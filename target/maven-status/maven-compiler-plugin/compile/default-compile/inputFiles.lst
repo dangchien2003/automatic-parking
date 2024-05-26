@@ -53,6 +53,7 @@ E:\code\SPRING\automatic-parking\src\main\java\util\Author.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseException.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\middleware\TokenCustomer.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\CashStaffService.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\start\StartController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigMiddleware.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\AcceptChangeEmailDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\middleware\TokenStaff.java
