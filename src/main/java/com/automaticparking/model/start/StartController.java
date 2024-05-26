@@ -15,7 +15,6 @@ public class StartController {
     ResponseEntity<?> hello(){
         Map<String, String> hello = new HashMap<>();
         hello.put("start", "hello");
-        System.out.println("call");
         return ResponseEntity.ok(hello);
     }
 }
