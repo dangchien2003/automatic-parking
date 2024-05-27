@@ -11,11 +11,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("start")
 public class StartController {
-    @GetMapping("hello1")
+    @GetMapping("hello")
     ResponseEntity<?> hello(){
         Map<String, String> hello = new HashMap<>();
         hello.put("start", "hello");
-        System.out.println("xin chào");
         return ResponseEntity.ok(hello);
     }
 }
