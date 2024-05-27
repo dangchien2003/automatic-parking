@@ -11,7 +11,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("start")
 public class StartController {
-    @GetMapping("hello")
+    @GetMapping("hello1")
     ResponseEntity<?> hello(){
         Map<String, String> hello = new HashMap<>();
         hello.put("start", "hello");
