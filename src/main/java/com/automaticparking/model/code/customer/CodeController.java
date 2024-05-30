@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
 import util.Genarate;
+import util.Json;
 import util.KeyCache;
 
 import javax.validation.Valid;
@@ -186,8 +187,8 @@ public class CodeController extends ResponseApi {
                 }
 
 
-                Long now = Genarate.getTimeStamp();
-                ContentQr content = new ContentQr(code.getQrid(), now);
+
+                ContentQr content = new ContentQr(code.getQrid(), exprireAt);
 
                 if(code.getCheckinAt() == null) {
                     content.setAcceptBot(1);
@@ -195,8 +196,8 @@ public class CodeController extends ResponseApi {
                     content.setAcceptBot(2);
                 }
 
-                JWT<ContentQr> jwt = new JWT<>();
-                contentQr = jwt.createJWT(content, (exprireAt - now) / 1000);
+                Json<ContentQr> json = new Json<>();
+                contentQr =  json.convertToJson(content);
 
                 if(contentQr == null) {
                     throw new Exception("Error genarate qr");

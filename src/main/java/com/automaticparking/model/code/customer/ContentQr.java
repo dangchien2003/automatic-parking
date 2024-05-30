@@ -3,11 +3,11 @@ package com.automaticparking.model.code.customer;
 public class ContentQr {
     private String qrid;
     private Integer acceptBot;
-    private Long renderAt;
+    private Long expiredAt;
 
-    public ContentQr(String qrid, Long time) {
+    public ContentQr(String qrid, Long expiredAt) {
         this.qrid = qrid;
-        this.renderAt = time;
+        this.expiredAt = expiredAt;
     }
 
     public String getQrid() {
@@ -26,11 +26,11 @@ public class ContentQr {
         this.acceptBot = acceptBot;
     }
 
-    public Long getRenderAt() {
-        return renderAt;
+    public Long getExpiredAt() {
+        return expiredAt;
     }
 
-    public void setRenderAt(Long renderAt) {
-        this.renderAt = renderAt;
+    public void setExpiredAt(Long expiredAt) {
+        this.expiredAt = expiredAt;
     }
 }
