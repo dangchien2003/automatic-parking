@@ -13,8 +13,7 @@ import java.util.Map;
 public class StartController {
     @GetMapping("hello")
     ResponseEntity<?> hello(){
-        Map<String, String> hello = new HashMap<>();
-        hello.put("start", "hello");
-        return ResponseEntity.ok(hello);
+        System.out.println("hello");
+        return ResponseEntity.ok("hello");
     }
 }
