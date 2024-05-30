@@ -7,12 +7,16 @@ import com.automaticparking.model.code.customer.dto.BuyCodeDto;
 import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.shopQr.QrShopService;
 import com.automaticparking.types.ResponseSuccess;
+import encrypt.JWT;
 import jakarta.servlet.http.HttpServletRequest;
+import org.checkerframework.checker.units.qual.K;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
+import util.Genarate;
+import util.KeyCache;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -111,4 +115,104 @@ public class CodeController extends ResponseApi {
             return internalServerError(e.getMessage());
         }
     }
+
+    @GetMapping("i")
+    ResponseEntity<?> getInfoCode(@RequestParam("qrid") String qrid, HttpServletRequest request) {
+        try {
+
+            if(qrid == null) {
+                return badRequestApi("Invalid qr");
+            }
+
+            Map<String, String> customerDataToken = (Map <String, String>) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.get("uid");
+
+            Code code = codeService.getInfo(uid, qrid);
+
+            if(code == null) {
+                return Error(HttpStatus.NOT_FOUND, "Not found");
+            }
+
+            if(code.getAcceptBy() != null) {
+                code.setAcceptBy("1");
+            }
+
+            ResponseSuccess<Code> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = code;
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    @GetMapping("qr/{qrid}")
+    ResponseEntity<?> getContenQr(@PathVariable String qrid, HttpServletRequest request) {
+        try {
+            if(qrid == null || qrid.trim().isEmpty()) {
+                return badRequestApi("Invalid qr");
+            }
+
+            Map<String, String> customerDataToken = (Map <String, String>) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.get("uid");
+
+            String keyCache = KeyCache.getKeyContentQr(uid, qrid);
+            String contentQr = cacheService.getCache(keyCache);
+
+            if(contentQr == null) {
+                Code code = codeService.getInfo(uid, qrid);
+
+                if(code == null) {
+                    return Error(HttpStatus.NOT_FOUND, "Not found");
+                }
+
+                if(code.getCancleAt() != null) {
+                    return badRequestApi("Cancled");
+                }
+
+                if(code.getCheckoutAt() != null) {
+                    return badRequestApi("Checkouted");
+                }
+
+                // get time expire
+                Long exprireAt = null;
+                if(code.getCheckinAt() != null) {
+                    exprireAt = code.getExpireAt() + 24 * 60 * 60 * 1000;
+                }else {
+                    exprireAt = code.getExpireAt();
+                }
+
+                if(exprireAt <= Genarate.getTimeStamp()) {
+                    return badRequestApi("expired");
+                }
+
+
+                Long now = Genarate.getTimeStamp();
+                ContentQr content = new ContentQr(code.getQrid(), now);
+
+                if(code.getCheckinAt() == null) {
+                    content.setAcceptBot(1);
+                }else {
+                    content.setAcceptBot(2);
+                }
+
+                JWT<ContentQr> jwt = new JWT<>();
+                contentQr = jwt.createJWT(content, (exprireAt - now) / 1000);
+
+                if(contentQr == null) {
+                    throw new Exception("Error genarate qr");
+                }
+
+                if(!cacheService.setCache(keyCache, contentQr)) {
+                    System.out.println("Error set cache");
+                }
+            }
+
+            ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = contentQr;
+            return ResponseEntity.ok().body(responseSuccess);
+        }catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
 }

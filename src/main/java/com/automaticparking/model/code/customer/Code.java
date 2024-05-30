@@ -30,10 +30,10 @@ public class Code {
     private Integer price;
 
     @Column
-    private String checkinAt;
+    private Long checkinAt;
 
     @Column
-    private String checkoutAt;
+    private Long checkoutAt;
 
     @Column
     private Long expireAt;
@@ -106,19 +106,19 @@ public class Code {
         this.price = price;
     }
 
-    public String getCheckinAt() {
+    public Long getCheckinAt() {
         return checkinAt;
     }
 
-    public void setCheckinAt(String checkinAt) {
+    public void setCheckinAt(Long checkinAt) {
         this.checkinAt = checkinAt;
     }
 
-    public String getCheckoutAt() {
+    public Long getCheckoutAt() {
         return checkoutAt;
     }
 
-    public void setCheckoutAt(String checkoutAt) {
+    public void setCheckoutAt(Long checkoutAt) {
         this.checkoutAt = checkoutAt;
     }
 

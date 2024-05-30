@@ -72,4 +72,24 @@ public class CodeService {
         }
         return totalMyCash;
     }
+
+    public Code getInfo(String uid, String qrid) {
+        Session session = hibernateUtil.openSession();
+        Transaction tr = session.beginTransaction();
+
+        try {
+            String sql = "SELECT * FROM qr WHERE uid = :uid and qrid = :qrid";
+            NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
+            query.setParameter("uid", uid);
+            query.setParameter("qrid", qrid);
+            Code code = query.uniqueResult();
+            return code;
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }finally {
+            tr.commit();
+            session.close();
+        }
+    }
 }
