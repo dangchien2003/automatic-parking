@@ -26,6 +26,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\c
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\Cash.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\bot\BotController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\Util.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\run\RunService.java
 E:\code\SPRING\automatic-parking\src\main\java\util\hibernateUtil.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\Code.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigCloudinary.java
@@ -41,6 +42,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\custom
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\dto\ChangePasswordDto.java
 E:\code\SPRING\automatic-parking\src\main\java\response\ResponseApi.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\Util.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\run\RunController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\dto\CreateStaffDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseSuccess.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\CodeController.java
