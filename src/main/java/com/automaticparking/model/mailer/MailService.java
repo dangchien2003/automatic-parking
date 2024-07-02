@@ -4,9 +4,10 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
 import java.util.concurrent.Executor;
+
 @Service
 public class MailService {
     private Executor asyncExecutor;
@@ -19,7 +20,6 @@ public class MailService {
         this.asyncExecutor = asyncExecutor;
     }
 
-    @Async
     public void sendEmail(MailTemplate mailTemplate) {
         asyncExecutor.execute(() -> {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -31,7 +31,7 @@ public class MailService {
                 mimeMessageHelper.setSubject(mailTemplate.getSubject());
                 mimeMessageHelper.setText(mailTemplate.getHtml(), true);
                 javaMailSender.send(mimeMessage);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
         });

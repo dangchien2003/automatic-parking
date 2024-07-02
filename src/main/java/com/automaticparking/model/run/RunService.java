@@ -3,7 +3,6 @@ package com.automaticparking.model.run;
 import com.automaticparking.types.ResponseSuccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,8 +17,7 @@ public class RunService {
     public RunService(Executor asyncExecutor) {
         this.asyncExecutor = asyncExecutor;
     }
-
-    @Async
+    
     public ResponseEntity<?> run() {
 
         File file = new File("run.txt");
