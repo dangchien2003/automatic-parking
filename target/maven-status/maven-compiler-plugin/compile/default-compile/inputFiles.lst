@@ -2,11 +2,15 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\c
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\StaffService.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\ContentQr.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Json.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\bot\BotService.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\CodeRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\util\KeyCache.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\middleware\Admin.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cache\CacheService.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\dto\BuyCodeDto.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\CustomerRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\Customer.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\QrShopRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\CashStaffController.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Cookies.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\mailer\MailTemplate.java
@@ -14,7 +18,6 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\c
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\QrShop.java
 E:\code\SPRING\automatic-parking\src\main\java\encrypt\JWT.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\mailer\Render.java
-E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\QrShopService.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\ForgetPassword.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\dto\UpdateStaffDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\ChangePasswordDto.java
@@ -43,6 +46,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\
 E:\code\SPRING\automatic-parking\src\main\java\response\ResponseApi.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\Util.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\run\RunController.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\customer\QrShopForCustomerService.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\dto\CreateStaffDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseSuccess.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\CodeController.java
@@ -55,7 +59,9 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseError.java
 E:\code\SPRING\automatic-parking\src\main\java\validation\DateValid.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Author.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\StaffRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseException.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\customer\CashCustomerRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\middleware\TokenCustomer.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\CashStaffService.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\start\StartController.java
@@ -66,6 +72,8 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cache\
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\ChangeEmailDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\AutomaticParkingApplication.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\customer\CashCustomerController.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\staff\QrShopForStaffService.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\CashStaffRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\StaffController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\staff\QrShopForStaffController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigCache.java

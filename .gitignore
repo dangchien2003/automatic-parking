@@ -9,8 +9,6 @@
 *.ctxt
 run.txt
 
-run.txt
-
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
