@@ -1,6 +1,5 @@
 package com.automaticparking.model.run;
 
-import com.automaticparking.types.ResponseSuccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,13 +19,6 @@ public class RunController extends ResponseApi {
 
     @GetMapping("")
     ResponseEntity<?> run() {
-        try {
-            runService.run();
-            ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
-            responseSuccess.data = "ok";
-            return ResponseEntity.ok().body(responseSuccess);
-        } catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+        return runService.run();
     }
 }

@@ -1,57 +1,59 @@
 package com.automaticparking.model.cash.staff;
 
-
 import com.automaticparking.model.cash.Cash;
-import com.automaticparking.types.ResponseException;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.NativeQuery;
-import org.hibernate.query.Query;
+import com.automaticparking.model.cash.staff.dto.ApproveDto;
+import com.automaticparking.types.ResponseSuccess;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import util.hibernateUtil;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import util.Genarate;
+import response.ResponseApi;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-public class CashStaffService {
-    public List<Cash> getAllCashNotApprove() {
-        Session session = hibernateUtil.openSession();
+@Service
+public class CashStaffService extends ResponseApi {
+    private CashStaffRepository cashStaffRepository;
+
+    @Autowired
+    public CashStaffService(CashStaffRepository cashStaffRepository) {
+        this.cashStaffRepository = cashStaffRepository;
+    }
+
+    ResponseEntity<?> getAllCashNotApprove() {
         try {
-            Transaction tr = session.beginTransaction();
-
-            String sql = "SELECT * FROM historycash where acceptAt is NULL";
-            NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
-            List<Cash> cashs = query.list();
-            tr.commit();
-            session.close();
-            return cashs;
-        }catch (Exception e) {
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            List<Cash> cashs = cashStaffRepository.getAllCashNotApprove();
+            ResponseSuccess<List<Cash>> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = cashs;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
     }
 
-    public Integer approveListCash(Long[] listId, Long approveAt, String personApprove) {
-        Session session = hibernateUtil.openSession();
+    ResponseEntity<?> approveCash(ApproveDto approve, HttpServletRequest request) {
         try {
-            Transaction tr = session.beginTransaction();
-            String sql = "UPDATE Cash SET acceptAt = :acceptAt, acceptBy = :acceptBy WHERE stt IN (:listId) and acceptAt IS NULL and cancleAt IS NULL";
-            Query query = session.createQuery(sql);
-            query.setParameter("acceptAt", approveAt);
-            query.setParameter("acceptBy", personApprove);
-            query.setParameter("listId", Arrays.asList(listId));
-            Integer rowsAffected = query.executeUpdate();
 
-            // kiem tra so luong id đã update
-            if(rowsAffected != listId.length) {
-                tr.rollback();
-            }else {
-                tr.commit();
+            if (!approve.listIdCash.getClass().isArray()) {
+                return badRequestApi("id not array");
+            }
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+
+            Integer countUpdated = cashStaffRepository.approveListCash(approve.listIdCash, Genarate.getTimeStamp(), staffDataToken.get("sid"));
+
+            if (countUpdated != approve.listIdCash.length) {
+                return badRequestApi("Update failed " + countUpdated + "/" + approve.listIdCash.length);
             }
 
-            session.close();
-            return rowsAffected;
-        }catch (Exception e) {
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            ResponseSuccess<Integer> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = countUpdated;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
     }
+
 }

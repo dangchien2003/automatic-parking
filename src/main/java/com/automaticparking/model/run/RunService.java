@@ -1,6 +1,6 @@
 package com.automaticparking.model.run;
 
-import com.automaticparking.model.cache.CacheService;
+import com.automaticparking.types.ResponseSuccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
@@ -8,22 +8,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
-import java.net.URL;
 import java.util.concurrent.Executor;
 
 @Service
 public class RunService {
     private Executor asyncExecutor;
-    private CacheService cacheService;
 
     @Autowired
-    public RunService(Executor asyncExecutor, CacheService cacheService) {
+    public RunService(Executor asyncExecutor) {
         this.asyncExecutor = asyncExecutor;
-        this.cacheService = cacheService;
     }
 
     @Async
-    public void run() {
+    public ResponseEntity<?> run() {
 
         File file = new File("run.txt");
         BufferedReader reader = null;
@@ -37,7 +34,9 @@ public class RunService {
                 System.out.println("starting...");
             } else {
                 System.out.println("runed");
-                return;
+                ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
+                responseSuccess.data = "runed";
+                return ResponseEntity.ok().body(responseSuccess);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -47,6 +46,9 @@ public class RunService {
                 if (writer != null) writer.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
+                ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
+                responseSuccess.data = ex.getMessage();
+                return ResponseEntity.ok().body(responseSuccess);
             }
         }
 
@@ -68,5 +70,8 @@ public class RunService {
                 }
             }
         });
+        ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
+        responseSuccess.data = "ok";
+        return ResponseEntity.ok().body(responseSuccess);
     }
 }

@@ -1,131 +1,339 @@
 package com.automaticparking.model.staff;
 
-import com.automaticparking.types.ResponseException;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.NativeQuery;
+import com.automaticparking.model.staff.dto.ChangePasswordDto;
+import com.automaticparking.model.staff.dto.CreateStaffDto;
+import com.automaticparking.model.staff.dto.LoginDto;
+import com.automaticparking.model.staff.dto.UpdateStaffDto;
+import com.automaticparking.types.ResponseSuccess;
+import encrypt.Hash;
+import encrypt.JWT;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import util.hibernateUtil;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import util.CustomDotENV;
+import util.Genarate;
+import response.ResponseApi;
+import validation.DateValid;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class StaffService {
-    public Boolean createStaff(Staff staff) {
-        Session session = hibernateUtil.openSession();
-        try {
-            Transaction tr = session.beginTransaction();
-            session.save(staff);
-            tr.commit();
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            return false;
-        }
-        finally {
-            session.close();
-        }
-        return  true;
+
+@Service
+public class StaffService extends ResponseApi {
+    private StaffRepository staffRepository;
+
+    @Autowired
+    public StaffService(StaffRepository staffRepository) {
+        this.staffRepository = staffRepository;
     }
 
-    public List<Staff> getAllStaff() {
-        Session session = hibernateUtil.openSession();
+    ResponseEntity<?> createAdmin(CreateStaffDto createStaff) {
         try {
-            Transaction tr = session.beginTransaction();
+            DateValid dateValid = new DateValid();
+            if (!dateValid.isValidDate(createStaff.birthday)) {
+                return badRequestApi("Birthday", "Non-compliant birthday format 'yyyy-MM-dd'");
+            }
 
-            String sql = "SELECT * FROM staff WHERE admin != 1";
-            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
-            List<Staff> staff = query.list();
-            tr.commit();
-            session.close();
-            return staff;
-        }catch (Exception e) {
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-        }
-    }
+            StaffRepository staffRepository = new StaffRepository();
 
-    public Staff getOneStaffByEmail(String email) {
-        Session session = hibernateUtil.openSession();
-        try {
-            Transaction tr = session.beginTransaction();
+            Staff staffs = staffRepository.getOneStaffByEmail(createStaff.getEmail());
+            if (staffs != null) return Error(HttpStatus.CONFLICT, "Email đã tồn tại");
 
-            String sql = "SELECT * FROM staff WHERE email = :email";
-            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
-            query.setParameter("email", email);
-            Staff staff = query.uniqueResult();
-            tr.commit();
-            session.close();
-            return staff;
-        }catch (Exception e) {
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            BigInteger countAdmins = staffRepository.countAdmin();
+            int countAdminsInteger = countAdmins.intValue();
+            if (countAdminsInteger > 0) {
+                return badRequestApi("Admin already exists");
+            }
+
+            Staff staff = Util.getDefaultStaff();
+            staff = Util.setStaff(staff, 1, createStaff.name, createStaff.birthday, createStaff.email);
+
+            Boolean created = staffRepository.createStaff(staff);
+
+            if (!created) {
+                return internalServerError("Cannot create staff");
+            }
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<Staff>();
+            responseSuccess.data = staff;
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
     }
 
-    public BigInteger countAdmin() {
-        Session session = hibernateUtil.openSession();
+    ResponseEntity<?> login(LoginDto loginDto, HttpServletResponse response) {
         try {
-            Transaction tr = session.beginTransaction();
+            // check length email
+            if (loginDto.email.trim().length() < 10) {
+                return badRequestApi("email", "Email must not be less than 8 characters");
+            }
 
-            String sql = "SELECT COUNT(*) FROM staff WHERE admin = :isAdmin";
-            NativeQuery<BigInteger> query = session.createNativeQuery(sql);
-            query.setParameter("isAdmin", 1);
-            BigInteger countAdmin = (BigInteger) query.uniqueResult();
-            tr.commit();
-            session.close();
-            return countAdmin;
-        }catch (Exception e) {
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            // check length password
+            if (loginDto.password.trim().length() < 8) {
+                return badRequestApi("password", "Password must not be less than 8 characters");
+            }
+
+            Staff staff = staffRepository.getOneStaffByEmail(loginDto.email);
+
+            if (staff == null) {
+                return Error(HttpStatus.UNAUTHORIZED, "Account or password is incorrect");
+            }
+            Hash hash = new Hash();
+
+            if (!hash.compareHash(loginDto.password, staff.getPassword())) {
+                return badRequestApi("password", "Incorrect password");
+            }
+
+            if (staff.getBlock() == 1) {
+                return Error(HttpStatus.UNAUTHORIZED, "Account access has been restricted");
+            }
+
+
+            JWT<Staff> jwt = new JWT<>();
+            String stoken = jwt.createJWT(staff, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
+
+            Map<String, String> cookies = new HashMap<>();
+            cookies.put("SToken", stoken);
+
+            Cookie cookie = new Cookie("SToken", stoken);
+            cookie.setAttribute("Path", "/staff");
+            cookie.setAttribute("HttpOnly", "True");
+            cookie.setAttribute("SameSite", "None");
+            cookie.setAttribute("Partitioned", "True");
+            cookie.setMaxAge(3600);
+            response.addCookie(cookie);
+
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.cookies = cookies;
+            responseSuccess.data = staff;
+            return ResponseEntity.ok().body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
     }
 
-    public Staff getOneStaffBySid(String sid) {
-        Session session = hibernateUtil.openSession();
+    ResponseEntity<?> createStaff(CreateStaffDto createStaff, HttpServletRequest request) {
         try {
-            Transaction tr = session.beginTransaction();
+            DateValid dateValid = new DateValid();
+            if (!dateValid.isValidDate(createStaff.birthday)) {
+                return badRequestApi("Birthday", "Non-compliant birthday format 'yyyy-MM-dd'");
+            }
 
-            String sql = "SELECT * FROM staff WHERE sid = :sid";
-            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
-            query.setParameter("sid", sid);
-            Staff staff = query.uniqueResult();
-            tr.commit();
-            session.close();
-            return staff;
-        }catch (Exception e) {
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            StaffRepository staffRepository = new StaffRepository();
+
+            Staff staff = staffRepository.getOneStaffByEmail(createStaff.getEmail());
+            if (staff != null) return Error(HttpStatus.CONFLICT, "Email đã tồn tại");
+
+            // tạo staff
+            Staff dataStaff = Util.getDefaultStaff();
+            staff = Util.setStaff(dataStaff, 0, createStaff.name, createStaff.birthday, createStaff.email);
+
+            Boolean created = staffRepository.createStaff(dataStaff);
+
+            if (!created) {
+                return internalServerError("Cannot create staff");
+            }
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<Staff>();
+            responseSuccess.data = staff;
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
     }
 
-    public Boolean updateStaff(Staff staff) {
-        Session session = hibernateUtil.openSession();
+    ResponseEntity<?> getAllStaff(HttpServletRequest request) {
         try {
-            Transaction tr = session.beginTransaction();
-            session.update(staff);
-            tr.commit();
-        }catch (Exception e){
-            System.out.println(e.getMessage());
-            return false;
+            List<Staff> staffs = staffRepository.getAllStaff();
+
+            ResponseSuccess<List<Staff>> responseSuccess = new ResponseSuccess<List<Staff>>();
+            responseSuccess.data = staffs;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
-        finally {
-            session.close();
+    }
+
+    ResponseEntity<?> lockStaff(String sid, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+
+            if (sid.length() < 20) {
+                return badRequestApi("sid", "Sid is not long enough");
+            }
+
+            Staff staff = staffRepository.getOneStaffBySid(sid);
+
+            if (staff == null) {
+                return Error(HttpStatus.NOT_FOUND, "Sid not exist");
+            }
+
+            if (staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
+                return Error(HttpStatus.BAD_REQUEST, "Not block your self");
+            }
+
+            if (staff.getBlock() == 1) {
+                return Error(HttpStatus.CONFLICT, "The account has been locked before");
+            }
+
+            // set block
+            staff.setBlock(1);
+            staff.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = staffRepository.updateStaff(staff);
+            if (!updated) {
+                return Error(HttpStatus.BAD_REQUEST, "Cannot block account. Please checking sid");
+            }
+
+            Map<String, String> dataResponse = new HashMap<>();
+            dataResponse.put("sid", staff.getSid());
+            dataResponse.put("email", staff.getEmail());
+
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<Map<String, String>>();
+            responseSuccess.data = dataResponse;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
-        return true;
+    }
+
+    ResponseEntity<?> unLockStaff(String sid, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+
+            if (sid.length() < 20) {
+                return badRequestApi("sid", "Sid is not long enough");
+            }
+
+            Staff staff = staffRepository.getOneStaffBySid(sid);
+
+            if (staff == null) {
+                {
+                    return Error(HttpStatus.NOT_FOUND, "Sid not exist");
+                }
+            }
+
+            if (staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
+                return Error(HttpStatus.BAD_REQUEST, "Cannot unlock your self");
+            }
+
+            if (staff.getBlock() == 0) {
+                return Error(HttpStatus.CONFLICT, "The account has been unlocked before");
+            }
+
+            // set block
+            staff.setBlock(0);
+            staff.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = staffRepository.updateStaff(staff);
+            if (!updated) {
+                return Error(HttpStatus.BAD_REQUEST, "Cannot unlock account. Please checking sid");
+            }
+
+            Map<String, String> dataResponse = new HashMap<>();
+            dataResponse.put("sid", staff.getSid());
+            dataResponse.put("email", staff.getEmail());
+
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = dataResponse;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    ResponseEntity<?> changePassword(ChangePasswordDto changePassword, HttpServletRequest request) {
+        try {
+            if (!changePassword.confirmPassword.equals(changePassword.newPassword)) {
+                return badRequestApi("password", "Confirm password and new password must be the same");
+            }
+
+            if (changePassword.oldPassword.equals(changePassword.newPassword)) {
+                return badRequestApi("password", "Old password and new password cannot be the same");
+            }
+
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+            String sid = staffDataToken.get("sid");
+            Staff staff = staffRepository.getOneStaffBySid(sid);
+            Hash hash = new Hash();
+            if (!hash.compareHash(changePassword.oldPassword, staff.getPassword())) {
+                return badRequestApi("password", "Incorrect password");
+            }
+
+            String hashNewPassword = hash.hash(changePassword.newPassword);
+
+            if (hashNewPassword == null) {
+                throw new Exception("Password encryption error");
+            }
+
+            staff.setPassword(hashNewPassword);
+            staff.setLastLogin(Genarate.getTimeStamp());
+
+            Boolean updated = staffRepository.updateStaff(staff);
+            if (!updated) {
+                throw new Exception("Update error");
+            }
+
+            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
 
     }
 
-    public List<Staff> getListStaffByEmailAndSid(String sid, String email) {
-        Session session = hibernateUtil.openSession();
+    ResponseEntity<?> updateStaff(UpdateStaffDto updateStaff, String sid) {
         try {
-            Transaction tr = session.beginTransaction();
+            if (sid.length() < 20) {
+                return badRequestApi("sid", "Sid is not long enough");
+            }
 
-            String sql = "SELECT * FROM staff WHERE sid = :sid or email = :email";
-            NativeQuery<Staff> query = session.createNativeQuery(sql, Staff.class);
-            query.setParameter("sid", sid);
-            query.setParameter("email", email);
-            List<Staff> staff = query.list();
-            tr.commit();
-            session.close();
-            return staff;
-        }catch (Exception e) {
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            DateValid dateValid = new DateValid();
+            if (!dateValid.isValidDate(updateStaff.birthday)) {
+                return badRequestApi("Birthday", "Non-compliant birthday format 'yyyy-MM-dd'");
+            }
+
+            List<Staff> staffs = staffRepository.getListStaffByEmailAndSid(sid, updateStaff.email);
+
+            if (staffs.size() > 2) {
+                return Error(HttpStatus.CONFLICT, "An unknown error. Please contact us");
+            }
+
+            if (staffs.size() == 2) {
+                return Error(HttpStatus.CONFLICT, "Email already exists");
+            }
+
+            if (staffs.isEmpty() || !staffs.get(0).getSid().equals(sid)) {
+                return Error(HttpStatus.NOT_FOUND, "Not found staff");
+            }
+
+            if (staffs.get(0).getEmail().equals(updateStaff.email) && staffs.get(0).getBirthday().equals(updateStaff.birthday) && staffs.get(0).getName().equals(updateStaff.name)) {
+                return badRequestApi("The information has not changed");
+            }
+
+            Staff dataUpdate = staffs.get(0);
+
+            dataUpdate.setName(updateStaff.name);
+            dataUpdate.setEmail(updateStaff.email);
+            dataUpdate.setBirthday(updateStaff.birthday);
+            dataUpdate.setLastLogin(Genarate.getTimeStamp());
+            Boolean updated = staffRepository.updateStaff(dataUpdate);
+
+            if (!updated) {
+                throw new Exception("Update error");
+            }
+
+            ResponseSuccess<Staff> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = dataUpdate;
+            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
         }
     }
 
