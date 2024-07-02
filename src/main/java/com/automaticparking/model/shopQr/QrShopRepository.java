@@ -1,6 +1,5 @@
 package com.automaticparking.model.shopQr;
 
-import com.automaticparking.model.shopQr.QrShop;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
@@ -10,7 +9,7 @@ import util.hibernateUtil;
 import java.util.List;
 
 @Service
-public class QrShopService {
+public class QrShopRepository {
     public List<QrShop> getAllCodeOk() {
         Session session = hibernateUtil.openSession();
         try {
@@ -21,11 +20,12 @@ public class QrShopService {
             tr.commit();
             session.close();
             return qr;
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
         }
     }
+
     public QrShop getOneQrById(String category) {
         Session session = hibernateUtil.openSession();
         try {
@@ -37,7 +37,7 @@ public class QrShopService {
             tr.commit();
             session.close();
             return qr;
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return null;
         }
@@ -49,10 +49,10 @@ public class QrShopService {
             Transaction tr = session.beginTransaction();
             session.save(qr);
             tr.commit();
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
-        }finally {
+        } finally {
             session.close();
         }
         return true;

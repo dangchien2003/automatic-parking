@@ -1,20 +1,17 @@
 package com.automaticparking.model.cache;
 
-import com.automaticparking.model.staff.Staff;
-import com.automaticparking.types.ResponseSuccess;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import response.ResponseApi;
 
 @RestController
 @RequestMapping("cache")
-public class CacheController extends ResponseApi {
+public class CacheController {
     private CacheService cacheService;
+
     @Autowired
     public CacheController(CacheService cacheService) {
         this.cacheService = cacheService;
@@ -22,60 +19,21 @@ public class CacheController extends ResponseApi {
 
     @PostMapping("set")
     ResponseEntity<?> set() {
-        try {
-            Staff staff = new Staff();
-            staff.setAdmin(5);
-            Boolean set = cacheService.setCache("staff", staff);
-            if(!set) {
-                throw new Exception("Lỗi set cache");
-            }
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-            response.data = staff;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        }catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+        return cacheService.set();
     }
 
     @PostMapping("set1")
     ResponseEntity<?> set1() {
-        try {
-            Staff staff = new Staff();
-            staff.setAdmin(2);
-            Boolean set = cacheService.setCache("staff", staff);
-            if(!set) {
-                throw new Exception("Lỗi set cache");
-            }
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-            response.data = staff;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        }catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+        return cacheService.set1();
     }
 
     @GetMapping("get")
     ResponseEntity<?> get() {
-        try {
-            Staff staff = cacheService.getCache("staff");
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-            response.data = staff;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        }catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+        return cacheService.get();
     }
 
     @GetMapping("count")
     ResponseEntity<?> count() {
-        try {
-            Long count = cacheService.countCache();
-            ResponseSuccess<Long> response = new ResponseSuccess<>();
-            response.data = count;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        }catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+        return cacheService.count();
     }
-
 }

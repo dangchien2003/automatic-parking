@@ -1,7 +1,7 @@
 package com.automaticparking.middleware;
 
 import com.automaticparking.model.staff.Staff;
-import com.automaticparking.model.staff.StaffService;
+import com.automaticparking.model.staff.StaffRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
@@ -21,14 +21,14 @@ import response.ResponseApi;
 import java.util.Map;
 
 @Component
-public class TokenStaff extends ResponseApi implements HandlerInterceptor  {
+public class TokenStaff extends ResponseApi implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         Cookie[] cookies = request.getCookies();
         Cookies CookieUtil = new Cookies(cookies);
         Cookie Stoken = CookieUtil.getCookieByName("SToken");
-        if(Stoken == null) {
+        if (Stoken == null) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Not found token"), HttpStatus.BAD_REQUEST);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -42,24 +42,24 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor  {
 
         String token = Stoken.getValue();
         Boolean error = false;
-        if(token.trim() == "") {
+        if (token.trim() == "") {
             error = true;
         }
 
         Map<String, String> staffDataToken = null;
 
-        if(!error) {
+        if (!error) {
             JWT<Staff> jwt = new JWT<>();
             Claims dataToken = jwt.decodeJWT(token);
-            if(dataToken == null) {
+            if (dataToken == null) {
                 error = true;
-            }else {
+            } else {
                 //  lấy dữ liệu token
                 staffDataToken = Genarate.getMapFromJson(dataToken.getSubject());
             }
         }
 
-        if(error) {
+        if (error) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Invalid token"), HttpStatus.BAD_REQUEST);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -70,12 +70,12 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor  {
             return false; // endpoint
         }
 
-        StaffService staffService = new StaffService();
+        StaffRepository staffService = new StaffRepository();
         /*get info staff from DB*/
         Staff staffInfo = staffService.getOneStaffByEmail(staffDataToken.get("email"));
 
         // kiểm tra tài khoản bị block
-        if(staffInfo.getBlock() == 1) {
+        if (staffInfo.getBlock() == 1) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Account Blocked"), HttpStatus.UNAUTHORIZED);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -87,7 +87,7 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor  {
         }
 
         // kiểm tra phiên đăng nhập của tk
-        if(staffInfo.getLastLogin() != Long.parseLong(staffDataToken.get("lastLogin"))) {
+        if (staffInfo.getLastLogin() != Long.parseLong(staffDataToken.get("lastLogin"))) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Login session ended"), HttpStatus.BAD_REQUEST);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -105,9 +105,11 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor  {
     @Override
     public void postHandle(
             HttpServletRequest request, HttpServletResponse response, Object handler,
-            ModelAndView modelAndView) throws Exception {}
+            ModelAndView modelAndView) throws Exception {
+    }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-                                Object handler, Exception exception) throws Exception {}
+                                Object handler, Exception exception) throws Exception {
+    }
 }
