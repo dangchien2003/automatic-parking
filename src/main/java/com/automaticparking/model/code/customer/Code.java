@@ -24,19 +24,19 @@ public class Code {
     private String uid;
 
     @Column
-    private Long buyAt;
+    private long buyAt;
 
     @Column
     private Integer price;
 
     @Column
-    private Long checkinAt;
+    private long checkinAt;
 
     @Column
-    private Long checkoutAt;
+    private long checkoutAt;
 
     @Column
-    private Long expireAt;
+    private long expireAt;
 
     @Column
     private String acceptBy;
@@ -45,7 +45,7 @@ public class Code {
     private String plate;
 
     @Column
-    private String cancleAt;
+    private long cancleAt;
 
     public Code() {
     }
@@ -146,11 +146,11 @@ public class Code {
         this.plate = plate;
     }
 
-    public String getCancleAt() {
+    public long getCancleAt() {
         return cancleAt;
     }
 
-    public void setCancleAt(String cancleAt) {
+    public void setCancleAt(long cancleAt) {
         this.cancleAt = cancleAt;
     }
 }

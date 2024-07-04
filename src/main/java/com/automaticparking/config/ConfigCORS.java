@@ -11,11 +11,11 @@ import javax.sound.midi.Patch;
 
 @Configuration
 @EnableWebMvc
-public class ConfigCORS implements WebMvcConfigurer{
+public class ConfigCORS implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://fe-parking.vercel.app", "https://fe-parking-zcc6rh1xd-dangchien2003s-projects.vercel.app","https://localhost:3000", "http://localhost:3000", "https://fe-parking.onrender.com", "https://feparking.com:3000", "http://feparking.com:3000", "https://child1.feparking.com:3000", "http://child1.feparking.com:3000", "https://bot-app-3wke.onrender.com")
+                .allowedOrigins("https://fe-parking.vercel.app", "https://fe-parking-zcc6rh1xd-dangchien2003s-projects.vercel.app", "https://localhost:3000", "http://localhost:3000", "https://localhost:3001", "http://localhost:3001", "https://fe-parking.onrender.com", "https://feparking.com:3000", "http://feparking.com:3000", "https://child1.feparking.com:3000", "http://child1.feparking.com:3000", "https://bot-app-3wke.onrender.com")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true)

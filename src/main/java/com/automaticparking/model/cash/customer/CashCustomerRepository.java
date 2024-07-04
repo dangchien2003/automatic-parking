@@ -54,7 +54,7 @@ public class CashCustomerRepository {
         try {
             Transaction tr = session.beginTransaction();
 
-            String sql = "SELECT * FROM historycash WHERE uid = :uid AND acceptAt IS NOT NULL AND recashAt IS NULL AND cancleAt IS NULL";
+            String sql = "SELECT * FROM historycash WHERE uid = :uid AND acceptAt IS NOT NULL AND recashAt IS NULL AND cancleAt is null";
             NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
             query.setParameter("uid", uid);
             List<Cash> cashs = query.list();
@@ -81,12 +81,10 @@ public class CashCustomerRepository {
         List<Cash> historyCash = getALlMyHistoryOk(uid);
 
         Integer totalMyCash = getTotalCash(historyCash);
-
         // get history code used
         List<Code> myCode = codeRepository.getAllCodeUse(uid);
 
         Integer moneyUsed = codeRepository.getToTalMoneyUsed(myCode);
-
         // get remaining(số dư)
         Integer remaining = totalMyCash - moneyUsed;
 
