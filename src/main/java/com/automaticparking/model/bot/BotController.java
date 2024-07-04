@@ -20,10 +20,18 @@ public class BotController {
     }
 
     @PostMapping("checkin")
-    public ResponseEntity<?> uploadFileBase64(@RequestPart("image") MultipartFile file,
-                                              @RequestPart(value = "width", required = false) String width,
-                                              @RequestPart(value = "height", required = false) String height,
-                                              @RequestPart(value = "qr") String qr) {
-        return botService.uploadFileBase64(file, width, height, qr);
+    public ResponseEntity<?> checkin(@RequestPart("image") MultipartFile file,
+                                     @RequestPart(value = "width", required = false) String width,
+                                     @RequestPart(value = "height", required = false) String height,
+                                     @RequestPart(value = "qr") String qr) {
+        return botService.checkin(file, width, height, qr);
+    }
+
+    @PostMapping("checkout")
+    public ResponseEntity<?> checkout(@RequestPart("image") MultipartFile file,
+                                      @RequestPart(value = "width", required = false) String width,
+                                      @RequestPart(value = "height", required = false) String height,
+                                      @RequestPart(value = "qr") String qr) {
+        return botService.checkout(file, width, height, qr);
     }
 }

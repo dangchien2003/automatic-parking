@@ -1,5 +1,6 @@
 package com.automaticparking.model.code.customer;
 
+import com.automaticparking.model.customer.Customer;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
@@ -15,7 +16,7 @@ public class CodeRepository {
         Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
-            String sql = "SELECT * FROM qr WHERE uid = :uid AND (cancleAt IS NULL AND expireAt > :now) OR (checkinAt IS NOT NULL)";
+            String sql = "SELECT * FROM qr WHERE uid = :uid AND (cancleAt = 0 AND expireAt > :now) OR (checkinAt != 0)";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
             query.setParameter("now", Genarate.getTimeStamp());
@@ -37,6 +38,23 @@ public class CodeRepository {
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
             query.setParameter("limit", limit);
+            List<Code> boughtCode = query.list();
+            tr.commit();
+            session.close();
+            return boughtCode;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+    }
+
+    public List<Code> getInfoByPlate(String plate) {
+        Session session = hibernateUtil.openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+            String sql = "SELECT * FROM qr WHERE plate = :plate";
+            NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
+            query.setParameter("plate", plate);
             List<Code> boughtCode = query.list();
             tr.commit();
             session.close();
@@ -90,5 +108,40 @@ public class CodeRepository {
             tr.commit();
             session.close();
         }
+    }
+
+    public Code getInfo(String qrid) {
+        Session session = hibernateUtil.openSession();
+        Transaction tr = session.beginTransaction();
+
+        try {
+            String sql = "SELECT * from qr where qrid = :qrid";
+            NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
+            query.setParameter("qrid", qrid);
+            Code code = query.uniqueResult();
+            return code;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        } finally {
+            tr.commit();
+            session.close();
+        }
+    }
+
+    public Boolean updateCode(Code code) {
+        Session session = hibernateUtil.openSession();
+        try {
+            Transaction tr = session.beginTransaction();
+            session.update(code);
+            tr.commit();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        } finally {
+            session.close();
+        }
+        return true;
+
     }
 }

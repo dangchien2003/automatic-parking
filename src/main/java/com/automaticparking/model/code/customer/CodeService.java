@@ -162,11 +162,11 @@ public class CodeService extends ResponseApi {
                     return Error(HttpStatus.NOT_FOUND, "Not found");
                 }
 
-                if (code.getCancleAt() != null) {
+                if (code.getCancleAt() != 0) {
                     return badRequestApi("Cancled");
                 }
 
-                if (code.getCheckoutAt() != null) {
+                if (code.getCheckoutAt() != 0) {
                     return badRequestApi("Checkouted");
                 }
 
