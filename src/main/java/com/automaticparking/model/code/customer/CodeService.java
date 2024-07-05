@@ -172,7 +172,7 @@ public class CodeService extends ResponseApi {
 
                 // get time expire
                 Long exprireAt = null;
-                if (code.getCheckinAt() != null) {
+                if (code.getCheckinAt() != 0) {
                     exprireAt = code.getExpireAt() + 24 * 60 * 60 * 1000;
                 } else {
                     exprireAt = code.getExpireAt();
@@ -185,7 +185,7 @@ public class CodeService extends ResponseApi {
 
                 ContentQr content = new ContentQr(code.getQrid(), exprireAt);
 
-                if (code.getCheckinAt() == null) {
+                if (code.getCheckinAt() == 0) {
                     content.setAcceptBot(1);
                 } else {
                     content.setAcceptBot(2);
