@@ -3,15 +3,12 @@ package com.automaticparking.model.bot;
 import com.automaticparking.model.cloudinary.CloudinaryService;
 import com.automaticparking.model.code.customer.Code;
 import com.automaticparking.model.code.customer.CodeRepository;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import response.ResponseApi;
@@ -129,9 +126,9 @@ public class BotService extends ResponseApi {
 
             if (Integer.parseInt(dataReadPlate.get("status")) == 200) {
                 String plate = dataReadPlate.get("plate");
-
-                if (!plate.equals(code.getPlate())) {
-                    return badRequestApi("Different plate");
+                double similarity = similarityPlate(code.getPlate(), plate);
+                if (similarity < 90) {
+                    return badRequestApi("Different plate " + plate + "/" + code.getPlate());
                 }
 
                 asyncExecutor.execute(() -> {
@@ -154,8 +151,6 @@ public class BotService extends ResponseApi {
 
                         if (!updated) {
                             throw new Exception("Error update");
-                        } else {
-                            System.out.println("ok");
                         }
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
@@ -165,6 +160,7 @@ public class BotService extends ResponseApi {
 
             return ResponseEntity.ok(dataReadPlate);
         } catch (Exception e) {
+            e.printStackTrace();
             return internalServerError(e.getMessage());
         }
     }
@@ -189,4 +185,11 @@ public class BotService extends ResponseApi {
         return dataRes;
     }
 
+
+    private double similarityPlate(String plate1, String plate2) {
+        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+        int distance = levenshteinDistance.apply(plate1, plate2);
+        int maxLength = Math.max(plate1.length(), plate2.length());
+        return ((double) (maxLength - distance) / maxLength) * 100;
+    }
 }
