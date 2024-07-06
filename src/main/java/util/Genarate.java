@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class Genarate {
     public static Long getTimeStamp() {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        return zdt.toInstant().toEpochMilli();
+        long time = zdt.toInstant().toEpochMilli();
+        System.out.println(TimeZone.getDefault().getID());
+        System.out.println(time);
+        return time;
     }
 
     public static Map<String, String> getMapFromJson(String json) {
