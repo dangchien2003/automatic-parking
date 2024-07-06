@@ -12,10 +12,10 @@ public class Timestamp {
 
             if (format.contains("HH")) {
                 LocalDateTime dateTime = LocalDateTime.parse(time, formatter);
-                return dateTime.atZone(ZoneId.systemDefault()).toEpochSecond();
+                return dateTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toEpochSecond();
             } else {
                 LocalDateTime dateTime = LocalDateTime.parse(time + " 00:00:00", DateTimeFormatter.ofPattern(format + " HH:mm:ss"));
-                return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                return dateTime.atZone(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant().toEpochMilli();
             }
         } catch (DateTimeParseException e) {
             System.out.println("Định dạng không hỗ trợ: " + e.getMessage());

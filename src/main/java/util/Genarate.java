@@ -12,8 +12,6 @@ public class Genarate {
     public static Long getTimeStamp() {
         ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         long time = zdt.toInstant().toEpochMilli();
-        System.out.println(TimeZone.getDefault().getID());
-        System.out.println(time);
         return time;
     }
 
