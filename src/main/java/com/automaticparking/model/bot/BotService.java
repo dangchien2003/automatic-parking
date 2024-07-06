@@ -85,6 +85,7 @@ public class BotService extends ResponseApi {
                         code.setImageIn(path);
                         code.setCheckinAt(now);
                         code.setPlate(plate);
+                        code.setExpireAt(now + 86400 * 1000);
 
                         boolean updated = codeRepository.updateCode(code);
 
