@@ -47,6 +47,12 @@ public class Code {
     @Column
     private long cancleAt;
 
+    @Column
+    private int timesExtend;
+
+    @Column
+    private int priceExtend;
+
     public Code() {
     }
 
@@ -152,5 +158,21 @@ public class Code {
 
     public void setCancleAt(long cancleAt) {
         this.cancleAt = cancleAt;
+    }
+
+    public int getTimesExtend() {
+        return timesExtend;
+    }
+
+    public void setTimesExtend(int timesExtend) {
+        this.timesExtend = timesExtend;
+    }
+
+    public int getPriceExtend() {
+        return priceExtend;
+    }
+
+    public void setPriceExtend(int priceExtend) {
+        this.priceExtend = priceExtend;
     }
 }

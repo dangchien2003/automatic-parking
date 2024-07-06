@@ -2,12 +2,14 @@ package com.automaticparking.model.code.customer;
 
 import com.automaticparking.model.cache.CacheService;
 import com.automaticparking.model.cash.customer.CashCustomerRepository;
+import com.automaticparking.model.cash.customer.CashCustomerService;
 import com.automaticparking.model.code.customer.dto.BuyCodeDto;
 import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.shopQr.QrShopRepository;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,9 @@ import response.ResponseApi;
 import util.Genarate;
 import util.Json;
 import util.KeyCache;
+import util.Timestamp;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -171,12 +175,7 @@ public class CodeService extends ResponseApi {
                 }
 
                 // get time expire
-                Long exprireAt = null;
-                if (code.getCheckinAt() != 0) {
-                    exprireAt = code.getExpireAt() + 24 * 60 * 60 * 1000;
-                } else {
-                    exprireAt = code.getExpireAt();
-                }
+                Long exprireAt = code.getExpireAt();
 
                 if (exprireAt <= Genarate.getTimeStamp()) {
                     return badRequestApi("expired");
@@ -211,4 +210,143 @@ public class CodeService extends ResponseApi {
         }
     }
 
+    public ResponseEntity<?> calcPriceExtendCode(String qrid, String date, int indexTime, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            String uid = staffDataToken.get("uid");
+
+            if (date.trim().isEmpty()) {
+                return badRequestApi("Invalid date");
+            }
+
+            long timestamp = Timestamp.convertDateToTimestamp(date, "dd-MM-yyyy");
+
+            if (timestamp <= 0) {
+                return badRequestApi("Invalid date");
+            }
+
+            if (1 > indexTime || indexTime > 4) {
+                return badRequestApi("Invalid time");
+            }
+
+            Code code = codeRepository.getInfo(uid, qrid);
+            if (code == null) {
+                return badRequestApi("Invalid code");
+            }
+
+            long now = Genarate.getTimeStamp();
+            if (code.getCheckinAt() == 0 || code.getCheckoutAt() != 0 || now < code.getExpireAt()) {
+                return badRequestApi("Code cannot be renewed");
+            }
+
+            long newExpire = timestamp + indexTime * 21600000;
+            if (now > newExpire - 15 * 60 * 1000) {
+                return badRequestApi("The time must be at least 15 minutes greater than the current time");
+            }
+
+            long hoursExpired = (newExpire - code.getExpireAt()) / 1000 / 3600;
+            int price = (int) hoursExpired * 1000;
+            Map dataRes = new HashMap<String, Object>() {
+                {
+                    put("date", date);
+                    put("indexTime", indexTime);
+                    put("price", price);
+                    put("dateTime", newExpire);
+                    put("code", code);
+                }
+            };
+
+            cacheService.setCache("PriceExtendCode" + qrid, dataRes);
+            ResponseSuccess<Map<String, Object>> responseSuccess = new ResponseSuccess<>();
+            responseSuccess.data = dataRes;
+            return ResponseEntity.ok().body(responseSuccess);
+        } catch (Exception e) {
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    public ResponseEntity<?> extendCode(String qrid, String date, int indexTime, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            String uid = staffDataToken.get("uid");
+
+            Map<String, Object> data = cacheService.getCache("PriceExtendCode" + qrid);
+            if (data == null || !data.get("date").equals(date) || !data.get("indexTime").equals(indexTime)) {
+                ResponseEntity<?> res = calcPriceExtendCode(qrid, date, indexTime, request);
+                if (res.getStatusCode() == HttpStatus.OK) {
+                    data = cacheService.getCache("PriceExtendCode" + qrid);
+                } else {
+                    return res;
+                }
+            }
+
+            int price = (int) data.get("price");
+            int remaining = getRemainingUser(uid);
+            if (remaining < price) {
+                return badRequestApi("Not enough money");
+            }
+
+            long newExpire = (long) data.get("dateTime");
+
+            Code code = (Code) data.get("code");
+            code.setExpireAt(newExpire);
+            code.setPriceExtend(code.getPriceExtend() + price);
+            code.setTimesExtend(code.getTimesExtend() + 1);
+
+            boolean updated = codeRepository.updateCode(code);
+            if (!updated) {
+                throw new Exception("Update error");
+            }
+
+            cacheService.setCache("remaining_" + uid, remaining - price);
+            ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return internalServerError(e.getMessage());
+        }
+    }
+
+    private int getRemainingUser(String idUser) {
+        Integer remaining = cacheService.getCache("remaining_" + idUser);
+        if (remaining != null) {
+            return remaining;
+        }
+
+        return cashCustomerService.getRemaining(idUser);
+    }
+
+    ResponseEntity<?> cancleCode(String qrid, HttpServletRequest request) {
+        try {
+            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            String uid = staffDataToken.get("uid");
+
+            qrid = qrid.trim();
+            if (qrid.equals("")) {
+                return badRequestApi("Invalid code");
+            }
+
+            Code code = codeRepository.getInfo(uid, qrid);
+            if (code == null) {
+                return badRequestApi("Code not exist");
+            }
+            if (code.getCheckinAt() != 0 || code.getCancleAt() != 0) {
+                return badRequestApi("Cannot cancle");
+            }
+
+            long now = Genarate.getTimeStamp();
+            code.setCancleAt(now);
+
+            boolean updated = codeRepository.updateCode(code);
+            if (!updated) {
+                throw new Exception("Update error");
+            }
+
+            ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
+            return ResponseEntity.ok().body(responseSuccess);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return internalServerError(e.getMessage());
+        }
+    }
 }

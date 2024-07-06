@@ -3,6 +3,7 @@ package com.automaticparking.model.code.customer;
 import com.automaticparking.model.code.customer.dto.BuyCodeDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +37,20 @@ public class CodeController {
     @GetMapping("qr/{qrid}")
     ResponseEntity<?> getContenQr(@PathVariable String qrid, HttpServletRequest request) {
         return codeService.getContenQr(qrid, request);
+    }
+
+    @GetMapping("extend/price/{qrid}")
+    ResponseEntity<?> priceExtend(@RequestParam(name = "date", required = true) String date, @RequestParam(name = "time", required = true) int indexTime, @PathVariable String qrid, HttpServletRequest request) {
+        return codeService.calcPriceExtendCode(qrid, date, indexTime, request);
+    }
+
+    @PatchMapping("extend/{qrid}")
+    ResponseEntity<?> extend(@RequestParam(name = "date", required = true) String date, @RequestParam(name = "time", required = true) int indexTime, @PathVariable String qrid, HttpServletRequest request) {
+        return codeService.extendCode(qrid, date, indexTime, request);
+    }
+
+    @PatchMapping("cancle")
+    ResponseEntity<?> extend(@RequestParam(name = "id", required = true) String qrid, HttpServletRequest request) {
+        return codeService.cancleCode(qrid, request);
     }
 }

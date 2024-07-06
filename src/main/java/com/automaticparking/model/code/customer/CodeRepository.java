@@ -84,7 +84,7 @@ public class CodeRepository {
         Integer totalMyCash = 0;
         if (codes != null) {
             for (Code code : codes) {
-                totalMyCash += code.getPrice();
+                totalMyCash += (code.getPrice() + code.getPriceExtend());
             }
         }
         return totalMyCash;
