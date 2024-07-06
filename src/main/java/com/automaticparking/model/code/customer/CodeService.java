@@ -235,17 +235,24 @@ public class CodeService extends ResponseApi {
             }
 
             long now = Genarate.getTimeStamp();
+            System.out.println("now: " + now);
+
             if (code.getCheckinAt() == 0 || code.getCheckoutAt() != 0 || now < code.getExpireAt()) {
                 return badRequestApi("Code cannot be renewed");
             }
 
             long newExpire = timestamp + indexTime * 21600000;
+            System.out.println("newExpire: " + newExpire);
             if (now > newExpire - 15 * 60 * 1000) {
                 return badRequestApi("The time must be at least 15 minutes greater than the current time");
             }
 
             long hoursExpired = (newExpire - code.getExpireAt()) / 1000 / 3600;
+            System.out.println("hoursExpired: " + hoursExpired);
+
             int price = (int) hoursExpired * 1000;
+            System.out.println("price: " + price);
+
             Map dataRes = new HashMap<String, Object>() {
                 {
                     put("date", date);
