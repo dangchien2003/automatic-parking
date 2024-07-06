@@ -3,15 +3,14 @@ package util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Calendar;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.TimeZone;
 
 public class Genarate {
     public static Long getTimeStamp() {
-        TimeZone timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh");
-        Calendar calendar = Calendar.getInstance(timeZone);
-        return calendar.getTime().getTime();
+        ZonedDateTime zdt = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        return zdt.toInstant().toEpochMilli();
     }
 
     public static Map<String, String> getMapFromJson(String json) {
