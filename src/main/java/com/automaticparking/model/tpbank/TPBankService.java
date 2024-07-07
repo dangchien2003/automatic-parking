@@ -72,7 +72,6 @@ public class TPBankService extends ResponseApi {
 
                         Map<String, String> dataDate = tpBankUtil.getDataDate(cashNotApproves);
                         List<Map<String, Object>> historys = getHistory(tpBank, dataDate);
-                        System.out.println(historys);
                         Long[] listIdCashBanked = getCashApprove(cashNotApproves, historys);
                         if (listIdCashBanked.length > 0) {
                             long now = Genarate.getTimeStamp();
