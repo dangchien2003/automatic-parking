@@ -12,7 +12,7 @@ HOST_READ_PLATE =https://doc-bien-so.onrender.com
 DB_HOST=parking-chienboy03-5a1d.g.aivencloud.com
 DB_PORT=12367
 DB_USERNAME=avnadmin
-DB_PASSWORD=AVNS_98KYUVq9PGcWSdU25s2
+DB_PASSWORD=
 DATABASE=defaultdb
 
 DB_HOST_DEV=127.0.0.1
@@ -23,8 +23,8 @@ DATABASE_DEV=parking
 
 # cloudinary
 CLOUD_NAME=dis2ybh5i
-API_KEY=454546528841134
-API_SECRET=9EGyo9AW2yjcW0jJAPJsV7GAlkk
+API_KEY=
+API_SECRET=
 
 #hibernate
 SHOW_SQL=false
