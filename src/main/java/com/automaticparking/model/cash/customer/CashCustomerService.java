@@ -26,7 +26,7 @@ public class CashCustomerService extends ResponseApi {
         this.cashCustomerRepository = cashCustomerRepository;
         this.cacheService = cacheService;
     }
-    
+
     ResponseEntity<?> inputMoney(InputMoneyDto inputMoney, HttpServletRequest request) {
         try {
             Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
@@ -34,12 +34,12 @@ public class CashCustomerService extends ResponseApi {
             String uid = staffDataToken.get("uid");
             Cash cash = new Cash();
             cash.setUid(uid);
-            cash.setMoney(inputMoney.money);
+            cash.setMoney(inputMoney.getMoney());
+            cash.setStringCode(inputMoney.getStringCode());
             cash.setCashAt(Genarate.getTimeStamp());
-            cash.setStringCode(uid);
 
-            // duyệt nạp tiền
-            cash.setAcceptAt(Long.parseLong("1"));
+//            // duyệt nạp tiền
+//            cash.setAcceptAt(Long.parseLong("1"));
 
             Boolean create = cashCustomerRepository.saveCashHistory(cash);
 

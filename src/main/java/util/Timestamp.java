@@ -1,7 +1,9 @@
 package util;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -21,5 +23,13 @@ public class Timestamp {
             System.out.println("Định dạng không hỗ trợ: " + e.getMessage());
             return -1;
         }
+    }
+
+    public static String convertTimestampToDate(long timestamp, String format) {
+        Instant time = Instant.ofEpochMilli(timestamp);
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        ZonedDateTime zonedDateTime = time.atZone(zoneId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        return zonedDateTime.format(formatter);
     }
 }
