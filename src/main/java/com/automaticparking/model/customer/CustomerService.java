@@ -1,10 +1,12 @@
 package com.automaticparking.model.customer;
 
 
+import com.automaticparking.model.cache.CacheService;
 import com.automaticparking.model.customer.dto.*;
 import com.automaticparking.model.mailer.MailService;
 import com.automaticparking.model.mailer.MailTemplate;
 import com.automaticparking.model.mailer.Render;
+import com.automaticparking.model.staff.Staff;
 import com.automaticparking.types.ResponseSuccess;
 import encrypt.Hash;
 import encrypt.JWT;
@@ -279,7 +281,6 @@ public class CustomerService extends ResponseApi {
         }
     }
 
-    @GetMapping("forget/{forgetToken}")
     ResponseEntity<?> acceptForget(String forgetToken) {
         try {
             JWT<ForgetPassword> jwt = new JWT<>();
@@ -334,8 +335,7 @@ public class CustomerService extends ResponseApi {
         }
     }
 
-    @GetMapping("me")
-    ResponseEntity<?> acceptForget(HttpServletRequest request) {
+    ResponseEntity<?> getMyinfo(HttpServletRequest request) {
         try {
             Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
             ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();

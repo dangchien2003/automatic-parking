@@ -62,7 +62,7 @@ public class CustomerController {
 
     @GetMapping("me")
     ResponseEntity<?> acceptForget(HttpServletRequest request) {
-        return customerService.acceptForget(request);
+        return customerService.getMyinfo(request);
     }
 
     @PatchMapping("change-password")
