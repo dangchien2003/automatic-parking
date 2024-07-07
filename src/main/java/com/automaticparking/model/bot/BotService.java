@@ -169,7 +169,6 @@ public class BotService extends ResponseApi {
     private Map<String, String> callReadPlate(MultipartFile file, String width, String height) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("image", file.getResource());
         body.add("width", width);

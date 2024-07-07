@@ -21,7 +21,7 @@ public class CashStaffRepository {
         try {
             Transaction tr = session.beginTransaction();
 
-            String sql = "SELECT * FROM historycash where acceptAt is NULL";
+            String sql = "SELECT * FROM historycash where acceptAt is NULL and cancleAt is NULL";
             NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
             List<Cash> cashs = query.list();
             tr.commit();
@@ -56,4 +56,20 @@ public class CashStaffRepository {
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
+
+//    public List<Cash> getMindate() {
+//        Session session = hibernateUtil.openSession();
+//        try {
+//            Transaction tr = session.beginTransaction();
+//
+//            String sql = "SELECT MIN(cashAt) FROM historycash where acceptAt is NULL and cancleAt is NULL";
+//            NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
+//            List<Cash> cashs = query.list();
+//            tr.commit();
+//            session.close();
+//            return cashs;
+//        } catch (Exception e) {
+//            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+//        }
+//    }
 }
