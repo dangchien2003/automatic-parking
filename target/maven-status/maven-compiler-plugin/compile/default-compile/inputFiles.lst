@@ -40,6 +40,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigThread.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\Staff.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Genarate.java
+E:\code\SPRING\automatic-parking\src\main\java\validation\EmailValid.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\mailer\MailService.java
 E:\code\SPRING\automatic-parking\src\main\java\util\CustomRandom.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\CustomerService.java
