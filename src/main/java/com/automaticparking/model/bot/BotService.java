@@ -5,6 +5,7 @@ import com.automaticparking.model.cloudinary.CloudinaryService;
 import com.automaticparking.model.code.customer.Code;
 import com.automaticparking.model.code.customer.CodeRepository;
 import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Interner;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -45,9 +46,11 @@ public class BotService extends ResponseApi {
                 return badRequestApi("Invalid qr");
             }
 
-            int dataCache = cacheService.getCache("plate_" + qr);
-            if (dataCache <= 0) {
-                return badRequestApi("QR is processing");
+            Integer dataCache = cacheService.getCache("plate_" + qr);
+            if (dataCache != null) {
+                if (dataCache > 0) {
+                    return badRequestApi("QR is processing");
+                }
             }
 
             Code code = codeRepository.getInfo(qr);
@@ -126,10 +129,11 @@ public class BotService extends ResponseApi {
             if (qr.trim().equals("") || qr.equals("0")) {
                 return badRequestApi("Invalid qr");
             }
-
-            int dataCache = cacheService.getCache("plate_" + qr);
-            if (dataCache <= 0) {
-                return badRequestApi("QR is processing");
+            Integer dataCache = cacheService.getCache("plate_" + qr);
+            if (dataCache != null) {
+                if (dataCache > 0) {
+                    return badRequestApi("QR is processing");
+                }
             }
 
             Code code = codeRepository.getInfo(qr);
@@ -147,7 +151,7 @@ public class BotService extends ResponseApi {
             if (Integer.parseInt(dataReadPlate.get("status")) == 200) {
                 String plate = dataReadPlate.get("plate");
                 double similarity = similarityPlate(code.getPlate(), plate);
-                if (similarity < 90) {
+                if (similarity < 85) {
                     return badRequestApi("Different plate " + plate + "/" + code.getPlate());
                 }
 
