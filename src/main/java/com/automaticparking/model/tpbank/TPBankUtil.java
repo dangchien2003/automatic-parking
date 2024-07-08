@@ -3,6 +3,7 @@ package com.automaticparking.model.tpbank;
 import com.automaticparking.model.cash.Cash;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import util.Genarate;
 import util.Timestamp;
@@ -11,7 +12,12 @@ import java.util.*;
 
 @Service
 public class TPBankUtil {
-    private Dotenv dotenv = Dotenv.load();
+    private Dotenv dotenv;
+
+    @Autowired
+    public TPBankUtil(Dotenv dotenv) {
+        this.dotenv = dotenv;
+    }
 
     public int getPointReload() {
         String reloadDefault = dotenv.get("TP_TIMERELOAD");

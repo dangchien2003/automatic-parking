@@ -1,9 +1,16 @@
 package com.automaticparking.model.tpbank;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.persistence.Entity;
+
 
 public class TPBank {
-    private Dotenv dotenv = Dotenv.load();
+    private Dotenv dotenv = Dotenv.configure()
+            .ignoreIfMissing()
+            .load();
+    ;
 
     private String username;
     private String password;
