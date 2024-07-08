@@ -18,24 +18,28 @@ import java.util.List;
 public class CashStaffRepository {
     public List<Cash> getAllCashNotApprove() {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
 
             String sql = "SELECT * FROM historycash where acceptAt is NULL and cancleAt is NULL";
             NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
             List<Cash> cashs = query.list();
             tr.commit();
-            session.close();
             return cashs;
         } catch (Exception e) {
+            tr.rollback();
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } finally {
+            session.close();
         }
     }
 
     public Integer approveListCash(Long[] listId, Long approveAt, String personApprove) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             String sql = "UPDATE Cash SET acceptAt = :acceptAt, acceptBy = :acceptBy WHERE stt IN (:listId) and acceptAt IS NULL and cancleAt IS NULL";
             Query query = session.createQuery(sql);
             query.setParameter("acceptAt", approveAt);
@@ -49,27 +53,12 @@ public class CashStaffRepository {
             } else {
                 tr.commit();
             }
-
-            session.close();
             return rowsAffected;
         } catch (Exception e) {
+            tr.rollback();
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } finally {
+            session.close();
         }
     }
-
-//    public List<Cash> getMindate() {
-//        Session session = hibernateUtil.openSession();
-//        try {
-//            Transaction tr = session.beginTransaction();
-//
-//            String sql = "SELECT MIN(cashAt) FROM historycash where acceptAt is NULL and cancleAt is NULL";
-//            NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
-//            List<Cash> cashs = query.list();
-//            tr.commit();
-//            session.close();
-//            return cashs;
-//        } catch (Exception e) {
-//            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-//        }
-//    }
 }
