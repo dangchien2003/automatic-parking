@@ -1,8 +1,10 @@
 package com.automaticparking.model.bot;
 
+import com.automaticparking.model.cache.CacheService;
 import com.automaticparking.model.cloudinary.CloudinaryService;
 import com.automaticparking.model.code.customer.Code;
 import com.automaticparking.model.code.customer.CodeRepository;
+import com.github.benmanes.caffeine.cache.Cache;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -25,14 +27,15 @@ import java.util.concurrent.Executor;
 public class BotService extends ResponseApi {
     private final CloudinaryService cloudinaryService;
     private final Executor asyncExecutor;
-
     private CodeRepository codeRepository;
+    private CacheService cacheService;
 
     @Autowired
-    public BotService(CloudinaryService cloudinaryService, Executor asyncExecutor, CodeRepository codeRepository) {
+    public BotService(CloudinaryService cloudinaryService, Executor asyncExecutor, CodeRepository codeRepository, CacheService cacheService) {
         this.cloudinaryService = cloudinaryService;
         this.asyncExecutor = asyncExecutor;
         this.codeRepository = codeRepository;
+        this.cacheService = cacheService;
     }
 
 
@@ -40,6 +43,11 @@ public class BotService extends ResponseApi {
         try {
             if (qr.trim().equals("") || qr.equals("0")) {
                 return badRequestApi("Invalid qr");
+            }
+
+            int dataCache = cacheService.getCache("plate_" + qr);
+            if (dataCache <= 0) {
+                return badRequestApi("QR is processing");
             }
 
             Code code = codeRepository.getInfo(qr);
@@ -70,17 +78,24 @@ public class BotService extends ResponseApi {
                 }
 
                 asyncExecutor.execute(() -> {
+                    cacheService.setCache("plate_" + qr, 1);
                     long now = Genarate.getTimeStamp();
 
                     Map<String, String> options = new HashMap<>();
                     options.put("folder", "parking/plate");
                     options.put("public_id", code.getQrid() + "_" + now + "_in");
                     try {
-                        Map<String, String> uploadResult = cloudinaryService.uploadFile(file, options);
-                        String url = uploadResult.get("secure_url");
-                        String[] splitUrl = url.split("/");
-                        String[] cutSplitUrl = Arrays.copyOfRange(splitUrl, splitUrl.length - 4, splitUrl.length);
-                        String path = String.join("/", cutSplitUrl);
+                        String path = "";
+                        try {
+                            Map<String, String> uploadResult = cloudinaryService.uploadFile(file, options);
+                            String url = uploadResult.get("secure_url");
+                            String[] splitUrl = url.split("/");
+                            String[] cutSplitUrl = Arrays.copyOfRange(splitUrl, splitUrl.length - 4, splitUrl.length);
+                            path = String.join("/", cutSplitUrl);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println(now + " _ " + plate);
+                        }
 
                         code.setImageIn(path);
                         code.setCheckinAt(now);
@@ -91,9 +106,8 @@ public class BotService extends ResponseApi {
 
                         if (!updated) {
                             throw new Exception("Error update");
-                        } else {
-                            System.out.println("ok");
                         }
+                        cacheService.setCache("plate_" + qr, -1);
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
@@ -111,6 +125,11 @@ public class BotService extends ResponseApi {
         try {
             if (qr.trim().equals("") || qr.equals("0")) {
                 return badRequestApi("Invalid qr");
+            }
+
+            int dataCache = cacheService.getCache("plate_" + qr);
+            if (dataCache <= 0) {
+                return badRequestApi("QR is processing");
             }
 
             Code code = codeRepository.getInfo(qr);
@@ -133,17 +152,24 @@ public class BotService extends ResponseApi {
                 }
 
                 asyncExecutor.execute(() -> {
+                    cacheService.setCache("plate_" + qr, 1);
                     long now = Genarate.getTimeStamp();
 
                     Map<String, String> options = new HashMap<>();
                     options.put("folder", "parking/plate");
                     options.put("public_id", code.getQrid() + "_" + now + "_out");
                     try {
-                        Map<String, String> uploadResult = cloudinaryService.uploadFile(file, options);
-                        String url = uploadResult.get("secure_url");
-                        String[] splitUrl = url.split("/");
-                        String[] cutSplitUrl = Arrays.copyOfRange(splitUrl, splitUrl.length - 4, splitUrl.length);
-                        String path = String.join("/", cutSplitUrl);
+                        String path = "";
+                        try {
+                            Map<String, String> uploadResult = cloudinaryService.uploadFile(file, options);
+                            String url = uploadResult.get("secure_url");
+                            String[] splitUrl = url.split("/");
+                            String[] cutSplitUrl = Arrays.copyOfRange(splitUrl, splitUrl.length - 4, splitUrl.length);
+                            path = String.join("/", cutSplitUrl);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println(now + " _ " + plate);
+                        }
 
                         code.setImageOut(path);
                         code.setCheckoutAt(now);
@@ -153,6 +179,8 @@ public class BotService extends ResponseApi {
                         if (!updated) {
                             throw new Exception("Error update");
                         }
+
+                        cacheService.setCache("plate_" + qr, -1);
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
