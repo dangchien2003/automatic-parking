@@ -56,8 +56,12 @@ public class TPBankService extends ResponseApi {
         if (pointLoadToken <= 0) {
             return badRequestApi("Error get point reload");
         }
+        Map<String, Object> dataLogin = login(tpBank);
+        if (dataLogin == null) {
+            return badRequestApi("Error login");
+        }
 
-        token = login(tpBank).get("access_token").toString();
+        token = dataLogin.get("access_token").toString();
 
         try {
             asyncExecutor.execute(() -> {
