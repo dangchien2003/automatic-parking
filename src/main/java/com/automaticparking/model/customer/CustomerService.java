@@ -15,6 +15,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import response.ResponseApi;
 import util.DotENV;
 import util.Genarate;
 import util.Random;
+import validation.EmailValid;
 
 
 import java.util.HashMap;
@@ -37,28 +39,22 @@ public class CustomerService extends ResponseApi {
     private final Render mailRender;
     private CustomerRepository customerRepository;
 
+    private CacheService cacheService;
+
     @Autowired
-    public CustomerService(MailService mailService, Render mailRender, CustomerRepository customerRepository) {
+    public CustomerService(MailService mailService, Render mailRender, CustomerRepository customerRepository, CacheService cacheService) {
         this.mailService = mailService;
         this.mailRender = mailRender;
         this.customerRepository = customerRepository;
+        this.cacheService = cacheService;
     }
 
     ResponseEntity<?> createAdmin(RegisterDto registerDto) {
         try {
-            Customer customer = new Customer();
-            customer.setUid(Util.genarateUid());
-
-            customer.setEmail(registerDto.email);
             Long now = Genarate.getTimeStamp();
-            customer.setLastLogin(now);
-            customer.setCreateAt(now);
-
             Hash hash = new Hash();
-            customer.setPassword(hash.hash(registerDto.password));
-
-            customer.setBlock(0);
-
+            
+            Customer customer = new Customer(Util.genarateUid(), registerDto.email, hash.hash(registerDto.password), now, now, 0);
             Boolean created = customerRepository.saveCustomer(customer);
 
             if (!created) {
@@ -85,6 +81,9 @@ public class CustomerService extends ResponseApi {
 
             // sendEmail
             mailService.sendEmail(template);
+
+            // set cache
+            setCustomerToCache(customer, customer.getUid());
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
@@ -114,10 +113,9 @@ public class CustomerService extends ResponseApi {
 
             // get map payload
             Map<String, String> payload = Genarate.getMapFromJson(dataToken.getSubject());
-            String email = payload.get("email");
+            String uid = payload.get("uid");
 
-            // get customer
-            Customer customer = customerRepository.getCustomerByEmail(email);
+            Customer customer = getCustomer(uid);
 
             // check customer
             if (customer == null) {
@@ -137,6 +135,9 @@ public class CustomerService extends ResponseApi {
             if (!updated) {
                 throw new Exception("Accept error");
             }
+
+            // set cache
+            setCustomerToCache(customer, customer.getUid());
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
@@ -184,6 +185,9 @@ public class CustomerService extends ResponseApi {
             Long dieToken = now + 6 * 60 * 1000;
             Map<String, String> cookies = new HashMap<>();
             cookies.put("ETok", dieToken + "->MA360");
+
+            // setCache
+            setCustomerToCache(customer, customer.getUid());
 
             ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
             responseSuccess.cookies = cookies;
@@ -251,8 +255,7 @@ public class CustomerService extends ResponseApi {
 
     ResponseEntity<?> forget(@Valid @RequestBody ForgetPassword forgetPassword) {
         try {
-
-            Customer customer = customerRepository.getCustomerByEmail(forgetPassword.email);
+            Customer customer = getCustomer(forgetPassword.email);
 
             if (customer == null) {
                 return badRequestApi("Email not exist");
@@ -273,6 +276,9 @@ public class CustomerService extends ResponseApi {
             mailTemplate.setTo(forgetPassword.email);
             mailTemplate.setHtml(html);
 
+
+            // set cache
+            cacheService.setCache("info_" + customer.getEmail(), customer);
             mailService.sendEmail(mailTemplate);
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.ok().body(responseSuccess);
@@ -298,7 +304,8 @@ public class CustomerService extends ResponseApi {
                 return badRequestApi("Invalid email");
             }
 
-            Customer customer = customerRepository.getCustomerByEmail(email);
+            Customer customer = getCustomer(email);
+
             if (customer == null) {
                 return badRequestApi("Email not exist");
             }
@@ -327,6 +334,9 @@ public class CustomerService extends ResponseApi {
             mailTemplate.setTo(email);
 
             mailService.sendEmail(mailTemplate);
+
+            // set cache
+            setCustomerToCache(customer, customer.getUid());
 
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.ok().body(responseSuccess);
@@ -361,7 +371,7 @@ public class CustomerService extends ResponseApi {
                 return badRequestApi("Confirm password not same");
             }
 
-            Customer customer = customerRepository.getCustomerByUid(uid);
+            Customer customer = getCustomer(uid);
 
             Hash hash = new Hash();
             if (!customer.getPassword().equals(hash.hash(dataPassword.getOldPassword()))) {
@@ -396,6 +406,9 @@ public class CustomerService extends ResponseApi {
             cookie.setMaxAge(3600);
             response.addCookie(cookie);
 
+            // set cache
+            setCustomerToCache(customer, customer.getUid());
+
             ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = customer;
             responseSuccess.cookies = cookies;
@@ -420,7 +433,7 @@ public class CustomerService extends ResponseApi {
             }
 
             // check new email exist
-            Customer customer = customerRepository.getCustomerByEmail(dataChange.newEmail);
+            Customer customer = getCustomer(dataChange.newEmail);
             if (customer != null) {
                 return badRequestApi("Email already exists");
             }
@@ -468,7 +481,7 @@ public class CustomerService extends ResponseApi {
 
             Map<String, String> mapData = Genarate.getMapFromJson(claimsData.getSubject());
 
-            Customer customer = customerRepository.getCustomerByUid(mapData.get("uid"));
+            Customer customer = getCustomer(mapData.get("uid"));
             if (customer == null) {
                 return badRequestApi("Account not exist");
             }
@@ -486,6 +499,9 @@ public class CustomerService extends ResponseApi {
                 throw new Exception("Change error");
             }
 
+            // set cache
+            setCustomerToCache(customer, customer.getUid());
+
             ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
             return ResponseEntity.ok().body(responseSuccess);
         } catch (Exception e) {
@@ -493,5 +509,27 @@ public class CustomerService extends ResponseApi {
         }
     }
 
+    public Customer getCustomerFromCache(String key) {
+        Customer customer = cacheService.getCache("info_" + key);
+        return customer;
+    }
 
+    public void setCustomerToCache(Customer customer, String key) {
+        cacheService.setCache("info_" + key, customer);
+    }
+
+    public Customer getCustomer(String key) {
+        Customer customer = getCustomerFromCache(key);
+        if (customer == null) {
+            if (EmailValid.IsEmail(key)) {
+                customer = customerRepository.getCustomerByEmail(key);
+            } else {
+                customer = customerRepository.getCustomerByUid(key);
+            }
+            setCustomerToCache(customer, key);
+        } else {
+            System.out.println("cache_" + key);
+        }
+        return customer;
+    }
 }

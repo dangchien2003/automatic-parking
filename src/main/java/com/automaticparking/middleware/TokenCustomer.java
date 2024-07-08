@@ -2,12 +2,14 @@ package com.automaticparking.middleware;
 
 import com.automaticparking.model.customer.Customer;
 import com.automaticparking.model.customer.CustomerRepository;
+import com.automaticparking.model.customer.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,15 @@ import java.util.Map;
 
 @Component
 public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
+    private CustomerService customerService;
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    public TokenCustomer(CustomerService customerService, CustomerRepository customerRepository) {
+        this.customerService = customerService;
+        this.customerRepository = customerRepository;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
@@ -70,10 +81,8 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
             return false; // endpoint
         }
 
-        CustomerRepository customerService = new CustomerRepository();
-        /*get info staff from DB*/
-        Customer customerInfo = customerService.getCustomerByEmail(customerDataToken.get("email"));
-
+        String uid = customerDataToken.get("uid");
+        Customer customerInfo = customerService.getCustomer(uid);
         // kiểm tra tài khoản bị block
         if (customerInfo.getBlock() == 1) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Account Blocked"), HttpStatus.UNAUTHORIZED);

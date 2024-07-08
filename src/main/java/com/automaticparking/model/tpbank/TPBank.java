@@ -63,4 +63,11 @@ public class TPBank {
         this.accountNo = accountNo;
         return this;
     }
+
+    public void print() {
+        System.out.println("username: "+ this.username);
+        System.out.println("password: "+ this.password);
+        System.out.println("accountNo: "+ this.accountNo);
+        System.out.println("token: "+ this.token);
+    }
 }

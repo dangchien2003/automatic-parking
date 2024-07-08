@@ -29,7 +29,7 @@ public class TPBankService extends ResponseApi {
     private boolean runed = false;
     private String token = "";
     private String staff = "bot";
-
+    private long time;
 
     @Autowired
     public TPBankService(Dotenv dotenv, TPBankUtil tpBankUtil, CashStaffRepository cashStaffRepository, Executor asyncExecutor) {
@@ -37,6 +37,7 @@ public class TPBankService extends ResponseApi {
         this.tpBankUtil = tpBankUtil;
         this.cashStaffRepository = cashStaffRepository;
         this.asyncExecutor = asyncExecutor;
+        this.time = Long.parseLong(dotenv.get("TP_TIMERELOAD")) * 60 * 1000;
     }
 
     ResponseEntity<?> autoTpbank(String author) {
@@ -87,8 +88,7 @@ public class TPBankService extends ResponseApi {
                                 System.out.println(String.format("Success update %d", updated));
                             }
                         }
-
-                        long time = Long.parseLong(dotenv.get("TP_TIMERELOAD")) * 60 * 1000;
+                        System.out.println("done scan");
                         try {
                             Thread.sleep(time);
                         } catch (InterruptedException e) {
@@ -136,15 +136,17 @@ public class TPBankService extends ResponseApi {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
+            String jsonDataRes = response.body();
             int status = response.statusCode();
             if (status != 200) {
                 System.out.println("cannot get token");
                 System.out.println("status: " + status);
+                System.out.println("data: " + jsonDataRes);
+                tpBank.print();
                 return null;
             }
             ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> map = objectMapper.readValue(response.body(), Map.class);
+            Map<String, Object> map = objectMapper.readValue(jsonDataRes, Map.class);
             return map;
         } catch (Exception e) {
             e.printStackTrace();
