@@ -53,7 +53,7 @@ public class CustomerService extends ResponseApi {
         try {
             Long now = Genarate.getTimeStamp();
             Hash hash = new Hash();
-            
+
             Customer customer = new Customer(Util.genarateUid(), registerDto.email, hash.hash(registerDto.password), now, now, 0);
             Boolean created = customerRepository.saveCustomer(customer);
 
@@ -527,8 +527,6 @@ public class CustomerService extends ResponseApi {
                 customer = customerRepository.getCustomerByUid(key);
             }
             setCustomerToCache(customer, key);
-        } else {
-            System.out.println("cache_" + key);
         }
         return customer;
     }
