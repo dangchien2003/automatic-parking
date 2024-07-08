@@ -21,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
-import util.CustomDotENV;
+import util.DotENV;
 import util.Genarate;
 import util.Random;
 
@@ -167,7 +167,7 @@ public class CustomerService extends ResponseApi {
             }
 
             JWT<Customer> jwt = new JWT<>();
-            String CToken = jwt.createJWT(customer, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
+            String CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
 
             Cookie cookie1 = new Cookie("CToken", CToken);
             cookie1.setAttribute("Path", "/customer");
@@ -199,7 +199,7 @@ public class CustomerService extends ResponseApi {
             Map<String, String> data = (Map<String, String>) request.getAttribute("customerDataToken");
 
             JWT<Map<String, String>> jwt = new JWT<>();
-            String newToken = jwt.createJWT(data, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
+            String newToken = jwt.createJWT(data, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
 
             // set cookie
             Cookie cookie1 = new Cookie("CToken", newToken);
@@ -262,7 +262,7 @@ public class CustomerService extends ResponseApi {
             forgetPassword.lastLogin = customer.getLastLogin();
 
             JWT<ForgetPassword> jwt = new JWT<>();
-            String forgetToken = jwt.createJWT(forgetPassword, Long.parseLong(CustomDotENV.get("FORGET_PASSWORD_SECOND_TOKEN")));
+            String forgetToken = jwt.createJWT(forgetPassword, Long.parseLong(DotENV.get("FORGET_PASSWORD_SECOND_TOKEN")));
 
             // get template
             String html = mailRender.customerForget(forgetToken);
@@ -380,7 +380,7 @@ public class CustomerService extends ResponseApi {
             }
 
             JWT<Customer> jwt = new JWT<>();
-            String CToken = jwt.createJWT(customer, Long.parseLong(CustomDotENV.get("TIME_SECOND_TOKEN")));
+            String CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
 
             Map<String, String> cookies = new HashMap<>();
             cookies.put("CToken", CToken);

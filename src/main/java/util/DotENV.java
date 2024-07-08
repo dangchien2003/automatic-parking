@@ -2,7 +2,7 @@ package util;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
-public class CustomDotENV {
+public class DotENV {
     private static final Dotenv dotenv = Dotenv.configure()
             .ignoreIfMissing()
             .load();
