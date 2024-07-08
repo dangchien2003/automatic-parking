@@ -84,8 +84,11 @@ public class ConfigDB {
         properties.setProperty("hibernate.connection.password", dbPass);
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         properties.setProperty("hibernate.show_sql", showSql);
-        properties.setProperty("hibernate.connection.pool_size", "20");
-
+        properties.setProperty("hibernate.c3p0.min_size", "10");
+        properties.setProperty("hibernate.c3p0.max_size", "30");
+        properties.setProperty("hibernate.c3p0.timeout", "300");
+        properties.setProperty("hibernate.c3p0.max_statements", "50");
+        properties.setProperty("hibernate.c3p0.idle_test_period", "3000");
         return properties;
     }
 
@@ -104,7 +107,11 @@ public class ConfigDB {
         properties.setProperty("hibernate.connection.password", dbPass);
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         properties.setProperty("hibernate.show_sql", showSql);
-        properties.setProperty("hibernate.connection.pool_size", "20");
+        properties.setProperty("hibernate.c3p0.min_size", "10");
+        properties.setProperty("hibernate.c3p0.max_size", "30");
+        properties.setProperty("hibernate.c3p0.timeout", "300");
+        properties.setProperty("hibernate.c3p0.max_statements", "50");
+        properties.setProperty("hibernate.c3p0.idle_test_period", "3000");
         return properties;
     }
 }
