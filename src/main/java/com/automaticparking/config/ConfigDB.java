@@ -10,14 +10,20 @@ import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import java.util.Properties;
 
 @Configuration
 public class ConfigDB {
+    private Dotenv dotenv = Dotenv.configure()
+            .ignoreIfMissing()
+            .load();
+
     private static MetadataSources metadataSources;
-    Dotenv dotenv = Dotenv.load();
+
     @Bean
     public SessionFactory setup() {
         Properties properties = null;
@@ -44,7 +50,7 @@ public class ConfigDB {
             metadataSources.addAnnotatedClass(Customer.class);
             metadataSources.addAnnotatedClass(QrShop.class);
             metadataSources.addAnnotatedClass(Code.class);
-            System.out.println("Hibernate "+ active +" setup OK");
+            System.out.println("Hibernate " + active + " setup OK");
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(standardServiceRegistry);
             System.out.println("Error add entity");
@@ -73,7 +79,7 @@ public class ConfigDB {
 
         Properties properties = new Properties();
         properties.setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
-        properties.setProperty("hibernate.connection.url", "jdbc:mysql://"+dbHost+":"+dbPort+"/"+database);
+        properties.setProperty("hibernate.connection.url", "jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database);
         properties.setProperty("hibernate.connection.username", dbUser);
         properties.setProperty("hibernate.connection.password", dbPass);
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
@@ -93,7 +99,7 @@ public class ConfigDB {
 
         Properties properties = new Properties();
         properties.setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
-        properties.setProperty("hibernate.connection.url", "jdbc:mysql://"+dbHost+":"+dbPort+"/"+database);
+        properties.setProperty("hibernate.connection.url", "jdbc:mysql://" + dbHost + ":" + dbPort + "/" + database);
         properties.setProperty("hibernate.connection.username", dbUser);
         properties.setProperty("hibernate.connection.password", dbPass);
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");

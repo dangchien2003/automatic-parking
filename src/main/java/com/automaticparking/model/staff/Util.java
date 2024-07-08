@@ -1,6 +1,6 @@
 package com.automaticparking.model.staff;
 
-import util.CustomDotENV;
+import util.DotENV;
 import encrypt.Hash;
 import util.Genarate;
 import util.CustomRandom;
@@ -26,7 +26,7 @@ public class Util {
         staff.setName(name);
         staff.setBirthday(birthday);
         staff.setEmail(email);
-        staff.setPassword(new Hash().hash(CustomDotENV.get("PASSWORD_STAFF")));
+        staff.setPassword(new Hash().hash(DotENV.get("PASSWORD_STAFF")));
         return staff;
     }
 

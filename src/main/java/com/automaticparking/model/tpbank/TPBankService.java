@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
 public class TPBankService extends ResponseApi {
     private Executor asyncExecutor;
     private CashStaffRepository cashStaffRepository;
-    private Dotenv dotenv = Dotenv.load();
+    private Dotenv dotenv;
     private TPBank tpBank = new TPBank();
     private TPBankUtil tpBankUtil;
     private boolean runed = false;
@@ -32,7 +32,8 @@ public class TPBankService extends ResponseApi {
 
 
     @Autowired
-    public TPBankService(TPBankUtil tpBankUtil, CashStaffRepository cashStaffRepository, Executor asyncExecutor) {
+    public TPBankService(Dotenv dotenv, TPBankUtil tpBankUtil, CashStaffRepository cashStaffRepository, Executor asyncExecutor) {
+        this.dotenv = dotenv;
         this.tpBankUtil = tpBankUtil;
         this.cashStaffRepository = cashStaffRepository;
         this.asyncExecutor = asyncExecutor;

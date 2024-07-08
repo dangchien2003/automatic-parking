@@ -15,7 +15,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import response.ResponseApi;
-import util.CustomDotENV;
+import util.DotENV;
 import util.Genarate;
 
 import java.util.Arrays;
@@ -210,7 +210,7 @@ public class BotService extends ResponseApi {
 
         // Gửi yêu cầu POST đến server Python
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(CustomDotENV.get("HOST_READ_PLATE") + "/read-text", HttpMethod.POST, requestEntity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(DotENV.get("HOST_READ_PLATE") + "/read-text", HttpMethod.POST, requestEntity, String.class);
 
         Map<String, String> dataRes = Genarate.getMapFromJson(response.getBody());
 
