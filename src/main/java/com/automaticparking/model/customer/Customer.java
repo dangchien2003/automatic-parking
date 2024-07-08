@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name= "user")
+@Table(name = "user")
 public class Customer {
     @Id
     @Column(length = 30)
@@ -33,15 +33,16 @@ public class Customer {
     @Column
     private Long acceptAt;
 
-    public Long getLastLogin() {
-        return lastLogin;
-    }
-
-    public void setLastLogin(Long lastLogin) {
-        this.lastLogin = lastLogin;
-    }
-
     public Customer() {
+    }
+
+    public Customer(String uid, String email, String password, Long lastLogin, Long createAt, Integer block) {
+        this.uid = uid;
+        this.email = email;
+        this.password = password;
+        this.lastLogin = lastLogin;
+        this.createAt = createAt;
+        this.block = block;
     }
 
     public String getUid() {
@@ -90,5 +91,13 @@ public class Customer {
 
     public void setAcceptAt(Long acceptAt) {
         this.acceptAt = acceptAt;
+    }
+
+    public Long getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Long lastLogin) {
+        this.lastLogin = lastLogin;
     }
 }
