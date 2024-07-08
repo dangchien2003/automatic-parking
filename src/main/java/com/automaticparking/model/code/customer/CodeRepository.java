@@ -14,65 +14,76 @@ import java.util.List;
 public class CodeRepository {
     public List<Code> getAllCodeUse(String uid) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             String sql = "SELECT * FROM qr WHERE uid = :uid AND (cancleAt = 0 AND expireAt > :now) OR (checkinAt != 0)";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
             query.setParameter("now", Genarate.getTimeStamp());
             List<Code> codeUsed = query.list();
             tr.commit();
-            session.close();
             return codeUsed;
         } catch (Exception e) {
+            tr.rollback();
             System.out.println(e.getMessage());
             return null;
+        } finally {
+            session.close();
         }
     }
 
     public List<Code> allBoughtCode(String uid, Integer limit) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             String sql = "SELECT * FROM qr WHERE uid = :uid ORDER BY buyAt DESC LIMIT 0, :limit";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
             query.setParameter("limit", limit);
             List<Code> boughtCode = query.list();
             tr.commit();
-            session.close();
             return boughtCode;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            tr.rollback();
+            e.printStackTrace();
             return null;
+        } finally {
+            session.close();
         }
     }
 
     public List<Code> getInfoByPlate(String plate) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             String sql = "SELECT * FROM qr WHERE plate = :plate";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("plate", plate);
             List<Code> boughtCode = query.list();
             tr.commit();
-            session.close();
             return boughtCode;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            tr.rollback();
+            e.printStackTrace();
             return null;
+        } finally {
+            session.close();
         }
     }
 
     Boolean saveCode(Code code) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             session.save(code);
             tr.commit();
         } catch (Exception e) {
-            System.out.println(e.getStackTrace());
+            tr.rollback();
+            e.printStackTrace();
             return false;
         } finally {
             session.close();

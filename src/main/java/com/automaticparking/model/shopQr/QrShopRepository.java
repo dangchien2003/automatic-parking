@@ -12,8 +12,9 @@ import java.util.List;
 public class QrShopRepository {
     public List<QrShop> getAllCodeOk() {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             String sql = "SELECT * FROM shopqr WHERE hide = 0";
             NativeQuery<QrShop> query = session.createNativeQuery(sql, QrShop.class);
             List<QrShop> qr = query.list();
@@ -21,35 +22,43 @@ public class QrShopRepository {
             session.close();
             return qr;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            tr.rollback();
+            e.printStackTrace();
             return null;
+        } finally {
+            session.close();
         }
     }
 
     public QrShop getOneQrById(String category) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             String sql = "SELECT * From shopqr where qrCategory = :qrCategory and hide = 0";
             NativeQuery<QrShop> query = session.createNativeQuery(sql, QrShop.class);
             query.setParameter("qrCategory", category);
             QrShop qr = query.uniqueResult();
             tr.commit();
-            session.close();
             return qr;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            tr.rollback();
+            e.printStackTrace();
             return null;
+        } finally {
+            session.close();
         }
     }
 
     public Boolean saveQrCategory(QrShop qr) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             session.save(qr);
             tr.commit();
         } catch (Exception e) {
+            tr.rollback();
             System.out.println(e.getMessage());
             return false;
         } finally {

@@ -19,11 +19,13 @@ public class CashCustomerRepository {
 
     public Boolean saveCashHistory(Cash cash) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
             session.save(cash);
             tr.commit();
         } catch (Exception e) {
+            tr.rollback();
             System.out.println(e.getMessage());
             return false;
         } finally {
@@ -34,35 +36,40 @@ public class CashCustomerRepository {
 
     public List<Cash> getALlMyHistory(String uid) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
+            tr = session.beginTransaction();
 
             String sql = "SELECT * FROM historycash where uid = :uid ORDER BY cashAt DESC";
             NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
             query.setParameter("uid", uid);
             List<Cash> cashs = query.list();
             tr.commit();
-            session.close();
             return cashs;
         } catch (Exception e) {
+            tr.rollback();
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } finally {
+            session.close();
         }
     }
 
     public List<Cash> getALlMyHistoryOk(String uid) {
         Session session = hibernateUtil.openSession();
+        Transaction tr = null;
         try {
-            Transaction tr = session.beginTransaction();
-
+            tr = session.beginTransaction();
             String sql = "SELECT * FROM historycash WHERE uid = :uid AND acceptAt IS NOT NULL AND recashAt IS NULL AND cancleAt is null";
             NativeQuery<Cash> query = session.createNativeQuery(sql, Cash.class);
             query.setParameter("uid", uid);
             List<Cash> cashs = query.list();
             tr.commit();
-            session.close();
             return cashs;
         } catch (Exception e) {
+            tr.rollback();
             throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        } finally {
+            session.close();
         }
     }
 
