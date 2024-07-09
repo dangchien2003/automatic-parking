@@ -15,8 +15,12 @@ public class Json<T> {
         }
     }
 
-    public T jsonParse(String json, Class<T> type) throws Exception {
-        return objectMapper.readValue(json, type);
+    public T jsonParse(String json, Class<T> type) {
+        try {
+            return objectMapper.readValue(json, type);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

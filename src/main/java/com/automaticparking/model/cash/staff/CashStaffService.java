@@ -2,6 +2,7 @@ package com.automaticparking.model.cash.staff;
 
 import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.cash.staff.dto.ApproveDto;
+import com.automaticparking.model.staff.Staff;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,9 +41,9 @@ public class CashStaffService extends ResponseApi {
             if (!approve.listIdCash.getClass().isArray()) {
                 return badRequestApi("id not array");
             }
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+            Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
 
-            Integer countUpdated = cashStaffRepository.approveListCash(approve.listIdCash, Genarate.getTimeStamp(), staffDataToken.get("sid"));
+            Integer countUpdated = cashStaffRepository.approveListCash(approve.listIdCash, Genarate.getTimeStamp(), staffDataToken.getSid());
 
             if (countUpdated != approve.listIdCash.length) {
                 return badRequestApi("Update failed " + countUpdated + "/" + approve.listIdCash.length);

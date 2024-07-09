@@ -4,6 +4,7 @@ import com.automaticparking.model.cache.CacheService;
 import com.automaticparking.model.cash.customer.CashCustomerRepository;
 import com.automaticparking.model.cash.customer.CashCustomerService;
 import com.automaticparking.model.code.customer.dto.BuyCodeDto;
+import com.automaticparking.model.customer.Customer;
 import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.shopQr.QrShopRepository;
 import com.automaticparking.types.ResponseSuccess;
@@ -45,8 +46,8 @@ public class CodeService extends ResponseApi {
 
     public ResponseEntity<?> buyCode(BuyCodeDto buyCode, HttpServletRequest request) {
         try {
-            Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = customerDataToken.get("uid");
+            Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.getUid();
 
             // get qr info
             QrShop qr = qrShopService.getOneQrById(buyCode.qrCategory);
@@ -96,8 +97,8 @@ public class CodeService extends ResponseApi {
 
     public ResponseEntity<?> getBoughtCode(HttpServletRequest request, String quantity) {
         try {
-            Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = customerDataToken.get("uid");
+            Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.getUid();
 
             Integer quantityLimit;
             try {
@@ -126,8 +127,8 @@ public class CodeService extends ResponseApi {
                 return badRequestApi("Invalid qr");
             }
 
-            Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = customerDataToken.get("uid");
+            Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.getUid();
 
             Code code = codeRepository.getInfo(uid, qrid);
 
@@ -153,8 +154,8 @@ public class CodeService extends ResponseApi {
                 return badRequestApi("Invalid qr");
             }
 
-            Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = customerDataToken.get("uid");
+            Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.getUid();
 
             String keyCache = KeyCache.getKeyContentQr(uid, qrid);
             String contentQr = cacheService.getCache(keyCache);
@@ -212,8 +213,8 @@ public class CodeService extends ResponseApi {
 
     public ResponseEntity<?> calcPriceExtendCode(String qrid, String date, int indexTime, HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = staffDataToken.get("uid");
+            Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = staffDataToken.getUid();
 
             if (date.trim().isEmpty()) {
                 return badRequestApi("Invalid date");
@@ -270,8 +271,8 @@ public class CodeService extends ResponseApi {
 
     public ResponseEntity<?> extendCode(String qrid, String date, int indexTime, HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = staffDataToken.get("uid");
+            Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = staffDataToken.getUid();
 
             Map<String, Object> data = cacheService.getCache("PriceExtendCode" + qrid);
             if (data == null || !data.get("date").equals(date) || !data.get("indexTime").equals(indexTime)) {
@@ -321,8 +322,8 @@ public class CodeService extends ResponseApi {
 
     ResponseEntity<?> cancleCode(String qrid, HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = staffDataToken.get("uid");
+            Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = staffDataToken.getUid();
 
             qrid = qrid.trim();
             if (qrid.equals("")) {

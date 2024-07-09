@@ -17,8 +17,10 @@ import org.springframework.web.servlet.ModelAndView;
 import util.Cookies;
 import util.Genarate;
 import response.ResponseApi;
+import util.Json;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class TokenStaff extends ResponseApi implements HandlerInterceptor {
@@ -46,20 +48,20 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor {
             error = true;
         }
 
-        Map<String, String> staffDataToken = null;
-
+        Staff staffDataToken = new Staff();
         if (!error) {
             JWT<Staff> jwt = new JWT<>();
             Claims dataToken = jwt.decodeJWT(token);
             if (dataToken == null) {
                 error = true;
             } else {
+                Json<Staff> json = new Json<>();
                 //  lấy dữ liệu token
-                staffDataToken = Genarate.getMapFromJson(dataToken.getSubject());
+                staffDataToken = json.jsonParse(dataToken.getSubject(), Staff.class);
             }
         }
 
-        if (error) {
+        if (error || staffDataToken == null) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Invalid token"), HttpStatus.BAD_REQUEST);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -72,7 +74,7 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor {
 
         StaffRepository staffService = new StaffRepository();
         /*get info staff from DB*/
-        Staff staffInfo = staffService.getOneStaffByEmail(staffDataToken.get("email"));
+        Staff staffInfo = staffService.getOneStaffByEmail(staffDataToken.getEmail());
 
         // kiểm tra tài khoản bị block
         if (staffInfo.getBlock() == 1) {
@@ -87,7 +89,7 @@ public class TokenStaff extends ResponseApi implements HandlerInterceptor {
         }
 
         // kiểm tra phiên đăng nhập của tk
-        if (staffInfo.getLastLogin() != Long.parseLong(staffDataToken.get("lastLogin"))) {
+        if (!Objects.equals(staffInfo.getLastLogin(), staffDataToken.getLastLogin())) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Login session ended"), HttpStatus.BAD_REQUEST);
 
             ObjectMapper objectMapper = new ObjectMapper();
