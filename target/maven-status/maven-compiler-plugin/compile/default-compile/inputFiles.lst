@@ -21,6 +21,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\Confi
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\mailer\Render.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\tpbank\TPBankUtil.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\ForgetPassword.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\redis\Redis.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\dto\UpdateStaffDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\ChangePasswordDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\Util.java
@@ -52,6 +53,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\dto\CreateStaffDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseSuccess.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\CodeController.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigRedis.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\dto\ApproveDto.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigDB.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\RegisterDto.java
@@ -74,11 +76,13 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\custom
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\middleware\TokenStaff.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cache\CacheController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\customer\dto\ChangeEmailDto.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\redis\RedisController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\tpbank\TPBankService.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\AutomaticParkingApplication.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\customer\CashCustomerController.java
 E:\code\SPRING\automatic-parking\src\main\java\util\Timestamp.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\staff\QrShopForStaffService.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\redis\RedisService.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\staff\CashStaffRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\StaffController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\staff\QrShopForStaffController.java
