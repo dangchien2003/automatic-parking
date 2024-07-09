@@ -77,11 +77,10 @@ public class TPBankService extends ResponseApi {
         }
 
         token = dataLogin.get("access_token").toString();
-
+        runed = true;
         try {
             asyncExecutor.execute(() -> {
                 try {
-                    runed = true;
                     int count = 0;
                     while (runed) {
                         List<Cash> cashNotApproves = cashStaffRepository.getAllCashNotApprove();
