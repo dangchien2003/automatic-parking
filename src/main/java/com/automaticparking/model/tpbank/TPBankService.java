@@ -110,7 +110,6 @@ public class TPBankService extends ResponseApi {
                             Thread.sleep(time);
                         } catch (InterruptedException e) {
                             System.out.println("loi sleep");
-                            break;
                         }
                         ++count;
                         if (count >= pointLoadToken) {
