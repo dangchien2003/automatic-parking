@@ -82,16 +82,20 @@ public class TPBankService extends ResponseApi {
             asyncExecutor.execute(() -> {
                 try {
                     int count = 0;
+                    List<Cash> cashNotApproves;
+                    Map<String, String> dataDate;
+                    List<Map<String, Object>> historys;
+                    Long[] listIdCashBanked;
                     while (runed) {
-                        List<Cash> cashNotApproves = cashStaffRepository.getAllCashNotApprove();
+                        cashNotApproves = cashStaffRepository.getAllCashNotApprove();
 
                         if (cashNotApproves == null) {
                             throw new Exception("Error get cash");
                         }
 
-                        Map<String, String> dataDate = tpBankUtil.getDataDate(cashNotApproves);
-                        List<Map<String, Object>> historys = getHistory(tpBank, dataDate);
-                        Long[] listIdCashBanked = getCashApprove(cashNotApproves, historys);
+                        dataDate = tpBankUtil.getDataDate(cashNotApproves);
+                        historys = getHistory(tpBank, dataDate);
+                        listIdCashBanked = getCashApprove(cashNotApproves, historys);
                         if (listIdCashBanked.length > 0) {
                             long now = Genarate.getTimeStamp();
                             int updated = cashStaffRepository.approveListCash(listIdCashBanked, now, staff);
