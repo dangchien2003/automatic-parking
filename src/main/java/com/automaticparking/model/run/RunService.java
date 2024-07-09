@@ -26,8 +26,8 @@ public class RunService extends ResponseApi {
         System.out.println("starting");
         running = true;
         asyncExecutor.execute(() -> {
+            RestTemplate restTemplate = new RestTemplate();
             while (running) {
-                RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getForEntity("https://automatic-parking.onrender.com/start/hello", String.class);
                 restTemplate.getForEntity("https://doc-bien-so.onrender.com", String.class);
                 restTemplate.getForEntity("https://bot-app-3wke.onrender.com/bot/hello.html", String.class);
