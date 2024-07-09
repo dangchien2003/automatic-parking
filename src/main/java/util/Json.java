@@ -1,9 +1,12 @@
 package util;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Json<T> {
+    ObjectMapper objectMapper = new ObjectMapper();
+
     public String convertToJson(T data) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             String jsonString = objectMapper.writeValueAsString(data);
             return jsonString;
         } catch (Exception e) {
@@ -11,4 +14,9 @@ public class Json<T> {
             return null;
         }
     }
+
+    public T jsonParse(String json, Class<T> type) throws Exception {
+        return objectMapper.readValue(json, type);
+    }
+
 }
