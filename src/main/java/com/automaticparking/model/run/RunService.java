@@ -38,7 +38,6 @@ public class RunService extends ResponseApi {
                     Thread.sleep(time);
                 } catch (InterruptedException e) {
                     System.out.println("loi sleep");
-                    break;
                 }
             }
         });
