@@ -44,7 +44,7 @@ public class StaffController {
 
     @PatchMapping("lock/{sid}")
     ResponseEntity<?> lockStaff(@PathVariable String sid, HttpServletRequest request) {
-        return lockStaff(sid, request);
+        return staffService.lockStaff(sid, request);
     }
 
     @PatchMapping("unlock/{sid}")

@@ -164,7 +164,7 @@ public class StaffService extends ResponseApi {
 
     ResponseEntity<?> lockStaff(String sid, HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+            Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
 
             if (sid.length() < 20) {
                 return badRequestApi("sid", "Sid is not long enough");
@@ -176,7 +176,7 @@ public class StaffService extends ResponseApi {
                 return Error(HttpStatus.NOT_FOUND, "Sid not exist");
             }
 
-            if (staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
+            if (staff.getSid().equals(staffDataToken.getSid()) || staff.getAdmin() == 1) {
                 return Error(HttpStatus.BAD_REQUEST, "Not block your self");
             }
 
@@ -207,7 +207,7 @@ public class StaffService extends ResponseApi {
 
     ResponseEntity<?> unLockStaff(String sid, HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
+            Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
 
             if (sid.length() < 20) {
                 return badRequestApi("sid", "Sid is not long enough");
@@ -221,7 +221,7 @@ public class StaffService extends ResponseApi {
                 }
             }
 
-            if (staff.getSid().equals(staffDataToken.get("sid")) || staff.getAdmin() == 1) {
+            if (staff.getSid().equals(staffDataToken.getSid()) || staff.getAdmin() == 1) {
                 return Error(HttpStatus.BAD_REQUEST, "Cannot unlock your self");
             }
 
@@ -260,8 +260,8 @@ public class StaffService extends ResponseApi {
                 return badRequestApi("password", "Old password and new password cannot be the same");
             }
 
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
-            String sid = staffDataToken.get("sid");
+            Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
+            String sid = staffDataToken.getSid();
             Staff staff = staffRepository.getOneStaffBySid(sid);
             Hash hash = new Hash();
             if (!hash.compareHash(changePassword.oldPassword, staff.getPassword())) {

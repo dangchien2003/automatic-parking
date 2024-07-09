@@ -18,18 +18,17 @@ import org.springframework.web.servlet.ModelAndView;
 import util.Cookies;
 import util.Genarate;
 import response.ResponseApi;
+import util.Json;
 
 import java.util.Map;
 
 @Component
 public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
     private CustomerService customerService;
-    private CustomerRepository customerRepository;
 
     @Autowired
     public TokenCustomer(CustomerService customerService, CustomerRepository customerRepository) {
         this.customerService = customerService;
-        this.customerRepository = customerRepository;
     }
 
     @Override
@@ -57,7 +56,7 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
             error = true;
         }
 
-        Map<String, String> customerDataToken = null;
+        Customer customerDataToken = null;
 
         if (!error) {
             JWT<Customer> jwt = new JWT<>();
@@ -65,8 +64,9 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
             if (dataToken == null) {
                 error = true;
             } else {
+                Json<Customer> json = new Json<>();
                 //  lấy dữ liệu token
-                customerDataToken = Genarate.getMapFromJson(dataToken.getSubject());
+                customerDataToken = json.jsonParse(dataToken.getSubject(), Customer.class);
             }
         }
 
@@ -81,7 +81,7 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
             return false; // endpoint
         }
 
-        String uid = customerDataToken.get("uid");
+        String uid = customerDataToken.getUid();
         Customer customerInfo = customerService.getCustomer(uid);
         // kiểm tra tài khoản bị block
         if (customerInfo.getBlock() == 1) {
@@ -92,11 +92,11 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
             response.setContentType("application/json");
             response.getWriter().write(jsonResponse);
             response.setStatus(errorResponse.getStatusCodeValue());
-            return false; // endpoint
+            return false;
         }
 
         // kiểm tra phiên đăng nhập của tk
-        if (customerInfo.getLastLogin() != Long.parseLong(customerDataToken.get("lastLogin"))) {
+        if (!customerInfo.getLastLogin().equals(customerDataToken.getLastLogin())) {
             ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Login session ended"), HttpStatus.BAD_REQUEST);
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -104,7 +104,7 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
             response.setContentType("application/json");
             response.getWriter().write(jsonResponse);
             response.setStatus(errorResponse.getStatusCodeValue());
-            return false; // endpoint
+            return false;
         }
 
         request.setAttribute("customerDataToken", customerDataToken);

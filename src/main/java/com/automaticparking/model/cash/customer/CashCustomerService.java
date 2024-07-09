@@ -3,6 +3,7 @@ package com.automaticparking.model.cash.customer;
 import com.automaticparking.model.cache.CacheService;
 import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.cash.customer.dto.InputMoneyDto;
+import com.automaticparking.model.customer.Customer;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,9 @@ public class CashCustomerService extends ResponseApi {
 
     ResponseEntity<?> inputMoney(InputMoneyDto inputMoney, HttpServletRequest request) {
         try {
-            Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
 
-            String uid = staffDataToken.get("uid");
+            String uid = staffDataToken.getUid();
             Cash cash = new Cash();
             cash.setUid(uid);
             cash.setMoney(inputMoney.getMoney());
@@ -56,9 +57,9 @@ public class CashCustomerService extends ResponseApi {
 
     ResponseEntity<?> allMyHistory(HttpServletRequest request) {
         try {
-            Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
 
-            String uid = customerDataToken.get("uid");
+            String uid = customerDataToken.getUid();
 
             List<Cash> history = cashCustomerRepository.getALlMyHistory(uid);
 
@@ -78,8 +79,8 @@ public class CashCustomerService extends ResponseApi {
 
     ResponseEntity<?> getMyRemaining(HttpServletRequest request) {
         try {
-            Map<String, String> customerDataToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = customerDataToken.get("uid");
+            Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = customerDataToken.getUid();
 
             String keyCache = "remaining_" + uid;
             Integer remaining = cacheService.getCache(keyCache);

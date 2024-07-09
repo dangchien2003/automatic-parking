@@ -1,5 +1,6 @@
 package com.automaticparking.middleware;
 
+import com.automaticparking.model.staff.Staff;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,12 +15,12 @@ import response.ResponseApi;
 import java.util.Map;
 
 @Component
-public class Admin extends ResponseApi implements HandlerInterceptor  {
+public class Admin extends ResponseApi implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        Map<String, String> staffDataToken = (Map<String, String>) request.getAttribute("staffDataToken");
-        if(staffDataToken.get("admin").equals("1")) {
+        Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
+        if (staffDataToken.getAdmin() == 1) {
             return true;
         }
         ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(Error(HttpStatus.UNAUTHORIZED, "Not have access"), HttpStatus.UNAUTHORIZED);
@@ -35,9 +36,11 @@ public class Admin extends ResponseApi implements HandlerInterceptor  {
     @Override
     public void postHandle(
             HttpServletRequest request, HttpServletResponse response, Object handler,
-            ModelAndView modelAndView) throws Exception {}
+            ModelAndView modelAndView) throws Exception {
+    }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-                                Object handler, Exception exception) throws Exception {}
+                                Object handler, Exception exception) throws Exception {
+    }
 }

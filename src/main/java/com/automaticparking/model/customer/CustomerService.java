@@ -200,9 +200,9 @@ public class CustomerService extends ResponseApi {
 
     ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
         try {
-            Map<String, String> data = (Map<String, String>) request.getAttribute("customerDataToken");
+            Customer data = (Customer) request.getAttribute("customerDataToken");
 
-            JWT<Map<String, String>> jwt = new JWT<>();
+            JWT<Customer> jwt = new JWT<>();
             String newToken = jwt.createJWT(data, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
 
             // set cookie
@@ -347,8 +347,8 @@ public class CustomerService extends ResponseApi {
 
     ResponseEntity<?> getMyinfo(HttpServletRequest request) {
         try {
-            Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            ResponseSuccess<Map<String, String>> responseSuccess = new ResponseSuccess<>();
+            Customer customerToken = (Customer) request.getAttribute("customerDataToken");
+            ResponseSuccess<Customer> responseSuccess = new ResponseSuccess<>();
             responseSuccess.data = customerToken;
             return ResponseEntity.ok().body(responseSuccess);
         } catch (Exception e) {
@@ -360,8 +360,8 @@ public class CustomerService extends ResponseApi {
     ResponseEntity<?> changePassword(ChangePasswordDto dataPassword, HttpServletRequest request, HttpServletResponse response) {
 
         try {
-            Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
-            String uid = customerToken.get("uid");
+            Customer customerToken = (Customer) request.getAttribute("customerDataToken");
+            String uid = customerToken.getUid();
 
             if (dataPassword.getNewPassword().equals(dataPassword.getOldPassword())) {
                 return badRequestApi("Password must not same");
@@ -420,12 +420,12 @@ public class CustomerService extends ResponseApi {
 
     ResponseEntity<?> changeEmail(HttpServletRequest request, ChangeEmailDto dataChange) {
         try {
-            Map<String, String> customerToken = (Map<String, String>) request.getAttribute("customerDataToken");
+            Customer customerToken = (Customer) request.getAttribute("customerDataToken");
 
             // lower email
             dataChange.newEmail = dataChange.newEmail.trim().toLowerCase(Locale.ROOT);
-            String oldEmail = customerToken.get("email").trim().toLowerCase(Locale.ROOT);
-            String lastLogin = customerToken.get("lastLogin");
+            String oldEmail = customerToken.getEmail().trim().toLowerCase(Locale.ROOT);
+            Long lastLogin = customerToken.getLastLogin();
 
             // check same email
             if (oldEmail.equals(dataChange.newEmail)) {
@@ -440,12 +440,11 @@ public class CustomerService extends ResponseApi {
 
 
             Map<String, String> payload = new HashMap<>();
-            String uid = customerToken.get("uid");
+            String uid = customerToken.getUid();
             payload.put("uid", uid);
             payload.put("oldEmail", oldEmail);
-            payload.put("lastLogin", lastLogin);
+            payload.put("lastLogin", lastLogin.toString());
             payload.put("newEmail", dataChange.newEmail);
-
             // token
             JWT<Map<String, String>> jwt = new JWT<>();
             String tokenChange = jwt.createJWT(payload, 60 * 10);
