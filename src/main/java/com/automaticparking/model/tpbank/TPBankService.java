@@ -40,6 +40,20 @@ public class TPBankService extends ResponseApi {
         this.time = Long.parseLong(dotenv.get("TP_TIMERELOAD")) * 60 * 1000;
     }
 
+    ResponseEntity<?> stopTpbank(String author) {
+        if (!author.equals("admin")) {
+            return badRequestApi("error");
+        }
+        if (!runed) {
+            return badRequestApi("Not running automatically yet");
+        }
+
+        runed = false;
+
+        ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
+        return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+    }
+
     ResponseEntity<?> autoTpbank(String author) {
         if (!author.equals("admin")) {
             return badRequestApi("error");
@@ -69,7 +83,7 @@ public class TPBankService extends ResponseApi {
                 try {
                     runed = true;
                     int count = 0;
-                    while (true) {
+                    while (runed) {
                         List<Cash> cashNotApproves = cashStaffRepository.getAllCashNotApprove();
 
                         if (cashNotApproves == null) {

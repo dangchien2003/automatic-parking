@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import response.ResponseApi;
 
 @Controller
-@RequestMapping("run")
+@RequestMapping("load")
 public class RunController extends ResponseApi {
     private RunService runService;
 
@@ -17,8 +17,13 @@ public class RunController extends ResponseApi {
         this.runService = runService;
     }
 
-    @GetMapping("")
+    @GetMapping("run")
     ResponseEntity<?> run() {
         return runService.run();
+    }
+
+    @GetMapping("stop")
+    ResponseEntity<?> stop() {
+        return runService.stop();
     }
 }
