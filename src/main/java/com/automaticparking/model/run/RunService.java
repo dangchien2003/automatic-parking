@@ -5,59 +5,33 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import response.ResponseApi;
 
-import java.io.*;
 import java.util.concurrent.Executor;
 
 @Service
-public class RunService {
+public class RunService extends ResponseApi {
     private Executor asyncExecutor;
+    private boolean running = false;
 
     @Autowired
     public RunService(Executor asyncExecutor) {
         this.asyncExecutor = asyncExecutor;
     }
-    
+
     public ResponseEntity<?> run() {
-
-        File file = new File("run.txt");
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
-
-        try {
-            // Kiểm tra nếu file không tồn tại hoặc file trống
-            if (!file.exists() || file.length() == 0) {
-                writer = new BufferedWriter(new FileWriter(file));
-                writer.write("running");
-                System.out.println("starting...");
-            } else {
-                System.out.println("runed");
-                ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
-                responseSuccess.data = "runed";
-                return ResponseEntity.ok().body(responseSuccess);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (reader != null) reader.close();
-                if (writer != null) writer.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
-                responseSuccess.data = ex.getMessage();
-                return ResponseEntity.ok().body(responseSuccess);
-            }
+        if (running == true) {
+            return badRequestApi("runed");
         }
-
+        System.out.println("starting");
+        running = true;
         asyncExecutor.execute(() -> {
-            while (true) {
+            while (running) {
                 RestTemplate restTemplate = new RestTemplate();
-                ResponseEntity<String> response = null;
-                response = restTemplate.getForEntity("https://automatic-parking.onrender.com/start/hello", String.class);
-                response = restTemplate.getForEntity("https://doc-bien-so.onrender.com", String.class);
-                response = restTemplate.getForEntity("https://bot-app-3wke.onrender.com/bot/hello.html", String.class);
-                response = restTemplate.getForEntity("https://fe-parking.onrender.com/helloworld", String.class);
+                restTemplate.getForEntity("https://automatic-parking.onrender.com/start/hello", String.class);
+                restTemplate.getForEntity("https://doc-bien-so.onrender.com", String.class);
+                restTemplate.getForEntity("https://bot-app-3wke.onrender.com/bot/hello.html", String.class);
+                restTemplate.getForEntity("https://fe-parking.onrender.com/helloworld", String.class);
                 System.out.println("done");
                 long time = 120000;
                 try {
@@ -70,6 +44,17 @@ public class RunService {
         });
         ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
         responseSuccess.data = "ok";
+        return ResponseEntity.ok().body(responseSuccess);
+    }
+
+    public ResponseEntity<?> stop() {
+        if (running == false) {
+            return badRequestApi("not run yet");
+        }
+
+        running = false;
+        ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
+        responseSuccess.data = "stop ok";
         return ResponseEntity.ok().body(responseSuccess);
     }
 }

@@ -22,4 +22,9 @@ public class TPBankController {
     ResponseEntity<?> autoApprove(@RequestParam(name = "author", required = true) String author) {
         return tpBankService.autoTpbank(author);
     }
+
+    @GetMapping("stop")
+    ResponseEntity<?> stopAuto(@RequestParam(name = "author", required = true) String author) {
+        return tpBankService.stopTpbank(author);
+    }
 }
