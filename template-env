@@ -3,10 +3,10 @@ SPRING_PROFILES_ACTIVE=
 
 # host
 # HOST_FE=https://child1.feparking.com:3000
-HOST_FE=https://fe-parking.onrender.com
+HOST_FE=https://fe-parking-u1g6.onrender.com
 
 # HOST_READ_PLATE =http://localhost:5000
-HOST_READ_PLATE =https://doc-bien-so.onrender.com
+HOST_READ_PLATE =https://read-plate-parking.onrender.com
 
 # SQL
 DB_HOST=parking-chienboy03-5a1d.g.aivencloud.com
