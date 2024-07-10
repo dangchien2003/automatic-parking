@@ -15,7 +15,10 @@ public class ConfigCORS implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://fe-parking.vercel.app", "https://fe-parking-zcc6rh1xd-dangchien2003s-projects.vercel.app", "https://localhost:3000", "http://localhost:3000", "https://localhost:3001", "http://localhost:3001", "https://fe-parking.onrender.com", "https://feparking.com:3000", "http://feparking.com:3000", "https://child1.feparking.com:3000", "http://child1.feparking.com:3000", "https://bot-app-3wke.onrender.com")
+                .allowedOrigins("https://localhost:3000")
+                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins("https://fe-parking-u1g6.onrender.com")
+                .allowedOrigins("https://bot-parking.onrender.com")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true)
