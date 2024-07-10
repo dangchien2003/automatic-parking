@@ -15,10 +15,7 @@ public class ConfigCORS implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://localhost:3000")
-                .allowedOrigins("http://localhost:3000")
-                .allowedOrigins("https://fe-parking-u1g6.onrender.com")
-                .allowedOrigins("https://bot-parking.onrender.com")
+                .allowedOrigins("https://bot-parking.onrender.com", "https://fe-parking-u1g6.onrender.com", "https://localhost:3000", "http://localhost:3000")
                 .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true)
