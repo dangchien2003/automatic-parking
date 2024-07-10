@@ -28,16 +28,22 @@ public class RunService extends ResponseApi {
         asyncExecutor.execute(() -> {
             RestTemplate restTemplate = new RestTemplate();
             while (running) {
-                restTemplate.getForEntity("https://automatic-parking-x4o1.onrender.com/start/hello", String.class);
-                restTemplate.getForEntity("https://read-plate-parking.onrender.com", String.class);
-                restTemplate.getForEntity("https://bot-parking.onrender.com/bot/hello.html", String.class);
-                restTemplate.getForEntity("https://bot-parking.onrender.com/helloworld", String.class);
-                System.out.println("done");
-                long time = 120000;
                 try {
-                    Thread.sleep(time);
-                } catch (InterruptedException e) {
-                    System.out.println("loi sleep");
+                    restTemplate.getForEntity("https://automatic-parking-x4o1.onrender.com/start/hello", String.class);
+                    restTemplate.getForEntity("https://read-plate-parking.onrender.com", String.class);
+                    restTemplate.getForEntity("https://bot-parking.onrender.com/bot/hello.html", String.class);
+                    restTemplate.getForEntity("https://bot-parking.onrender.com/helloworld", String.class);
+                    System.out.println("done");
+                    long time = 120000;
+                    try {
+                        Thread.sleep(time);
+                    } catch (InterruptedException e) {
+                        System.out.println("loi sleep");
+                    }
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    running = false;
+                    break;
                 }
             }
         });
