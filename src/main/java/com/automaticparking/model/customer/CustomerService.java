@@ -62,6 +62,9 @@ public class CustomerService extends ResponseApi {
             if (customer.getAcceptAt() != null) {
                 throw new BadRequestException("Email already exist");
             }
+
+            customer.setPassword(hash.hash((registerDto.password)));
+            customerRepository.updateCustomer(customer);
         } else {
             customer = new Customer(Util.genarateUid(), registerDto.email, hash.hash(registerDto.password), now, now, 0);
             customerRepository.saveCustomer(customer);
@@ -99,7 +102,7 @@ public class CustomerService extends ResponseApi {
         String token = data.get("token");
 
         // check token
-        if (token.trim() == null) {
+        if (token == null || token.trim() == null) {
             throw new BadRequestException("Token is null");
         }
 
@@ -114,9 +117,9 @@ public class CustomerService extends ResponseApi {
 
         // get map payload
         Map<String, String> payload = Genarate.getMapFromJson(dataToken.getSubject());
-        String uid = payload.get("uid");
+        String email = payload.get("email");
 
-        Customer customer = getCustomer(uid);
+        Customer customer = getCustomer(email);
 
         // check customer
         if (customer == null) {
