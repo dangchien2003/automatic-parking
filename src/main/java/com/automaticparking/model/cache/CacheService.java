@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import response.ResponseApi;
 
 @Service
-public class CacheService extends ResponseApi {
+public class CacheService {
     private Cache<String, Object> cache;
 
     @Autowired
@@ -22,58 +22,32 @@ public class CacheService extends ResponseApi {
         this.cache = cache;
     }
 
-    ResponseEntity<?> set() {
-        try {
-            Staff staff = new Staff();
-            staff.setAdmin(5);
-            Boolean set = setCache("staff", staff);
-            if (!set) {
-                throw new Exception("Lỗi set cache");
-            }
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-            response.data = staff;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return internalServerError(e.getMessage());
+    ResponseSuccess set() throws Exception {
+        Staff staff = new Staff();
+        staff.setAdmin(5);
+        Boolean set = setCache("staff", staff);
+        if (!set) {
+            throw new Exception("Lỗi set cache");
         }
+        return new ResponseSuccess(staff);
     }
 
-    ResponseEntity<?> set1() {
-        try {
-            Staff staff = new Staff();
-            staff.setAdmin(2);
-            Boolean set = setCache("staff", staff);
-            if (!set) {
-                throw new Exception("Lỗi set cache");
-            }
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-            response.data = staff;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return internalServerError(e.getMessage());
+    ResponseSuccess set1() throws Exception {
+        Staff staff = new Staff();
+        staff.setAdmin(2);
+        Boolean set = setCache("staff", staff);
+        if (!set) {
+            throw new Exception("Lỗi set cache");
         }
+        return new ResponseSuccess(staff);
     }
 
-    ResponseEntity<?> get() {
-        try {
-            Staff staff = getCache("staff");
-            ResponseSuccess<Staff> response = new ResponseSuccess<>();
-            response.data = staff;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+    ResponseSuccess get() throws Exception {
+        return new ResponseSuccess(getCache("staff"));
     }
 
-    ResponseEntity<?> count() {
-        try {
-            Long count = countCache();
-            ResponseSuccess<Long> response = new ResponseSuccess<>();
-            response.data = count;
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+    ResponseSuccess count() throws Exception {
+        return new ResponseSuccess(countCache());
     }
 
 

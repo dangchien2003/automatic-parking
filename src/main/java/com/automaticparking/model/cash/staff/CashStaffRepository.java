@@ -11,12 +11,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import util.hibernateUtil;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
 @Repository
 public class CashStaffRepository {
-    public List<Cash> getAllCashNotApprove() {
+    public List<Cash> getAllCashNotApprove() throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -29,13 +30,13 @@ public class CashStaffRepository {
             return cashs;
         } catch (Exception e) {
             tr.rollback();
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
     }
 
-    public Integer approveListCash(Long[] listId, Long approveAt, String personApprove) {
+    public Integer approveListCash(Long[] listId, Long approveAt, String personApprove) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -56,7 +57,7 @@ public class CashStaffRepository {
             return rowsAffected;
         } catch (Exception e) {
             tr.rollback();
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }

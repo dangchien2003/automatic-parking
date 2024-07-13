@@ -9,30 +9,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import response.ResponseApi;
 
+import java.sql.SQLException;
+
 @Service
 public class QrShopForStaffService extends ResponseApi {
 
     private final QrShopRepository qrShopRepository = new QrShopRepository();
 
-    ResponseEntity<?> createQrCategory(CreateQrCategoryDto createData) {
-        try {
-            QrShop qr = new QrShop();
-            qr.setQrCategory(createData.qrCategory);
-            qr.setPrice(createData.price);
-            qr.setMaxAge(createData.maxAge);
-            qr.setHide(0);
-
-            Boolean created = qrShopRepository.saveQrCategory(qr);
-
-            if (!created) {
-                throw new Exception("Error save qr");
-            }
-
-            ResponseSuccess<QrShop> responseSuccess = new ResponseSuccess<>();
-            responseSuccess.data = qr;
-            return ResponseEntity.status(HttpStatus.CREATED).body(responseSuccess);
-        } catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
+    ResponseSuccess createQrCategory(CreateQrCategoryDto createData) throws SQLException {
+        QrShop qr = new QrShop(createData.qrCategory, createData.price, createData.maxAge, 0);
+        qrShopRepository.saveQrCategory(qr);
+        return new ResponseSuccess(qr);
     }
 }

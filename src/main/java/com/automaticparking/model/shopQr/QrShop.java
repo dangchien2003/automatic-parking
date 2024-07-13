@@ -23,6 +23,13 @@ public class QrShop {
     public QrShop() {
     }
 
+    public QrShop(String qrCategory, Integer price, Long maxAge, Integer hide) {
+        this.qrCategory = qrCategory;
+        this.price = price;
+        this.maxAge = maxAge;
+        this.hide = hide;
+    }
+
     public Integer getHide() {
         return hide;
     }

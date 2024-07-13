@@ -27,7 +27,7 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
     private CustomerService customerService;
 
     @Autowired
-    public TokenCustomer(CustomerService customerService, CustomerRepository customerRepository) {
+    public TokenCustomer(CustomerService customerService) {
         this.customerService = customerService;
     }
 

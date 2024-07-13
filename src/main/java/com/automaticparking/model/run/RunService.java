@@ -1,6 +1,7 @@
 package com.automaticparking.model.run;
 
 import com.automaticparking.types.ResponseSuccess;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,9 @@ public class RunService extends ResponseApi {
         this.asyncExecutor = asyncExecutor;
     }
 
-    public ResponseEntity<?> run() {
+    public ResponseSuccess run() throws BadRequestException {
         if (running == true) {
-            return badRequestApi("runed");
+            throw new BadRequestException("runed");
         }
         System.out.println("starting");
         running = true;
@@ -47,19 +48,15 @@ public class RunService extends ResponseApi {
                 }
             }
         });
-        ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
-        responseSuccess.data = "ok";
-        return ResponseEntity.ok().body(responseSuccess);
+        return new ResponseSuccess("loading");
     }
 
-    public ResponseEntity<?> stop() {
+    public ResponseSuccess stop() throws BadRequestException {
         if (running == false) {
-            return badRequestApi("not run yet");
+            throw new BadRequestException("not run yet");
         }
 
         running = false;
-        ResponseSuccess<String> responseSuccess = new ResponseSuccess<>();
-        responseSuccess.data = "stop ok";
-        return ResponseEntity.ok().body(responseSuccess);
+        return new ResponseSuccess("stop load ok");
     }
 }

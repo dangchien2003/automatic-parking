@@ -5,6 +5,7 @@ import com.automaticparking.model.cash.staff.CashStaffRepository;
 import com.automaticparking.types.ResponseSuccess;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import response.ResponseApi;
 import util.Genarate;
 
+import javax.security.sasl.AuthenticationException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -40,95 +42,86 @@ public class TPBankService extends ResponseApi {
         this.time = Long.parseLong(dotenv.get("TP_TIMERELOAD")) * 60 * 1000;
     }
 
-    ResponseEntity<?> stopTpbank(String author) {
+    ResponseSuccess stopTpbank(String author) throws AuthenticationException, BadRequestException {
         if (!author.equals("admin")) {
-            return badRequestApi("error");
+            throw new AuthenticationException("Not have access");
         }
         if (!runed) {
-            return badRequestApi("Not running automatically yet");
+            throw new BadRequestException("Not running automatically yet");
         }
-
         runed = false;
-
-        ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
-        return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
+        return new ResponseSuccess();
     }
 
-    ResponseEntity<?> autoTpbank(String author) {
+    ResponseSuccess autoTpbank(String author) throws AuthenticationException, BadRequestException {
         if (!author.equals("admin")) {
-            return badRequestApi("error");
+            throw new AuthenticationException("Not have access");
         }
         if (runed) {
-            return badRequestApi("runed");
+            throw new BadRequestException("runed");
         }
 
         tpBank = tpBank.getInfoAccount();
         if (tpBank == null) {
-            return badRequestApi("Error get info account TPBank");
+            throw new BadRequestException("Error get info account TPBank");
         }
 
         int pointLoadToken = tpBankUtil.getPointReload();
         if (pointLoadToken <= 0) {
-            return badRequestApi("Error get point reload");
+            throw new BadRequestException("Error get point reload");
         }
         Map<String, Object> dataLogin = login(tpBank);
         if (dataLogin == null) {
-            return badRequestApi("Error login");
+            throw new BadRequestException("Error login");
         }
 
         token = dataLogin.get("access_token").toString();
         runed = true;
-        try {
-            asyncExecutor.execute(() -> {
-                try {
-                    int count = 0;
-                    List<Cash> cashNotApproves;
-                    Map<String, String> dataDate;
-                    List<Map<String, Object>> historys;
-                    Long[] listIdCashBanked;
-                    while (runed) {
-                        cashNotApproves = cashStaffRepository.getAllCashNotApprove();
+        asyncExecutor.execute(() -> {
+            try {
+                int count = 0;
+                List<Cash> cashNotApproves;
+                Map<String, String> dataDate;
+                List<Map<String, Object>> historys;
+                Long[] listIdCashBanked;
+                while (runed) {
+                    cashNotApproves = cashStaffRepository.getAllCashNotApprove();
 
-                        if (cashNotApproves == null) {
-                            throw new Exception("Error get cash");
-                        }
+                    if (cashNotApproves == null) {
+                        throw new Exception("Error get cash");
+                    }
 
-                        dataDate = tpBankUtil.getDataDate(cashNotApproves);
-                        historys = getHistory(tpBank, dataDate);
-                        listIdCashBanked = getCashApprove(cashNotApproves, historys);
-                        if (listIdCashBanked.length > 0) {
-                            long now = Genarate.getTimeStamp();
-                            int updated = cashStaffRepository.approveListCash(listIdCashBanked, now, staff);
-                            if (updated != listIdCashBanked.length) {
-                                System.out.println(String.format("Error update %d/%d", updated, listIdCashBanked.length));
-                            } else {
-                                System.out.println(String.format("Success update %d", updated));
-                            }
-                        }
-                        System.out.println("done scan");
-                        try {
-                            Thread.sleep(time);
-                        } catch (InterruptedException e) {
-                            System.out.println("loi sleep");
-                        }
-                        ++count;
-                        if (count >= pointLoadToken) {
-                            token = login(tpBank).get("access_token").toString();
-                            count = 1;
+                    dataDate = tpBankUtil.getDataDate(cashNotApproves);
+                    historys = getHistory(tpBank, dataDate);
+                    listIdCashBanked = getCashApprove(cashNotApproves, historys);
+                    if (listIdCashBanked.length > 0) {
+                        long now = Genarate.getTimeStamp();
+                        int updated = cashStaffRepository.approveListCash(listIdCashBanked, now, staff);
+                        if (updated != listIdCashBanked.length) {
+                            System.out.println(String.format("Error update %d/%d", updated, listIdCashBanked.length));
+                        } else {
+                            System.out.println(String.format("Success update %d", updated));
                         }
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    runed = false;
+                    System.out.println("done scan");
+                    try {
+                        Thread.sleep(time);
+                    } catch (InterruptedException e) {
+                        System.out.println("loi sleep");
+                    }
+                    ++count;
+                    if (count >= pointLoadToken) {
+                        token = login(tpBank).get("access_token").toString();
+                        count = 1;
+                    }
                 }
-            });
+            } catch (Exception e) {
+                e.printStackTrace();
+                runed = false;
+            }
+        });
 
-            ResponseSuccess<?> responseSuccess = new ResponseSuccess<>();
-            return ResponseEntity.status(HttpStatus.OK).body(responseSuccess);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return internalServerError(e.getMessage());
-        }
+        return new ResponseSuccess();
     }
 
     private Long[] getCashApprove(List<Cash> listCash, List<Map<String, Object>> historys) throws Exception {

@@ -4,10 +4,12 @@ import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.shopQr.QrShopRepository;
 import com.automaticparking.types.ResponseSuccess;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import response.ResponseApi;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
@@ -19,15 +21,7 @@ public class QrShopForCustomerService extends ResponseApi {
         this.qrShopRepository = qrShopRepository;
     }
 
-    ResponseEntity<?> getAllCodeOK() {
-        try {
-            List<QrShop> listCodeOk = qrShopRepository.getAllCodeOk();
-            ResponseSuccess<List<QrShop>> responseSuccess = new ResponseSuccess<>();
-            responseSuccess.data = listCodeOk;
-            return ResponseEntity.ok().body(responseSuccess);
-        } catch (Exception e) {
-            return internalServerError(e.getMessage());
-        }
-
+    ResponseSuccess getAllCodeOK() throws SQLException {
+        return new ResponseSuccess(qrShopRepository.getAllCodeOk());
     }
 }

@@ -23,7 +23,7 @@ public class Admin extends ResponseApi implements HandlerInterceptor {
         if (staffDataToken.getAdmin() == 1) {
             return true;
         }
-        ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(Error(HttpStatus.UNAUTHORIZED, "Not have access"), HttpStatus.UNAUTHORIZED);
+        ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(error(HttpStatus.UNAUTHORIZED, "Not have access"), HttpStatus.UNAUTHORIZED);
 
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
