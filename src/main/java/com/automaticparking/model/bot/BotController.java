@@ -1,17 +1,21 @@
 package com.automaticparking.model.bot;
 
 
+import javassist.NotFoundException;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import response.ResponseApi;
 
 @RestController
 @RequestMapping("api/bot")
-public class BotController {
+public class BotController extends ResponseApi {
     private BotService botService;
 
     @Autowired
@@ -24,7 +28,16 @@ public class BotController {
                                      @RequestPart(value = "width", required = false) String width,
                                      @RequestPart(value = "height", required = false) String height,
                                      @RequestPart(value = "qr") String qr) {
-        return botService.checkin(file, width, height, qr);
+        try {
+            return ResponseEntity.ok(botService.checkin(file, width, height, qr));
+        } catch (BadRequestException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (NotFoundException e) {
+            return error(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            return error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+
     }
 
     @PostMapping("checkout")
@@ -32,6 +45,14 @@ public class BotController {
                                       @RequestPart(value = "width", required = false) String width,
                                       @RequestPart(value = "height", required = false) String height,
                                       @RequestPart(value = "qr") String qr) {
-        return botService.checkout(file, width, height, qr);
+        try {
+            return ResponseEntity.ok(botService.checkout(file, width, height, qr));
+        } catch (BadRequestException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (NotFoundException e) {
+            return error(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            return error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
     }
 }

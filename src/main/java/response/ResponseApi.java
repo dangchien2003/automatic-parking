@@ -79,11 +79,15 @@ public class ResponseApi {
         return ResponseEntity.status(status.value()).body(resError(errors));
     }
 
-    protected ResponseEntity<?> Error(HttpStatus status, String message) {
+    protected ResponseEntity<?> error(HttpStatus status, String message) {
         Map<String, String> errors = new HashMap<>();
         errors.put("error", message);
 
         return ResponseEntity.status(status.value()).body(resError(errors));
+    }
+
+    protected ResponseEntity<?> serverError() {
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "Error occurred");
     }
 
     @ExceptionHandler(ResponseException.class)

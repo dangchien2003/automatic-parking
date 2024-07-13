@@ -5,6 +5,8 @@ import encrypt.Hash;
 import util.Genarate;
 import util.CustomRandom;
 
+import java.security.NoSuchAlgorithmException;
+
 
 public class Util {
     public static String genarateSid() {
@@ -21,7 +23,7 @@ public class Util {
         return staff;
     }
 
-    public static Staff setStaff(Staff staff, Integer Admin, String name, String birthday, String email ) {
+    public static Staff setStaff(Staff staff, Integer Admin, String name, String birthday, String email) throws NoSuchAlgorithmException {
         staff.setAdmin(Admin);
         staff.setName(name);
         staff.setBirthday(birthday);

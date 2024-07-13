@@ -9,11 +9,12 @@ import org.springframework.stereotype.Repository;
 import util.hibernateUtil;
 
 import java.math.BigInteger;
+import java.sql.SQLException;
 import java.util.List;
 
 @Repository
 public class StaffRepository {
-    public Boolean createStaff(Staff staff) {
+    public Boolean createStaff(Staff staff) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -22,15 +23,14 @@ public class StaffRepository {
             tr.commit();
         } catch (Exception e) {
             tr.rollback();
-            e.printStackTrace();
-            return false;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
         return true;
     }
 
-    public List<Staff> getAllStaff() {
+    public List<Staff> getAllStaff() throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -44,13 +44,13 @@ public class StaffRepository {
         } catch (Exception e) {
             e.printStackTrace();
             tr.rollback();
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
     }
 
-    public Staff getOneStaffByEmail(String email) {
+    public Staff getOneStaffByEmail(String email) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -64,8 +64,7 @@ public class StaffRepository {
             return staff;
         } catch (Exception e) {
             tr.rollback();
-            e.printStackTrace();
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
@@ -113,7 +112,7 @@ public class StaffRepository {
         }
     }
 
-    public Boolean updateStaff(Staff staff) {
+    public Boolean updateStaff(Staff staff) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -123,7 +122,7 @@ public class StaffRepository {
         } catch (Exception e) {
             tr.rollback();
             e.printStackTrace();
-            return false;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }

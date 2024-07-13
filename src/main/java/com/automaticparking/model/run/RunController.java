@@ -1,6 +1,8 @@
 package com.automaticparking.model.run;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,11 +21,25 @@ public class RunController extends ResponseApi {
 
     @GetMapping("run")
     ResponseEntity<?> run() {
-        return runService.run();
+        try {
+            return ResponseEntity.ok(runService.run());
+        } catch (BadRequestException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return serverError();
+        }
     }
 
     @GetMapping("stop")
     ResponseEntity<?> stop() {
-        return runService.stop();
+        try {
+            return ResponseEntity.ok(runService.stop());
+        } catch (BadRequestException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return serverError();
+        }
     }
 }

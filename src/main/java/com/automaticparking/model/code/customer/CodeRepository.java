@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import util.Genarate;
 import util.hibernateUtil;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -33,7 +34,7 @@ public class CodeRepository {
         }
     }
 
-    public List<Code> allBoughtCode(String uid, Integer limit) {
+    public List<Code> allBoughtCode(String uid, Integer limit) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -47,8 +48,7 @@ public class CodeRepository {
             return boughtCode;
         } catch (Exception e) {
             tr.rollback();
-            e.printStackTrace();
-            return null;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
@@ -74,21 +74,20 @@ public class CodeRepository {
         }
     }
 
-    Boolean saveCode(Code code) {
+    Boolean saveCode(Code code) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
             tr = session.beginTransaction();
             session.save(code);
             tr.commit();
+            return true;
         } catch (Exception e) {
             tr.rollback();
-            e.printStackTrace();
-            return false;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
-        return true;
     }
 
     public Integer getToTalMoneyUsed(List<Code> codes) {
@@ -101,7 +100,7 @@ public class CodeRepository {
         return totalMyCash;
     }
 
-    public Code getInfo(String uid, String qrid) {
+    public Code getInfo(String uid, String qrid) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = session.beginTransaction();
 
@@ -113,8 +112,7 @@ public class CodeRepository {
             Code code = query.uniqueResult();
             return code;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return null;
+            throw new SQLException(e.getMessage());
         } finally {
             tr.commit();
             session.close();
@@ -140,19 +138,19 @@ public class CodeRepository {
         }
     }
 
-    public Boolean updateCode(Code code) {
+    public Boolean updateCode(Code code) throws SQLException {
         Session session = hibernateUtil.openSession();
         try {
             Transaction tr = session.beginTransaction();
             session.update(code);
             tr.commit();
+            return true;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return false;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
-        return true;
+
 
     }
 }

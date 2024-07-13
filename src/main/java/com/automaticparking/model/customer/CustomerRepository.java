@@ -8,9 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import util.hibernateUtil;
 
+import java.sql.SQLException;
+
 @Repository
 public class CustomerRepository {
-    public Boolean saveCustomer(Customer dataCustomer) {
+    public Boolean saveCustomer(Customer dataCustomer) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -19,15 +21,14 @@ public class CustomerRepository {
             tr.commit();
         } catch (Exception e) {
             tr.rollback();
-            System.out.println(e.getMessage());
-            return false;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
         return true;
     }
 
-    public Customer getCustomerByEmail(String email) {
+    public Customer getCustomerByEmail(String email) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -41,13 +42,13 @@ public class CustomerRepository {
             return customer;
         } catch (Exception e) {
             tr.rollback();
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
     }
 
-    public Customer getCustomerByUid(String uid) {
+    public Customer getCustomerByUid(String uid) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -61,13 +62,13 @@ public class CustomerRepository {
             return customer;
         } catch (Exception e) {
             tr.rollback();
-            throw new ResponseException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
     }
 
-    public Boolean updateCustomer(Customer customer) {
+    public Boolean updateCustomer(Customer customer) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -76,8 +77,7 @@ public class CustomerRepository {
             tr.commit();
         } catch (Exception e) {
             tr.rollback();
-            System.out.println(e.getMessage());
-            return false;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }

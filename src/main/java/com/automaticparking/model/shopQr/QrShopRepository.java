@@ -6,11 +6,12 @@ import org.hibernate.query.NativeQuery;
 import org.springframework.stereotype.Service;
 import util.hibernateUtil;
 
+import java.sql.SQLException;
 import java.util.List;
 
 @Service
 public class QrShopRepository {
-    public List<QrShop> getAllCodeOk() {
+    public List<QrShop> getAllCodeOk() throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -23,8 +24,7 @@ public class QrShopRepository {
             return qr;
         } catch (Exception e) {
             tr.rollback();
-            e.printStackTrace();
-            return null;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
@@ -50,7 +50,7 @@ public class QrShopRepository {
         }
     }
 
-    public Boolean saveQrCategory(QrShop qr) {
+    public Boolean saveQrCategory(QrShop qr) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = null;
         try {
@@ -59,8 +59,7 @@ public class QrShopRepository {
             tr.commit();
         } catch (Exception e) {
             tr.rollback();
-            System.out.println(e.getMessage());
-            return false;
+            throw new SQLException(e.getMessage());
         } finally {
             session.close();
         }
