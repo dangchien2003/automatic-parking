@@ -18,10 +18,11 @@ public class CodeRepository {
         Transaction tr = null;
         try {
             tr = session.beginTransaction();
-            String sql = "SELECT * FROM qr WHERE uid = :uid AND (cancleAt = 0 AND expireAt > :now) OR (checkinAt != 0)";
+            String sql = "SELECT * FROM qr WHERE uid = :uid AND ((cancleAt = 0 AND expireAt > :now) OR (checkinAt != 0))";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
-            query.setParameter("now", Genarate.getTimeStamp());
+            long now = Genarate.getTimeStamp();
+            query.setParameter("now", now);
             List<Code> codeUsed = query.list();
             tr.commit();
             return codeUsed;
