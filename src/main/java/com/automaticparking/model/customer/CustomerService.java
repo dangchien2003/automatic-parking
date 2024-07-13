@@ -54,16 +54,18 @@ public class CustomerService extends ResponseApi {
         this.cacheService = cacheService;
     }
 
-    ResponseSuccess createAdmin(RegisterDto registerDto) throws BadRequestException, SQLException, NoSuchAlgorithmException, JsonProcessingException {
+    ResponseSuccess createAccount(RegisterDto registerDto) throws BadRequestException, SQLException, NoSuchAlgorithmException, JsonProcessingException {
         Long now = Genarate.getTimeStamp();
         Hash hash = new Hash();
-
-        if (getCustomer(registerDto.email) != null) {
-            throw new BadRequestException("Email already exist");
+        Customer customer = getCustomer(registerDto.email);
+        if (customer != null) {
+            if (customer.getAcceptAt() != null) {
+                throw new BadRequestException("Email already exist");
+            }
+        } else {
+            customer = new Customer(Util.genarateUid(), registerDto.email, hash.hash(registerDto.password), now, now, 0);
+            customerRepository.saveCustomer(customer);
         }
-        Customer customer = new Customer(Util.genarateUid(), registerDto.email, hash.hash(registerDto.password), now, now, 0);
-
-        customerRepository.saveCustomer(customer);
 
         // set payload
         String token = "";
@@ -129,7 +131,7 @@ public class CustomerService extends ResponseApi {
         customer.setAcceptAt(Genarate.getTimeStamp());
 
         // update
-        Boolean updated = customerRepository.updateCustomer(customer);
+        customerRepository.updateCustomer(customer);
 
         // set cache
         setCustomerToCache(customer, customer.getUid());

@@ -27,9 +27,9 @@ public class CustomerController extends ResponseApi {
     }
 
     @PostMapping("register")
-    ResponseEntity<?> createAdmin(@Valid @RequestBody RegisterDto registerDto) {
+    ResponseEntity<?> createAccount(@Valid @RequestBody RegisterDto registerDto) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(customerService.createAdmin(registerDto));
+            return ResponseEntity.status(HttpStatus.CREATED).body(customerService.createAccount(registerDto));
         } catch (BadRequestException e) {
             return error(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (SQLException e) {
