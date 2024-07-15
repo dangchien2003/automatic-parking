@@ -33,6 +33,8 @@ public class TPBankService extends ResponseApi {
     private String staff = "bot";
     private long time;
 
+    private String dvid = "kpVAPvlf34EVbSUJmzPpjURgxxiX1D7CtVbCS8Pt35SQ0";
+
     @Autowired
     public TPBankService(Dotenv dotenv, TPBankUtil tpBankUtil, CashStaffRepository cashStaffRepository, Executor asyncExecutor) {
         this.dotenv = dotenv;
@@ -141,6 +143,25 @@ public class TPBankService extends ResponseApi {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(apiUrl))
                     .header("Content-Type", "application/json")
+                    .header("USER_NAME", "HYD")
+                    .header("APP_VERSION", "2024.07.12")
+                    .header("Accept", "application/json, text/plain, */*")
+                    .header("Accept-Language", "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5")
+                    .header("Authorization", "Bearer")
+                    .header("DEVICE_ID", dvid)
+                    .header("DEVICE_NAME", "Chrome")
+                    .header("Origin", "https://ebank.tpb.vn")
+                    .header("PLATFORM_NAME", "WEB")
+                    .header("PLATFORM_VERSION", "126")
+                    .header("Referer", "https://ebank.tpb.vn/retail/vX/")
+                    .header("SOURCE_APP", "HYDRO")
+                    .header("Sec-Fetch-Dest", "empty")
+                    .header("Sec-Fetch-Mode", "cors")
+                    .header("Sec-Fetch-Site", "same-origin")
+                    .header("User-Agent", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+                    .header("sec-ch-ua", "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Google Chrome\";v=\"126\"")
+                    .header("sec-ch-ua-mobile", "?0")
+                    .header("sec-ch-ua-platform", "\"Windows\"")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
