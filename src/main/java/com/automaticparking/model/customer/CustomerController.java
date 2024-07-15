@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import response.ResponseApi;
 
 import javax.naming.AuthenticationException;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -67,6 +69,25 @@ public class CustomerController extends ResponseApi {
         } catch (Exception e) {
             e.printStackTrace();
             return serverError();
+        }
+    }
+
+    @PostMapping("login/google")
+    ResponseEntity<?> loginByGoogle(@Valid @RequestBody LoginGooleDto loginGooleDto, HttpServletResponse response) {
+        try {
+            return ResponseEntity.ok(customerService.loginGoogle(loginGooleDto.getGoogleToken(), response));
+        } catch (BadRequestException e) {
+            return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (AuthenticationException e) {
+            return error(HttpStatus.UNAUTHORIZED, e.getMessage());
+        } catch (SQLException e) {
+            return error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return error(HttpStatus.BAD_REQUEST, "Error token");
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+            return error(HttpStatus.BAD_REQUEST, "Error token");
         }
     }
 
@@ -171,4 +192,6 @@ public class CustomerController extends ResponseApi {
             return serverError();
         }
     }
+
+
 }
