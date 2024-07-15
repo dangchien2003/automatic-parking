@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Random;
 import java.util.TimeZone;
 
 public class Genarate {
@@ -32,5 +33,18 @@ public class Genarate {
             data.put(entry.getKey(), entry.getValue());
         }
         return data;
+    }
+
+    public static String randomLetters(Integer length) {
+        java.util.Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            int asciiValue = random.nextInt(26) + 97;
+            char randomChar = (char) asciiValue;
+            sb.append(randomChar);
+        }
+
+        return sb.toString();
     }
 }

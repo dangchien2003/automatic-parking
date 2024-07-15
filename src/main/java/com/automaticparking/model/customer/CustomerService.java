@@ -9,6 +9,8 @@ import com.automaticparking.model.mailer.Render;
 import com.automaticparking.model.staff.Staff;
 import com.automaticparking.types.ResponseSuccess;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import encrypt.Hash;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
@@ -31,6 +33,8 @@ import validation.EmailValid;
 
 
 import javax.naming.AuthenticationException;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -46,12 +50,15 @@ public class CustomerService extends ResponseApi {
 
     private CacheService cacheService;
 
+    private GoogleIdTokenVerifier googleIdTokenVerifier;
+
     @Autowired
-    public CustomerService(MailService mailService, Render mailRender, CustomerRepository customerRepository, CacheService cacheService) {
+    public CustomerService(MailService mailService, Render mailRender, CustomerRepository customerRepository, CacheService cacheService, GoogleIdTokenVerifier googleIdTokenVerifier) {
         this.mailService = mailService;
         this.mailRender = mailRender;
         this.customerRepository = customerRepository;
         this.cacheService = cacheService;
+        this.googleIdTokenVerifier = googleIdTokenVerifier;
     }
 
     ResponseSuccess createAccount(RegisterDto registerDto) throws BadRequestException, SQLException, NoSuchAlgorithmException, JsonProcessingException {
@@ -185,6 +192,58 @@ public class CustomerService extends ResponseApi {
         setCustomerToCache(customer, customer.getUid());
         return new ResponseSuccess(cookies, customer);
     }
+
+    ResponseSuccess loginGoogle(String googleToken, HttpServletResponse response) throws BadRequestException, AuthenticationException, SQLException, IOException, GeneralSecurityException {
+        GoogleIdToken idToken = googleIdTokenVerifier.verify(googleToken);
+        if (idToken == null) {
+            throw new BadRequestException("Invalid token");
+        }
+        GoogleIdToken.Payload payload = idToken.getPayload();
+        String email = payload.getEmail();
+        String pictureUrl = (String) payload.get("picture");
+
+        Customer customer = getCustomer(email);
+        if (customer != null) {
+            if (customer.getAcceptAt() == null) {
+                throw new BadRequestException("Unverified account");
+            }
+
+            if (customer.getBlock() == 1) {
+                throw new AuthenticationException("Account has been locked");
+            }
+        } else {
+            // create not yet
+            Hash hash = new Hash();
+            long now = Genarate.getTimeStamp();
+            customer = new Customer(Util.genarateUid(), email, hash.hash(Genarate.randomLetters(15)), now, now, 0);
+            customer.setAcceptAt(now);
+            customerRepository.saveCustomer(customer);
+        }
+
+        JWT<Customer> jwt = new JWT<>();
+        String CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
+
+        Cookie cookie1 = new Cookie("CToken", CToken);
+        cookie1.setAttribute("Path", "/customer");
+        cookie1.setAttribute("HttpOnly", "True");
+        cookie1.setAttribute("Secure", "True");
+        cookie1.setAttribute("SameSite", "None");
+        cookie1.setAttribute("Secure", "True");
+        cookie1.setAttribute("Partitioned", "True");
+        cookie1.setMaxAge(60 * 6);
+
+        response.addCookie(cookie1);
+
+        Long now = Genarate.getTimeStamp();
+        Long dieToken = now + 6 * 60 * 1000;
+        Map<String, String> cookies = new HashMap<>();
+        cookies.put("ETok", dieToken + "->MA360");
+
+        // setCache
+        setCustomerToCache(customer, customer.getUid());
+        return new ResponseSuccess(cookies, customer);
+    }
+
 
     ResponseSuccess refresh(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
         Customer data = (Customer) request.getAttribute("customerDataToken");
@@ -433,6 +492,7 @@ public class CustomerService extends ResponseApi {
         return new ResponseSuccess();
     }
 
+
     public Customer getCustomerFromCache(String key) {
         Customer customer = cacheService.getCache("info_" + key);
         return customer;
@@ -454,4 +514,5 @@ public class CustomerService extends ResponseApi {
         }
         return customer;
     }
+
 }

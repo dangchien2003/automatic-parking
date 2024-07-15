@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class Util {
     public static String genarateSid() {
-        return "STAFF_" + Genarate.getTimeStamp() + "_" + CustomRandom.randomLetters(3);
+        return "STAFF_" + Genarate.getTimeStamp() + "_" + Genarate.randomLetters(3);
     }
 
     public static Staff getDefaultStaff() {
