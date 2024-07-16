@@ -129,7 +129,7 @@ public class TPBankService extends ResponseApi {
     private Long[] getCashApprove(List<Cash> listCash, List<Map<String, Object>> historys) throws Exception {
         return listCash.stream()
                 .filter(c -> historys.stream()
-                        .anyMatch(h -> h.get("description").equals(c.getStringCode()) && Integer.parseInt(h.get("amount").toString()) == c.getMoney()))
+                        .anyMatch(h -> h.get("description").toString().substring(0, 15).equals(c.getStringCode()) && Integer.parseInt(h.get("amount").toString()) == c.getMoney()))
                 .map(Cash::getStt)
                 .toArray(Long[]::new);
     }
