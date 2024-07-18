@@ -4,6 +4,7 @@ import com.automaticparking.model.cache.CacheService;
 import com.automaticparking.model.cloudinary.CloudinaryService;
 import com.automaticparking.model.code.customer.Code;
 import com.automaticparking.model.code.customer.CodeRepository;
+import com.automaticparking.types.ResponseSuccess;
 import javassist.NotFoundException;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.coyote.BadRequestException;
@@ -18,6 +19,7 @@ import util.DotENV;
 import util.Genarate;
 
 import javax.naming.AuthenticationException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,20 +32,29 @@ public class BotService {
     private final Executor asyncExecutor;
     private CodeRepository codeRepository;
     private CacheService cacheService;
+    private BotRepository botRepository;
+
+    private BotUtil botUtil;
 
     @Autowired
-    public BotService(CloudinaryService cloudinaryService, Executor asyncExecutor, CodeRepository codeRepository, CacheService cacheService) {
+    public BotService(CloudinaryService cloudinaryService, Executor asyncExecutor, CodeRepository codeRepository, CacheService cacheService, BotRepository botRepository, BotUtil botUtil) {
         this.cloudinaryService = cloudinaryService;
         this.asyncExecutor = asyncExecutor;
         this.codeRepository = codeRepository;
         this.cacheService = cacheService;
+        this.botRepository = botRepository;
+        this.botUtil = botUtil;
     }
 
-
-    public Map<String, String> checkin(MultipartFile file, String width, String height, String qr) throws BadRequestException, Exception, AuthenticationException {
+    public Map<String, String> checkin(MultipartFile file, String width, String height, String qr, String id) throws BadRequestException, AuthenticationException, NotFoundException, SQLException {
 
         if (qr.trim().equals("") || qr.equals("0")) {
             throw new BadRequestException("Invalid qr");
+        }
+
+        Bot bot = botUtil.getBot(id);
+        if (bot == null) {
+            throw new NotFoundException("Not found bot");
         }
 
         Integer dataCache = cacheService.getCache("plate_" + qr);
@@ -104,6 +115,7 @@ public class BotService {
                     code.setCheckinAt(now);
                     code.setPlate(plate);
                     code.setExpireAt(now + 86400 * 1000);
+                    code.setBotId(bot.getId());
 
                     boolean updated = codeRepository.updateCode(code);
 
@@ -121,10 +133,16 @@ public class BotService {
     }
 
 
-    public Map<String, String> checkout(MultipartFile file, String width, String height, String qr) throws BadRequestException, NotFoundException {
+    public Map<String, String> checkout(MultipartFile file, String width, String height, String qr, String botId) throws BadRequestException, NotFoundException, SQLException {
         if (qr.trim().equals("") || qr.equals("0")) {
             throw new BadRequestException("Invalid qr");
         }
+
+        Bot bot = botUtil.getBot(botId);
+        if (bot == null) {
+            throw new NotFoundException("Not found bot");
+        }
+
         Integer dataCache = cacheService.getCache("plate_" + qr);
         if (dataCache != null) {
             if (dataCache > 0) {
@@ -136,6 +154,10 @@ public class BotService {
 
         if (code == null) {
             throw new NotFoundException("Qr not exist");
+        }
+
+        if (!code.getBotId().equals(botId)) {
+            throw new BadRequestException("Invalid bot");
         }
 
         if (code.getCancleAt() != 0 || code.getExpireAt() < Genarate.getTimeStamp() || code.getCheckoutAt() != 0 || code.getCheckinAt() == 0) {

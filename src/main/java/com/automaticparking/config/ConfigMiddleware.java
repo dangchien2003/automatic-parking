@@ -58,6 +58,7 @@ public class ConfigMiddleware implements WebMvcConfigurer {
                 .addPathPatterns("/customer/code/extend/{qrid}")
                 .addPathPatterns("/customer/code/extend/price/{qrid}")
                 .addPathPatterns("/customer/code/cancle")
+                .addPathPatterns("/customer/bot/i")
                 .addPathPatterns("/customer/authentication");
 
     }
