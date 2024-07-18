@@ -6,8 +6,6 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "qr")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "DTYPE")
 public class Code {
     @Id
     private String qrid;
@@ -55,7 +53,7 @@ public class Code {
     private int priceExtend;
 
     @Column
-    @JsonIgnore
+    @JoinColumn(table = "bot", name = "id")
     private String botId;
 
     public Code() {
