@@ -111,16 +111,16 @@ public class CodeService {
         Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = customerDataToken.getUid();
 
-        Code code = codeRepository.getInfo(uid, qrid);
+        Ticket ticket = codeRepository.getInfo(uid, qrid);
 
-        if (code == null) {
+        if (ticket == null) {
             throw new NotFoundException("Not found");
         }
 
-        if (code.getAcceptBy() != null) {
-            code.setAcceptBy("1");
+        if (ticket.getAcceptBy() != null) {
+            ticket.setAcceptBy("1");
         }
-        return new ResponseSuccess(code);
+        return new ResponseSuccess(ticket);
     }
 
     public ResponseSuccess getContenQr(String qrid, HttpServletRequest request) throws BadRequestException, NotFoundException, SQLException, JsonProcessingException {

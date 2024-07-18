@@ -40,7 +40,7 @@ public class CodeRepository {
         Transaction tr = null;
         try {
             tr = session.beginTransaction();
-            String sql = "SELECT * FROM qr WHERE uid = :uid ORDER BY buyAt DESC LIMIT 0, :limit";
+            String sql = "SELECT *, 'Code' as DTYPE FROM qr WHERE uid = :uid ORDER BY buyAt DESC LIMIT 0, :limit";
             NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
             query.setParameter("uid", uid);
             query.setParameter("limit", limit);
@@ -101,17 +101,17 @@ public class CodeRepository {
         return totalMyCash;
     }
 
-    public Code getInfo(String uid, String qrid) throws SQLException {
+    public Ticket getInfo(String uid, String qrid) throws SQLException {
         Session session = hibernateUtil.openSession();
         Transaction tr = session.beginTransaction();
 
         try {
-            String sql = "SELECT * FROM qr WHERE uid = :uid and qrid = :qrid";
-            NativeQuery<Code> query = session.createNativeQuery(sql, Code.class);
+            String sql = "SELECT qr.*, bot.address FROM qr left join bot on bot.id = qr.botid WHERE  uid = :uid and qrid = :qrid";
+            NativeQuery<Ticket> query = session.createNativeQuery(sql, Ticket.class);
             query.setParameter("uid", uid);
             query.setParameter("qrid", qrid);
-            Code code = query.uniqueResult();
-            return code;
+            Ticket ticket = query.uniqueResult();
+            return ticket;
         } catch (Exception e) {
             throw new SQLException(e.getMessage());
         } finally {
