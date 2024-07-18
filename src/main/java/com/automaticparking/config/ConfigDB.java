@@ -2,6 +2,7 @@ package com.automaticparking.config;
 
 import com.automaticparking.model.cash.Cash;
 import com.automaticparking.model.code.customer.Code;
+import com.automaticparking.model.code.customer.Ticket;
 import com.automaticparking.model.customer.Customer;
 import com.automaticparking.model.shopQr.QrShop;
 import com.automaticparking.model.staff.Staff;
@@ -50,6 +51,7 @@ public class ConfigDB {
             metadataSources.addAnnotatedClass(Customer.class);
             metadataSources.addAnnotatedClass(QrShop.class);
             metadataSources.addAnnotatedClass(Code.class);
+            metadataSources.addAnnotatedClass(Ticket.class);
             System.out.println("Hibernate " + active + " setup OK");
         } catch (Exception e) {
             StandardServiceRegistryBuilder.destroy(standardServiceRegistry);

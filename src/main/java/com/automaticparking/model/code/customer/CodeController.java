@@ -43,7 +43,8 @@ public class CodeController extends ResponseApi {
         try {
             return ResponseEntity.ok(codeService.getBoughtCode(request, quantity));
         } catch (SQLException e) {
-            return error(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể thực hiện");
+            e.printStackTrace();
+            return error(HttpStatus.INTERNAL_SERVER_ERROR, "Can not action");
         } catch (Exception e) {
             return serverError();
         }
@@ -58,7 +59,8 @@ public class CodeController extends ResponseApi {
         } catch (NotFoundException e) {
             return error(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (SQLException e) {
-            return error(HttpStatus.INTERNAL_SERVER_ERROR, "Không thể thực hiện");
+            e.printStackTrace();
+            return error(HttpStatus.INTERNAL_SERVER_ERROR, "Can not action");
         } catch (Exception e) {
             return serverError();
         }

@@ -1,12 +1,13 @@
 package com.automaticparking.model.code.customer;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "qr")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "DTYPE")
 public class Code {
     @Id
     private String qrid;
@@ -52,6 +53,10 @@ public class Code {
 
     @Column
     private int priceExtend;
+
+    @Column
+    @JsonIgnore
+    private String botId;
 
     public Code() {
     }
@@ -174,5 +179,13 @@ public class Code {
 
     public void setPriceExtend(int priceExtend) {
         this.priceExtend = priceExtend;
+    }
+
+    public String getBotId() {
+        return botId;
+    }
+
+    public void setBotId(String botId) {
+        this.botId = botId;
     }
 }
