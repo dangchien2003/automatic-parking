@@ -68,6 +68,7 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\tpbank
 E:\code\SPRING\automatic-parking\src\main\java\util\Author.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\StaffRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\types\ResponseException.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\code\customer\Ticket.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigGooleOauth.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\customer\CashCustomerRepository.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\tpbank\TPBankController.java
@@ -90,4 +91,5 @@ E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\cash\s
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\staff\StaffController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\shopQr\staff\QrShopForStaffController.java
 E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\config\ConfigCache.java
+E:\code\SPRING\automatic-parking\src\main\java\com\automaticparking\model\bot\Bot.java
 E:\code\SPRING\automatic-parking\src\main\java\util\DotENV.java
