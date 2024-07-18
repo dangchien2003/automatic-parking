@@ -30,10 +30,10 @@ public class RunService extends ResponseApi {
             RestTemplate restTemplate = new RestTemplate();
             while (running) {
                 try {
-                    restTemplate.getForEntity("https://automatic-parking-x4o1.onrender.com/start/hello", String.class);
-                    restTemplate.getForEntity("https://read-plate-parking.onrender.com", String.class);
-                    restTemplate.getForEntity("https://parking-bot.onrender.com/bot/hello.html", String.class);
-                    restTemplate.getForEntity("https://fe-parking-u1g6.onrender.com/helloworld", String.class);
+                    restTemplate.getForEntity("https://autoparking-be-v1.onrender.com/start/hello", String.class);
+                    restTemplate.getForEntity("https://autoparking-readplate-v1.onrender.com", String.class);
+                    restTemplate.getForEntity("https://autoparking-bot-v1.onrender.com/bot/hello.html", String.class);
+                    restTemplate.getForEntity("https://autoparking-v1.onrender.com//helloworld", String.class);
                     System.out.println("done");
                     long time = 120000;
                     try {
