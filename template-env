@@ -1,5 +1,5 @@
 ACTIVE = dev
-
+VERSION=
 # host
 # HOST_FE=https://child1.feparking.com:3000
 HOST_FE=https://fe-parking-u1g6.onrender.com
