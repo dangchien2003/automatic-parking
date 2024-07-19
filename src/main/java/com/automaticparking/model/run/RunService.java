@@ -1,6 +1,7 @@
 package com.automaticparking.model.run;
 
 import com.automaticparking.types.ResponseSuccess;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,12 @@ import java.util.concurrent.Executor;
 public class RunService extends ResponseApi {
     private Executor asyncExecutor;
     private boolean running = false;
+    private Dotenv dotenv;
 
     @Autowired
-    public RunService(Executor asyncExecutor) {
+    public RunService(Executor asyncExecutor, Dotenv dotenv) {
         this.asyncExecutor = asyncExecutor;
+        this.dotenv = dotenv;
     }
 
     public ResponseSuccess run() throws BadRequestException {
@@ -26,14 +29,15 @@ public class RunService extends ResponseApi {
         }
         System.out.println("starting");
         running = true;
+        String version = dotenv.get("VERSION");
         asyncExecutor.execute(() -> {
             RestTemplate restTemplate = new RestTemplate();
             while (running) {
                 try {
-                    restTemplate.getForEntity("https://autoparking-be-v1.onrender.com/start/hello", String.class);
-                    restTemplate.getForEntity("https://autoparking-readplate-v1.onrender.com", String.class);
-                    restTemplate.getForEntity("https://autoparking-bot-v1.onrender.com/bot/hello.html", String.class);
-                    restTemplate.getForEntity("https://autoparking-v1.onrender.com//helloworld", String.class);
+                    restTemplate.getForEntity("https://autoparking-be-" + version + ".onrender.com/start/hello", String.class);
+                    restTemplate.getForEntity("https://autoparking-readplate-" + version + ".onrender.com", String.class);
+                    restTemplate.getForEntity("https://autoparking-bot-" + version + ".onrender.com/bot/hello.html", String.class);
+                    restTemplate.getForEntity("https://autoparking-" + version + ".onrender.com//helloworld", String.class);
                     System.out.println("done");
                     long time = 120000;
                     try {
