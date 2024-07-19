@@ -1,7 +1,7 @@
 package com.automaticparking.middleware;
 
-import com.automaticparking.model.staff.Staff;
-import com.automaticparking.model.staff.StaffRepository;
+import com.automaticparking.database.entity.Staff;
+import com.automaticparking.repositorys.StaffRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
@@ -15,11 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import util.Cookies;
-import util.Genarate;
 import response.ResponseApi;
 import util.Json;
 
-import java.util.Map;
 import java.util.Objects;
 
 @Component

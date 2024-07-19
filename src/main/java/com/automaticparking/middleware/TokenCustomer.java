@@ -1,8 +1,7 @@
 package com.automaticparking.middleware;
 
-import com.automaticparking.model.customer.Customer;
-import com.automaticparking.model.customer.CustomerRepository;
-import com.automaticparking.model.customer.CustomerService;
+import com.automaticparking.database.entity.Customer;
+import com.automaticparking.services.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
@@ -16,11 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import util.Cookies;
-import util.Genarate;
 import response.ResponseApi;
 import util.Json;
-
-import java.util.Map;
 
 @Component
 public class TokenCustomer extends ResponseApi implements HandlerInterceptor {

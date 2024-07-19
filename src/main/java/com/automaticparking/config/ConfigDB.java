@@ -1,11 +1,11 @@
 package com.automaticparking.config;
 
-import com.automaticparking.model.bot.Bot;
-import com.automaticparking.model.cash.Cash;
-import com.automaticparking.model.code.customer.Code;
-import com.automaticparking.model.customer.Customer;
-import com.automaticparking.model.shopQr.QrShop;
-import com.automaticparking.model.staff.Staff;
+import com.automaticparking.database.entity.Bot;
+import com.automaticparking.database.entity.Cash;
+import com.automaticparking.database.entity.Code;
+import com.automaticparking.database.entity.Customer;
+import com.automaticparking.database.entity.QrShop;
+import com.automaticparking.database.entity.Staff;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;

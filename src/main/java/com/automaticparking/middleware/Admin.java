@@ -1,6 +1,6 @@
 package com.automaticparking.middleware;
 
-import com.automaticparking.model.staff.Staff;
+import com.automaticparking.database.entity.Staff;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import response.ResponseApi;
-
-import java.util.Map;
 
 @Component
 public class Admin extends ResponseApi implements HandlerInterceptor {
