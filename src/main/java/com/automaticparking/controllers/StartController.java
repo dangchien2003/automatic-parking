@@ -14,6 +14,7 @@ public class StartController {
     @GetMapping("hello")
     ResponseEntity<?> hello() {
         Map<String, String> hello = new HashMap<>();
+        System.out.println("hello"); 
         hello.put("start", "hello");
         return ResponseEntity.ok(hello);
     }
