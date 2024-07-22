@@ -1,97 +1,89 @@
 package com.automaticparking.services;
 
+import com.automaticparking.Repositorys.StaffRepository;
 import com.automaticparking.database.dto.ChangePasswordDto;
-import com.automaticparking.database.entity.Staff;
 import com.automaticparking.database.dto.CreateStaffDto;
 import com.automaticparking.database.dto.LoginDto;
 import com.automaticparking.database.dto.UpdateStaffDto;
-import com.automaticparking.repositorys.StaffRepository;
+import com.automaticparking.database.entity.Staff;
+import com.automaticparking.exception.AuthorizedException;
+import com.automaticparking.exception.BadRequestException;
+import com.automaticparking.exception.ConflictException;
+import com.automaticparking.exception.NotFoundException;
 import com.automaticparking.types.ResponseSuccess;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import encrypt.Hash;
 import encrypt.JWT;
-import exception.ConflictException;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import javassist.NotFoundException;
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import util.Generate;
-import response.ResponseApi;
 import validation.DateValid;
 
-import javax.naming.AuthenticationException;
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
 @Service
-public class StaffService extends ResponseApi {
+@AllArgsConstructor
+public class StaffService {
     private StaffRepository staffRepository;
     private Dotenv dotenv;
 
-    @Autowired
-    public StaffService(StaffRepository staffRepository, Dotenv dotenv) {
-        this.staffRepository = staffRepository;
-        this.dotenv = dotenv;
-    }
-
-    public ResponseSuccess createAdmin(CreateStaffDto createStaff) throws ConflictException, BadRequestException, SQLException, NoSuchAlgorithmException {
+    public ResponseEntity<ResponseSuccess> createAdmin(CreateStaffDto createStaff) {
         DateValid dateValid = new DateValid();
         if (!dateValid.isValidDate(createStaff.getBirthday())) {
             throw new BadRequestException("Birthday non-compliant birthday format 'yyyy-MM-dd'");
         }
 
-        StaffRepository staffRepository = new StaffRepository();
-
-        Staff staffs = staffRepository.getOneStaffByEmail(createStaff.getEmail());
+        Staff staffs = staffRepository.findByEmail(createStaff.getEmail()).orElseThrow(() -> new RuntimeException("Not found"));
+        ;
         if (staffs != null) throw new ConflictException("Email already exists");
 
-        BigInteger countAdmins = staffRepository.countAdmin();
-        int countAdminsInteger = countAdmins.intValue();
-        if (countAdminsInteger > 0) {
+        int countAdmin = staffRepository.countByAdmin(1);
+        if (countAdmin > 0) {
             throw new BadRequestException("Admin already exists");
         }
         String password = new Hash().hash(dotenv.get("PASSWORD_STAFF"));
         Staff staff = new Staff(Generate.generateId("STAFF_", 3), 1, createStaff.getEmail(), password, createStaff.getName(), Generate.getTimeStamp(), createStaff.getBirthday(), 0, null);
 
 
-        staffRepository.createStaff(staff);
-
-        return new ResponseSuccess(staff);
+        staffRepository.save(staff);
+        HttpStatus status = HttpStatus.CREATED;
+        return new ResponseEntity<>(new ResponseSuccess(staff, status), status);
     }
 
-    public ResponseSuccess login(LoginDto loginDto, HttpServletResponse response) throws BadRequestException, AuthenticationException, SQLException, NoSuchAlgorithmException, JsonProcessingException {
+    public ResponseEntity<ResponseSuccess> login(LoginDto loginDto, HttpServletResponse response) {
         // check length email
-        if (loginDto.email.trim().length() < 10) {
+        if (loginDto.getEmail().trim().length() < 10) {
             throw new BadRequestException("Email must not be less than 8 characters");
         }
 
         // check length password
-        if (loginDto.password.trim().length() < 8) {
+        if (loginDto.getPassword().trim().length() < 8) {
             throw new BadRequestException("Password must not be less than 8 characters");
         }
 
-        Staff staff = staffRepository.getOneStaffByEmail(loginDto.email);
+        Staff staff = staffRepository.findByEmail(loginDto.getEmail()).orElseThrow(() -> new RuntimeException("Not found"));
 
         if (staff == null) {
-            throw new AuthenticationException("Account or password is incorrect");
+            throw new AuthorizedException("Account or password is incorrect");
         }
         Hash hash = new Hash();
 
-        if (!hash.compareHash(loginDto.password, staff.getPassword())) {
+
+        if (!hash.compareHash(loginDto.getPassword(), staff.getPassword())) {
             throw new BadRequestException("Incorrect password");
         }
 
         if (staff.getBlock() == 1) {
-            throw new AuthenticationException("Account access has been restricted");
+            throw new AuthorizedException("Account access has been restricted");
         }
 
 
@@ -108,40 +100,42 @@ public class StaffService extends ResponseApi {
         cookie.setAttribute("Partitioned", "True");
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
-        return new ResponseSuccess(cookies, staff);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(cookies, staff, status), status);
     }
 
-    public ResponseSuccess createStaff(CreateStaffDto createStaff, HttpServletRequest request) throws BadRequestException, SQLException, NoSuchAlgorithmException {
+    public ResponseEntity<ResponseSuccess> createStaff(CreateStaffDto createStaff, HttpServletRequest request) {
         DateValid dateValid = new DateValid();
         if (!dateValid.isValidDate(createStaff.getBirthday())) {
             throw new BadRequestException("Birthday non-compliant birthday format 'yyyy-MM-dd'");
         }
 
-        StaffRepository staffRepository = new StaffRepository();
-
-        Staff staff = staffRepository.getOneStaffByEmail(createStaff.getEmail());
+        Staff staff = staffRepository.findByEmail(createStaff.getEmail()).orElseThrow(() -> new RuntimeException("Not found"));
+        ;
         if (staff != null) throw new ConflictException("Email already exists");
 
         // tạo staff
         String password = new Hash().hash(dotenv.get("PASSWORD_STAFF"));
         Staff dataStaff = new Staff(Generate.generateId("STAFF_", 3), 0, createStaff.getEmail(), password, createStaff.getName(), Generate.getTimeStamp(), createStaff.getBirthday(), 0, null);
-        staffRepository.createStaff(dataStaff);
-        return new ResponseSuccess(staff);
+        staffRepository.save(dataStaff);
+        HttpStatus status = HttpStatus.CREATED;
+        return new ResponseEntity<>(new ResponseSuccess(staff, status), status);
     }
 
-    public ResponseSuccess getAllStaff(HttpServletRequest request) throws SQLException {
-        List<Staff> staffs = staffRepository.getAllStaff();
-        return new ResponseSuccess(staffs);
+    public ResponseEntity<ResponseSuccess> getAllStaff(HttpServletRequest request) {
+        List<Staff> staffs = staffRepository.findByAdminNot(1);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(staffs, status), status);
     }
 
-    public ResponseSuccess lockStaff(String sid, HttpServletRequest request) throws NotFoundException, BadRequestException, SQLException {
+    public ResponseEntity<ResponseSuccess> lockStaff(String sid, HttpServletRequest request) {
         Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
 
         if (sid.length() < 20) {
             throw new BadRequestException("Sid is not long enough");
         }
 
-        Staff staff = staffRepository.getOneStaffBySid(sid);
+        Staff staff = staffRepository.findById(sid).orElseThrow(() -> new RuntimeException("Not found"));
 
         if (staff == null) {
             throw new NotFoundException("Sid not exist");
@@ -159,23 +153,23 @@ public class StaffService extends ResponseApi {
         staff.setBlock(1);
         staff.setLastLogin(Generate.getTimeStamp());
 
-        staffRepository.updateStaff(staff);
+        staffRepository.save(staff);
 
         Map<String, String> dataResponse = new HashMap<>();
         dataResponse.put("sid", staff.getSid());
         dataResponse.put("email", staff.getEmail());
-
-        return new ResponseSuccess(dataResponse);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(dataResponse, status), status);
     }
 
-    public ResponseSuccess unLockStaff(String sid, HttpServletRequest request) throws BadRequestException, NotFoundException, SQLException {
+    public ResponseEntity<ResponseSuccess> unLockStaff(String sid, HttpServletRequest request) {
         Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
 
         if (sid.length() < 20) {
             throw new BadRequestException("Sid is not long enough");
         }
 
-        Staff staff = staffRepository.getOneStaffBySid(sid);
+        Staff staff = staffRepository.findById(sid).orElseThrow(() -> new RuntimeException("Not found"));
 
         if (staff == null) {
             throw new NotFoundException("Sid not exist");
@@ -193,18 +187,19 @@ public class StaffService extends ResponseApi {
         staff.setBlock(0);
         staff.setLastLogin(Generate.getTimeStamp());
 
-        Boolean updated = staffRepository.updateStaff(staff);
-        if (!updated) {
-            throw new BadRequestException("Cannot unlock account. Please checking sid");
+        Staff staffLastUpdate = staffRepository.save(staff);
+        if (!staffLastUpdate.equals(staff)) {
+            throw new RuntimeException("Error update");
         }
 
         Map<String, String> dataResponse = new HashMap<>();
         dataResponse.put("sid", staff.getSid());
         dataResponse.put("email", staff.getEmail());
-        return new ResponseSuccess(dataResponse);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(dataResponse, status), status);
     }
 
-    public ResponseSuccess changePassword(ChangePasswordDto changePassword, HttpServletRequest request) throws BadRequestException, NoSuchAlgorithmException, SQLException {
+    public ResponseEntity<ResponseSuccess> changePassword(ChangePasswordDto changePassword, HttpServletRequest request) {
         if (!changePassword.getConfirmPassword().equals(changePassword.getNewPassword())) {
             throw new BadRequestException("Confirm password and new password must be the same");
         }
@@ -215,7 +210,8 @@ public class StaffService extends ResponseApi {
 
         Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
         String sid = staffDataToken.getSid();
-        Staff staff = staffRepository.getOneStaffBySid(sid);
+        Staff staff = staffRepository.findById(sid).orElseThrow(() -> new RuntimeException("Not found"));
+
         Hash hash = new Hash();
         if (!hash.compareHash(changePassword.getOldPassword(), staff.getPassword())) {
             throw new BadRequestException("Incorrect password");
@@ -226,12 +222,12 @@ public class StaffService extends ResponseApi {
         staff.setPassword(hashNewPassword);
         staff.setLastLogin(Generate.getTimeStamp());
 
-        staffRepository.updateStaff(staff);
-
-        return new ResponseSuccess();
+        staffRepository.save(staff);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess updateStaff(UpdateStaffDto updateStaff, String sid) throws BadRequestException, SQLException, NotFoundException {
+    public ResponseEntity<ResponseSuccess> updateStaff(UpdateStaffDto updateStaff, String sid) {
         if (sid.length() < 20) {
             throw new BadRequestException("Sid is not long enough");
         }
@@ -241,18 +237,14 @@ public class StaffService extends ResponseApi {
             throw new BadRequestException("Non-compliant birthday format 'yyyy-MM-dd'");
         }
 
-        List<Staff> staffs = staffRepository.getListStaffByEmailAndSid(sid, updateStaff.email);
+        List<Staff> staffs = staffRepository.findAllBySidOrEmail(sid, updateStaff.email);
 
-        if (staffs.size() > 2) {
-            throw new ConflictException("An unknown error. Please contact us");
-        }
-
-        if (staffs.size() == 2) {
+        if (staffs.size() >= 2) {
             throw new ConflictException("Email already exists");
         }
 
         if (staffs.isEmpty() || !staffs.get(0).getSid().equals(sid)) {
-            throw new NotFoundException("Not found staff");
+            throw new NotFoundException("Not found");
         }
 
         if (staffs.get(0).getEmail().equals(updateStaff.email) && staffs.get(0).getBirthday().equals(updateStaff.birthday) && staffs.get(0).getName().equals(updateStaff.name)) {
@@ -265,9 +257,10 @@ public class StaffService extends ResponseApi {
         dataUpdate.setEmail(updateStaff.email);
         dataUpdate.setBirthday(updateStaff.birthday);
         dataUpdate.setLastLogin(Generate.getTimeStamp());
-        staffRepository.updateStaff(dataUpdate);
 
-        return new ResponseSuccess(dataUpdate);
+        Staff staffLastUpdate = staffRepository.save(dataUpdate);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(staffLastUpdate, status), status);
     }
 
 }

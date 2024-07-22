@@ -1,23 +1,21 @@
 package com.automaticparking.services;
 
-import com.automaticparking.repositorys.QrShopRepository;
-import com.automaticparking.types.ResponseSuccess;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import response.ResponseApi;
 
-import java.sql.SQLException;
+import com.automaticparking.Repositorys.QRShopRepository;
+import com.automaticparking.types.ResponseSuccess;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 
 @Service
-public class CQrShopService extends ResponseApi {
-    private QrShopRepository qrShopRepository;
+@AllArgsConstructor
+public class CQrShopService {
+    private QRShopRepository qrShopRepository;
 
-    @Autowired
-    public CQrShopService(QrShopRepository qrShopRepository) {
-        this.qrShopRepository = qrShopRepository;
-    }
-
-    public ResponseSuccess getAllCodeOK() throws SQLException {
-        return new ResponseSuccess(qrShopRepository.getAllCodeOk());
+    public ResponseEntity<ResponseSuccess> getAllCodeOK() {
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(qrShopRepository.findAllByHide(0), status), status);
     }
 }

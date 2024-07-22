@@ -2,7 +2,7 @@ package com.automaticparking.services;
 
 import com.automaticparking.database.dto.MailTemplate;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -10,16 +10,11 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.Executor;
 
 @Service
+@AllArgsConstructor
 public class MailService {
     private Executor asyncExecutor;
 
     private JavaMailSender javaMailSender;
-
-    @Autowired
-    public MailService(JavaMailSender javaMailSender, Executor asyncExecutor) {
-        this.javaMailSender = javaMailSender;
-        this.asyncExecutor = asyncExecutor;
-    }
 
     public void sendEmail(MailTemplate mailTemplate) {
         asyncExecutor.execute(() -> {

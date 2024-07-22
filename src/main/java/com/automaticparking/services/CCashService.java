@@ -1,36 +1,31 @@
 package com.automaticparking.services;
 
-import com.automaticparking.repositorys.CCashRepository;
-import com.automaticparking.database.entity.Cash;
+import com.automaticparking.Repositorys.CashRepository;
+import com.automaticparking.Repositorys.CodeRepository;
 import com.automaticparking.database.dto.InputMoneyDto;
+import com.automaticparking.database.entity.Cash;
 import com.automaticparking.database.entity.Code;
-import com.automaticparking.repositorys.CCodeRepository;
 import com.automaticparking.database.entity.Customer;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import util.Generate;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@AllArgsConstructor
 public class CCashService {
-    private CCashRepository cashCustomerRepository;
-    private CCodeRepository codeRepository;
+    private CashRepository cashRepository;
+    private CodeRepository codeRepository;
     private CacheService cacheService;
 
-    @Autowired
-    public CCashService(CCashRepository cashCustomerRepository, CCodeRepository codeRepository, CacheService cacheService) {
-        this.cashCustomerRepository = cashCustomerRepository;
-        this.codeRepository = codeRepository;
-        this.cacheService = cacheService;
-    }
-
-    public ResponseSuccess inputMoney(InputMoneyDto inputMoney, HttpServletRequest request) throws Exception {
+    public ResponseEntity<ResponseSuccess> inputMoney(InputMoneyDto inputMoney, HttpServletRequest request) {
 
         Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
 
@@ -41,30 +36,28 @@ public class CCashService {
         cash.setStringCode(inputMoney.getStringCode());
         cash.setCashAt(Generate.getTimeStamp());
 
-        Boolean create = cashCustomerRepository.saveCashHistory(cash);
-
-        if (!create) {
-            throw new Exception("Error create history. Please contact for us");
-        }
-        return new ResponseSuccess();
+        cashRepository.save(cash);
+        HttpStatus status = HttpStatus.CREATED;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess allMyHistory(HttpServletRequest request) throws SQLException, Exception {
+    public ResponseEntity<ResponseSuccess> allMyHistory(HttpServletRequest request) {
         Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
 
         String uid = customerDataToken.getUid();
 
-        List<Cash> history = cashCustomerRepository.getALlMyHistory(uid);
+        List<Cash> history = cashRepository.findAllByUid(uid);
 
         // hide field
         for (Cash cash : history) {
             cash.setAcceptBy("hide");
             cash.setRecashBy("hide");
         }
-        return new ResponseSuccess(history);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(history, status), status);
     }
 
-    public ResponseSuccess getMyRemaining(HttpServletRequest request) throws SQLException {
+    public ResponseEntity<ResponseSuccess> getMyRemaining(HttpServletRequest request) {
         Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = customerDataToken.getUid();
 
@@ -80,7 +73,8 @@ public class CCashService {
 
         Map<String, Integer> mapData = new HashMap<>();
         mapData.put("remaining", remaining);
-        return new ResponseSuccess(mapData);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(mapData, status), status);
     }
 
     public Integer getTotalCash(List<Cash> historyCash) {
@@ -93,18 +87,29 @@ public class CCashService {
         return totalMyCash;
     }
 
-    public Integer getRemaining(String uid) throws SQLException {
+    public Integer getRemaining(String uid) {
         // get history plus cash
-        List<Cash> historyCash = cashCustomerRepository.getALlMyHistoryOk(uid);
+        List<Cash> historyCash = cashRepository.findHistoryCashOkByUid(uid);
 
         Integer totalMyCash = getTotalCash(historyCash);
         // get history code used
-        List<Code> myCode = codeRepository.getAllCodeUse(uid);
+        List<Code> myCode = codeRepository.findAllCodeUse(uid, Generate.getTimeStamp());
 
-        Integer moneyUsed = codeRepository.getToTalMoneyUsed(myCode);
+        Integer moneyUsed = getToTalMoneyUsed(myCode);
         // get remaining(số dư)
         Integer remaining = totalMyCash - moneyUsed;
 
         return remaining;
     }
+
+    public Integer getToTalMoneyUsed(List<Code> codes) {
+        Integer totalMyCash = 0;
+        if (codes != null) {
+            for (Code code : codes) {
+                totalMyCash += (code.getPrice() + code.getPriceExtend());
+            }
+        }
+        return totalMyCash;
+    }
+
 }

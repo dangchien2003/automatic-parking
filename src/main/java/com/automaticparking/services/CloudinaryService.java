@@ -2,7 +2,7 @@ package com.automaticparking.services;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,13 +10,9 @@ import java.io.IOException;
 import java.util.Map;
 
 @Service
+@AllArgsConstructor
 public class CloudinaryService {
     private final Cloudinary cloudinary;
-
-    @Autowired
-    public CloudinaryService(Cloudinary cloudinary) {
-        this.cloudinary = cloudinary;
-    }
 
     public Map uploadFile(MultipartFile file, Map<String, String> option) throws IOException {
         byte[] bytes = file.getBytes();

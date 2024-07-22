@@ -1,5 +1,6 @@
 package encrypt;
 
+import com.automaticparking.exception.LogicException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
@@ -16,21 +17,25 @@ public class JWT<T> {
     private final Key key = new SecretKeySpec(DotENV.get("KEY_JWT").getBytes(), SignatureAlgorithm.HS256.getJcaName());
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public String createJWT(T data, long second) throws JsonProcessingException {
-        long nowMillis = System.currentTimeMillis();
-        Date now = new Date(nowMillis);
+    public String createJWT(T data, long second) {
+        try {
+            long nowMillis = System.currentTimeMillis();
+            Date now = new Date(nowMillis);
 
-        long expMillis = nowMillis + second * 1000;
-        Date exp = new Date(expMillis);
+            long expMillis = nowMillis + second * 1000;
+            Date exp = new Date(expMillis);
 
-        String userJson = objectMapper.writeValueAsString(data);
-        String jwt = Jwts.builder()
-                .setSubject(userJson)
-                .setIssuedAt(now)
-                .setExpiration(exp)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-        return jwt;
+            String userJson = objectMapper.writeValueAsString(data);
+            String jwt = Jwts.builder()
+                    .setSubject(userJson)
+                    .setIssuedAt(now)
+                    .setExpiration(exp)
+                    .signWith(key, SignatureAlgorithm.HS256)
+                    .compact();
+            return jwt;
+        } catch (JsonProcessingException e) {
+            throw new LogicException(e.getMessage());
+        }
     }
 
     public Claims decodeJWT(String jwt) {

@@ -1,12 +1,10 @@
 package com.automaticparking.services;
 
-
+import com.automaticparking.Repositorys.CustomerRepository;
 import com.automaticparking.database.dto.*;
 import com.automaticparking.database.entity.Customer;
-import com.automaticparking.repositorys.CustomerRepository;
-import com.automaticparking.database.dto.MailTemplate;
+import com.automaticparking.exception.*;
 import com.automaticparking.types.ResponseSuccess;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import encrypt.Hash;
@@ -16,59 +14,43 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
 import util.DotENV;
 import util.Generate;
 import util.Random;
 import validation.EmailValid;
 
-
-import javax.naming.AuthenticationException;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 @Service
+@AllArgsConstructor
 public class CustomerService {
     private final MailService mailService;
-
     private final RenderService mailRender;
     private CustomerRepository customerRepository;
-
     private CacheService cacheService;
-
     private GoogleIdTokenVerifier googleIdTokenVerifier;
 
-    @Autowired
-    public CustomerService(MailService mailService, RenderService mailRender, CustomerRepository customerRepository, CacheService cacheService, GoogleIdTokenVerifier googleIdTokenVerifier) {
-        this.mailService = mailService;
-        this.mailRender = mailRender;
-        this.customerRepository = customerRepository;
-        this.cacheService = cacheService;
-        this.googleIdTokenVerifier = googleIdTokenVerifier;
-    }
-
-    public ResponseSuccess createAccount(RegisterDto registerDto) throws BadRequestException, SQLException, NoSuchAlgorithmException, JsonProcessingException {
+    public ResponseEntity<ResponseSuccess> createAccount(RegisterDto registerDto) {
         Long now = Generate.getTimeStamp();
         Hash hash = new Hash();
-        Customer customer = getCustomer(registerDto.email);
+        Customer customer = getCustomer(registerDto.getEmail());
         if (customer != null) {
             if (customer.getAcceptAt() != null) {
-                throw new BadRequestException("Email already exist");
+                throw new ConflictException("Email already exist");
             }
 
-            customer.setPassword(hash.hash((registerDto.password)));
-            customerRepository.updateCustomer(customer);
+            customer.setPassword(hash.hash((registerDto.getPassword())));
+            customerRepository.save(customer);
         } else {
-            customer = new Customer(Generate.generateId("CUSTOMER_", 3), registerDto.email, hash.hash(registerDto.password), now, now, 0);
-            customerRepository.saveCustomer(customer);
+            customer = new Customer(Generate.generateId("CUSTOMER_", 3), registerDto.getEmail(), hash.hash(registerDto.getPassword()), now, now, 0);
+            customerRepository.save(customer);
         }
 
         // set payload
@@ -95,10 +77,11 @@ public class CustomerService {
         // set cache
         setCustomerToCache(customer, customer.getUid());
 
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.CREATED;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess acceptAccount(Map<String, String> data) throws BadRequestException, SQLException {
+    public ResponseEntity<ResponseSuccess> acceptAccount(Map<String, String> data) {
         // get data
         String token = data.get("token");
 
@@ -135,47 +118,49 @@ public class CustomerService {
         customer.setAcceptAt(Generate.getTimeStamp());
 
         // update
-        customerRepository.updateCustomer(customer);
+        customerRepository.save(customer);
 
         // set cache
         setCustomerToCache(customer, customer.getUid());
-        return new ResponseSuccess();
-
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess login(RegisterDto dataLogin, HttpServletResponse response) throws BadRequestException, AuthenticationException, SQLException, NoSuchAlgorithmException, JsonProcessingException {
-        Customer customer = customerRepository.getCustomerByEmail(dataLogin.email);
+    public ResponseEntity<ResponseSuccess> login(LoginDto dataLogin, HttpServletResponse response) {
+        Customer customer = customerRepository.findCustomerByEmail(dataLogin.getEmail()).orElseThrow(() -> new NotFoundException());
 
         if (customer == null) {
-            throw new BadRequestException("Email not exist");
+            throw new NotFoundException("Email not exist");
         }
 
         Hash hash = new Hash();
-        if (!hash.compareHash(dataLogin.password, customer.getPassword())) {
-            throw new BadRequestException("Incorrect password");
+        if (!hash.compareHash(dataLogin.getPassword(), customer.getPassword())) {
+            throw new InvalidException("Incorrect password");
         }
 
         if (customer.getAcceptAt() == null) {
-            throw new BadRequestException("Unverified account");
+            throw new AuthorizedException("Unverified account");
         }
 
         if (customer.getBlock() == 1) {
-            throw new AuthenticationException("Account has been locked");
+            throw new AuthorizedException("Account has been locked");
         }
 
         JWT<Customer> jwt = new JWT<>();
-        String CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
+        String CToken;
 
-        Cookie cookie1 = new Cookie("CToken", CToken);
-        cookie1.setAttribute("Path", "/customer");
-        cookie1.setAttribute("HttpOnly", "True");
-        cookie1.setAttribute("Secure", "True");
-        cookie1.setAttribute("SameSite", "None");
-        cookie1.setAttribute("Secure", "True");
-        cookie1.setAttribute("Partitioned", "True");
-        cookie1.setMaxAge(60 * 6);
+        CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
 
-        response.addCookie(cookie1);
+        Cookie cookie = new Cookie("CToken", CToken);
+        cookie.setAttribute("Path", "/customer");
+        cookie.setAttribute("HttpOnly", "True");
+        cookie.setAttribute("Secure", "True");
+        cookie.setAttribute("SameSite", "None");
+        cookie.setAttribute("Secure", "True");
+        cookie.setAttribute("Partitioned", "True");
+        cookie.setMaxAge(60 * 6);
+
+        response.addCookie(cookie);
 
         Long now = Generate.getTimeStamp();
         Long dieToken = now + 6 * 60 * 1000;
@@ -184,11 +169,17 @@ public class CustomerService {
 
         // setCache
         setCustomerToCache(customer, customer.getUid());
-        return new ResponseSuccess(cookies, customer);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(cookies, customer, status), status);
     }
 
-    public ResponseSuccess loginGoogle(String googleToken, HttpServletResponse response) throws BadRequestException, AuthenticationException, SQLException, IOException, GeneralSecurityException {
-        GoogleIdToken idToken = googleIdTokenVerifier.verify(googleToken);
+    public ResponseEntity<ResponseSuccess> loginGoogle(String googleToken, HttpServletResponse response) {
+        GoogleIdToken idToken;
+        try {
+            idToken = googleIdTokenVerifier.verify(googleToken);
+        } catch (Exception e) {
+            idToken = null;
+        }
         if (idToken == null) {
             throw new BadRequestException("Invalid token");
         }
@@ -203,7 +194,7 @@ public class CustomerService {
             }
 
             if (customer.getBlock() == 1) {
-                throw new AuthenticationException("Account has been locked");
+                throw new AuthorizedException("Account has been locked");
             }
         } else {
             // create not yet
@@ -211,7 +202,7 @@ public class CustomerService {
             long now = Generate.getTimeStamp();
             customer = new Customer(Generate.generateId("CUSTOMER_", 3), email, hash.hash(Generate.randomLetters(15)), now, now, 0);
             customer.setAcceptAt(now);
-            customerRepository.saveCustomer(customer);
+            customerRepository.save(customer);
         }
 
         JWT<Customer> jwt = new JWT<>();
@@ -235,11 +226,12 @@ public class CustomerService {
 
         // setCache
         setCustomerToCache(customer, customer.getUid());
-        return new ResponseSuccess(cookies, customer);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(cookies, customer, status), status);
     }
 
 
-    public ResponseSuccess refresh(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
+    public ResponseEntity<ResponseSuccess> refresh(HttpServletRequest request, HttpServletResponse response) {
         Customer data = (Customer) request.getAttribute("customerDataToken");
 
         JWT<Customer> jwt = new JWT<>();
@@ -261,23 +253,25 @@ public class CustomerService {
         Long dieToken = now + 6 * 60 * 1000;
         Map<String, String> cookies = new HashMap<>();
         cookies.put("ETok", dieToken + "->MA360");
-        return new ResponseSuccess(cookies, null);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(cookies, null, status), status);
     }
 
-    public ResponseSuccess logout(HttpServletResponse response) {
+    public ResponseEntity<ResponseSuccess> logout(HttpServletResponse response) {
         Cookie cookie = new Cookie("CToken", "");
         cookie.setAttribute("Path", "/customer");
         cookie.setAttribute("HttpOnly", "True");
         cookie.setAttribute("Secure", "True");
         cookie.setAttribute("SameSite", "None");
         cookie.setAttribute("Partitioned", "True");
-
         cookie.setMaxAge(0);
+
         response.addCookie(cookie);
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess forget(@Valid @RequestBody ForgetPassword forgetPassword) throws BadRequestException, SQLException, JsonProcessingException {
+    public ResponseEntity<ResponseSuccess> forget(@Valid @RequestBody ForgetPassword forgetPassword) {
         Customer customer = getCustomer(forgetPassword.email);
 
         if (customer == null) {
@@ -303,10 +297,11 @@ public class CustomerService {
         // set cache
         cacheService.setCache("info_" + customer.getEmail(), customer);
         mailService.sendEmail(mailTemplate);
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess acceptForget(String forgetToken) throws BadRequestException, SQLException, NoSuchAlgorithmException {
+    public ResponseEntity<ResponseSuccess> acceptForget(String forgetToken) {
         JWT<ForgetPassword> jwt = new JWT<>();
         Claims dataToken = jwt.decodeJWT(forgetToken);
 
@@ -339,7 +334,7 @@ public class CustomerService {
 
         customer.setPassword(hashNewPassword);
         customer.setLastLogin(Generate.getTimeStamp());
-        customerRepository.updateCustomer(customer);
+        customerRepository.save(customer);
 
         String html = mailRender.customerNewPassword(newPassword);
 
@@ -352,16 +347,18 @@ public class CustomerService {
 
         // set cache
         setCustomerToCache(customer, customer.getUid());
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess getMyinfo(HttpServletRequest request) {
+    public ResponseEntity<ResponseSuccess> getMyinfo(HttpServletRequest request) {
         Customer customerToken = (Customer) request.getAttribute("customerDataToken");
-        return new ResponseSuccess(customerToken);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(customerToken, status), status);
     }
 
 
-    public ResponseSuccess changePassword(ChangePasswordDto dataPassword, HttpServletRequest request, HttpServletResponse response) throws BadRequestException, SQLException, NoSuchAlgorithmException, JsonProcessingException {
+    public ResponseEntity<ResponseSuccess> changePassword(ChangePasswordDto dataPassword, HttpServletRequest request, HttpServletResponse response) {
         Customer customerToken = (Customer) request.getAttribute("customerDataToken");
         String uid = customerToken.getUid();
 
@@ -385,7 +382,7 @@ public class CustomerService {
         customer.setPassword(hashNewPassword);
         customer.setLastLogin(Generate.getTimeStamp());
 
-        customerRepository.updateCustomer(customer);
+        customerRepository.save(customer);
 
         JWT<Customer> jwt = new JWT<>();
         String CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
@@ -406,10 +403,11 @@ public class CustomerService {
 
         // set cache
         setCustomerToCache(customer, customer.getUid());
-        return new ResponseSuccess(cookies, customer);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(cookies, customer, status), status);
     }
 
-    public ResponseSuccess changeEmail(HttpServletRequest request, ChangeEmailDto dataChange) throws BadRequestException, SQLException, JsonProcessingException {
+    public ResponseEntity<ResponseSuccess> changeEmail(HttpServletRequest request, ChangeEmailDto dataChange) {
         Customer customerToken = (Customer) request.getAttribute("customerDataToken");
 
         // lower email
@@ -451,10 +449,11 @@ public class CustomerService {
         // send mail
         mailService.sendEmail(template);
 
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess acceptChangeEmail(AcceptChangeEmailDto data) throws BadRequestException, SQLException {
+    public ResponseEntity<ResponseSuccess> acceptChangeEmail(AcceptChangeEmailDto data) {
         String token = data.tokenChange;
 
         JWT<?> jwt = new JWT<>();
@@ -474,16 +473,21 @@ public class CustomerService {
             throw new BadRequestException("Session has ended");
         }
 
+        Customer customerNewEmail = customerRepository.findCustomerByEmail(mapData.get("newEmail")).orElse(null);
+        if (customerNewEmail != null) {
+            throw new ConflictException("Email already exist");
+        }
         // change info
         customer.setEmail(mapData.get("newEmail"));
         customer.setLastLogin(Generate.getTimeStamp());
 
-        customerRepository.updateCustomer(customer);
+        customerRepository.save(customer);
 
         // set cache
         setCustomerToCache(customer, customer.getUid());
 
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
 
@@ -496,13 +500,13 @@ public class CustomerService {
         cacheService.setCache("info_" + key, customer);
     }
 
-    public Customer getCustomer(String key) throws SQLException {
+    public Customer getCustomer(String key) {
         Customer customer = getCustomerFromCache(key);
         if (customer == null) {
             if (EmailValid.IsEmail(key)) {
-                customer = customerRepository.getCustomerByEmail(key);
+                customer = customerRepository.findCustomerByEmail(key).orElseThrow(() -> new NotFoundException());
             } else {
-                customer = customerRepository.getCustomerByUid(key);
+                customer = customerRepository.findById(key).orElseThrow(() -> new NotFoundException());
             }
             setCustomerToCache(customer, key);
         }

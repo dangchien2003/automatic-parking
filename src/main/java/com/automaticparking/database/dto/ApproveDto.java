@@ -9,5 +9,5 @@ public class ApproveDto {
     @Valid
 
     @NotEmpty
-    public Long[] listIdCash;
+    private Long[] listIdCash;
 }

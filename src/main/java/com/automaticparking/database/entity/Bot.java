@@ -1,11 +1,11 @@
 package com.automaticparking.database.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 @Entity
 @Data
@@ -17,9 +17,11 @@ public class Bot {
     @Column
     private String address;
 
+    @JsonIgnore
     @Column
     private Long createAt;
-
+    
+    @JsonIgnore
     @Column
     private Long cancleAt;
 

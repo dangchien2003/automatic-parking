@@ -1,48 +1,51 @@
 package com.automaticparking.services;
 
 import com.automaticparking.database.entity.Staff;
+import com.automaticparking.exception.LogicException;
 import com.automaticparking.types.ResponseSuccess;
 import com.github.benmanes.caffeine.cache.Cache;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
+@AllArgsConstructor
 public class CacheService {
     private Cache<String, Object> cache;
 
-    @Autowired
-    public CacheService(Cache<String, Object> cache) {
-        this.cache = cache;
-    }
-
-    public ResponseSuccess set() throws Exception {
+    public ResponseEntity<ResponseSuccess> set() {
         Staff staff = new Staff();
         staff.setAdmin(5);
         Boolean set = setCache("staff", staff);
         if (!set) {
-            throw new Exception("Lỗi set cache");
+            throw new LogicException("Lỗi set cache");
         }
-        return new ResponseSuccess(staff);
+        HttpStatus status = HttpStatus.CREATED;
+        return new ResponseEntity<>(new ResponseSuccess(staff, status), status);
     }
 
-    public ResponseSuccess set1() throws Exception {
+    public ResponseEntity<ResponseSuccess> set1() {
         Staff staff = new Staff();
         staff.setAdmin(2);
         Boolean set = setCache("staff", staff);
         if (!set) {
-            throw new Exception("Lỗi set cache");
+            throw new LogicException("Lỗi set cache");
         }
-        return new ResponseSuccess(staff);
+
+        HttpStatus status = HttpStatus.CREATED;
+        return new ResponseEntity<>(new ResponseSuccess(staff, status), status);
     }
 
-    public ResponseSuccess get() throws Exception {
-        return new ResponseSuccess(getCache("staff"));
+    public ResponseEntity<ResponseSuccess> get() {
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(getCache("staff"), status), status);
     }
 
-    public ResponseSuccess count() throws Exception {
-        return new ResponseSuccess(countCache());
+    public ResponseEntity<ResponseSuccess> count() {
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(countCache(), status), status);
     }
-
 
     public <T> T getCache(String key) {
         T data;

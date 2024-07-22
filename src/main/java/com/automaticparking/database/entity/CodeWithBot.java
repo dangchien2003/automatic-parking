@@ -1,9 +1,7 @@
 package com.automaticparking.database.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "qr")
-public class Code {
+public class CodeWithBot {
     @Id
     private String qrid;
 
@@ -58,10 +56,11 @@ public class Code {
     @Column
     private int priceExtend;
 
-    @Column
-    private String botId;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "botId", referencedColumnName = "id")
+    private Bot bot;
 
-    public Code(String qrid, String qrCategory, String uid, long buyAt, Integer price, long expireAt) {
+    public CodeWithBot(String qrid, String qrCategory, String uid, long buyAt, Integer price, long expireAt) {
         this.qrid = qrid;
         this.qrCategory = qrCategory;
         this.uid = uid;

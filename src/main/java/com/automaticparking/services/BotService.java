@@ -1,13 +1,15 @@
 package com.automaticparking.services;
 
+import com.automaticparking.Repositorys.BotRepository;
+import com.automaticparking.Repositorys.CodeRepository;
 import com.automaticparking.database.entity.Bot;
-import com.automaticparking.repositorys.BotRepository;
 import com.automaticparking.database.entity.Code;
-import com.automaticparking.repositorys.CCodeRepository;
-import javassist.NotFoundException;
+import com.automaticparking.exception.AuthorizedException;
+import com.automaticparking.exception.ConflictException;
+import com.automaticparking.exception.InvalidException;
+import com.automaticparking.exception.NotFoundException;
+import lombok.AllArgsConstructor;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -17,8 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import util.DotENV;
 import util.Generate;
 
-import javax.naming.AuthenticationException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,26 +26,18 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 @Service
+@AllArgsConstructor
 public class BotService {
     private final CloudinaryService cloudinaryService;
     private final Executor asyncExecutor;
-    private CCodeRepository codeRepository;
+    private CodeRepository codeRepository;
     private CacheService cacheService;
     private BotRepository botRepository;
 
-    @Autowired
-    public BotService(CloudinaryService cloudinaryService, Executor asyncExecutor, CCodeRepository codeRepository, CacheService cacheService, BotRepository botRepositoryl) {
-        this.cloudinaryService = cloudinaryService;
-        this.asyncExecutor = asyncExecutor;
-        this.codeRepository = codeRepository;
-        this.cacheService = cacheService;
-        this.botRepository = botRepository;
-    }
-
-    public Map<String, String> checkin(MultipartFile file, String width, String height, String qr, String id) throws BadRequestException, AuthenticationException, NotFoundException, SQLException {
+    public ResponseEntity<Map<String, String>> checkin(MultipartFile file, String width, String height, String qr, String id) {
 
         if (qr.trim().equals("") || qr.equals("0")) {
-            throw new BadRequestException("Invalid qr");
+            throw new InvalidException("Invalid qr");
         }
 
         Bot bot = getBot(id);
@@ -56,18 +48,18 @@ public class BotService {
         Integer dataCache = cacheService.getCache("plate_" + qr);
         if (dataCache != null) {
             if (dataCache > 0) {
-                throw new BadRequestException("QR is processing");
+                throw new ConflictException("QR is processing");
             }
         }
 
-        Code code = codeRepository.getInfo(qr);
+        Code code = codeRepository.findById(qr).orElseThrow(() -> new NotFoundException());
 
         if (code == null) {
             throw new NotFoundException("Qr not exist");
         }
 
         if (code.getCancleAt() != 0 || code.getExpireAt() < Generate.getTimeStamp() || code.getCheckoutAt() != 0 || code.getCheckinAt() != 0) {
-            throw new BadRequestException("Invalid Code");
+            throw new AuthorizedException("Invalid Code");
         }
 
         Map<String, String> dataReadPlate = callReadPlate(file, width, height);
@@ -75,7 +67,7 @@ public class BotService {
         if (Integer.parseInt(dataReadPlate.get("status")) == 200) {
             String plate = dataReadPlate.get("plate");
 
-            List<Code> list = codeRepository.getInfoByPlate(plate);
+            List<Code> list = codeRepository.findAllByPlate(plate);
             boolean inParking = false;
             for (Code item : list) {
                 if (item.getCancleAt() == 0 && item.getCheckinAt() != 0 && item.getCheckoutAt() == 0) {
@@ -84,7 +76,7 @@ public class BotService {
             }
 
             if (inParking) {
-                throw new BadRequestException("The vehicle is in the parking lot");
+                throw new ConflictException("The vehicle is in the parking lot");
             }
 
             asyncExecutor.execute(() -> {
@@ -113,11 +105,8 @@ public class BotService {
                     code.setExpireAt(now + 86400 * 1000);
                     code.setBotId(bot.getId());
 
-                    boolean updated = codeRepository.updateCode(code);
+                    codeRepository.save(code);
 
-                    if (!updated) {
-                        throw new Exception("Error update");
-                    }
                     cacheService.setCache("plate_" + qr, -1);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
@@ -125,13 +114,13 @@ public class BotService {
             });
         }
 
-        return dataReadPlate;
+        return new ResponseEntity<>(dataReadPlate, HttpStatus.OK);
     }
 
 
-    public Map<String, String> checkout(MultipartFile file, String width, String height, String qr, String botId) throws BadRequestException, NotFoundException, SQLException {
+    public ResponseEntity<Map<String, String>> checkout(MultipartFile file, String width, String height, String qr, String botId) {
         if (qr.trim().equals("") || qr.equals("0")) {
-            throw new BadRequestException("Invalid qr");
+            throw new InvalidException("Invalid qr");
         }
 
         Bot bot = getBot(botId);
@@ -142,22 +131,18 @@ public class BotService {
         Integer dataCache = cacheService.getCache("plate_" + qr);
         if (dataCache != null) {
             if (dataCache > 0) {
-                throw new BadRequestException("QR is processing");
+                throw new ConflictException("QR is processing");
             }
         }
 
-        Code code = codeRepository.getInfo(qr);
+        Code code = codeRepository.findById(qr).orElseThrow(() -> new NotFoundException());
 
         if (code == null) {
             throw new NotFoundException("Qr not exist");
         }
 
-        if (!code.getBotId().equals(botId)) {
-            throw new BadRequestException("Invalid bot");
-        }
-
         if (code.getCancleAt() != 0 || code.getExpireAt() < Generate.getTimeStamp() || code.getCheckoutAt() != 0 || code.getCheckinAt() == 0) {
-            throw new BadRequestException("Invalid Code");
+            throw new AuthorizedException("Invalid Code");
         }
 
         Map<String, String> dataReadPlate = callReadPlate(file, width, height);
@@ -166,7 +151,7 @@ public class BotService {
             String plate = dataReadPlate.get("plate");
             double similarity = similarityPlate(code.getPlate(), plate);
             if (similarity < 85) {
-                throw new BadRequestException("Different plate " + plate + "/" + code.getPlate());
+                throw new ConflictException("Different plate " + plate + "/" + code.getPlate());
             }
 
             asyncExecutor.execute(() -> {
@@ -192,11 +177,7 @@ public class BotService {
                     code.setImageOut(path);
                     code.setCheckoutAt(now);
 
-                    boolean updated = codeRepository.updateCode(code);
-
-                    if (!updated) {
-                        throw new Exception("Error update");
-                    }
+                    codeRepository.save(code);
 
                     cacheService.setCache("plate_" + qr, -1);
                 } catch (Exception e) {
@@ -205,7 +186,7 @@ public class BotService {
             });
         }
 
-        return dataReadPlate;
+        return new ResponseEntity<>(dataReadPlate, HttpStatus.OK);
     }
 
     private Map<String, String> callReadPlate(MultipartFile file, String width, String height) {
@@ -235,14 +216,12 @@ public class BotService {
         return ((double) (maxLength - distance) / maxLength) * 100;
     }
 
-    private Bot getBot(String id) throws SQLException {
+    private Bot getBot(String id) {
         String key = "bot_cache_" + id;
         Bot bot = cacheService.getCache(key);
         if (bot == null) {
-            bot = botRepository.getInfo(id);
-            if (bot != null) {
-                cacheService.setCache(key, bot);
-            }
+            bot = botRepository.findById(id).orElse(null);
+            cacheService.setCache(key, bot);
         }
         return bot;
     }

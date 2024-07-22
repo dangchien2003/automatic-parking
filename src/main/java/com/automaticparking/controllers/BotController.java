@@ -2,26 +2,21 @@ package com.automaticparking.controllers;
 
 
 import com.automaticparking.services.BotService;
-import javassist.NotFoundException;
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import response.ResponseApi;
 
-import java.sql.SQLException;
 
 @RestController
 @RequestMapping("api/bot")
-public class BotController extends ResponseApi {
+@AllArgsConstructor
+public class BotController  {
     private BotService botService;
 
-    @Autowired
-    public BotController(BotService botService) {
-        this.botService = botService;
-    }
 
     @PostMapping("checkin")
     public ResponseEntity<?> checkin(@RequestPart("image") MultipartFile file,
@@ -29,19 +24,7 @@ public class BotController extends ResponseApi {
                                      @RequestPart(value = "height", required = false) String height,
                                      @RequestPart(value = "qr") String qr,
                                      @RequestPart(value = "bot") String bot) {
-        try {
-            return ResponseEntity.ok(botService.checkin(file, width, height, qr, bot));
-        } catch (BadRequestException e) {
-            return error(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (NotFoundException e) {
-            return error(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return error(HttpStatus.INTERNAL_SERVER_ERROR, "Can not action");
-        } catch (Exception e) {
-            return error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
-
+        return botService.checkin(file, width, height, qr, bot);
     }
 
     @PostMapping("checkout")
@@ -50,17 +33,6 @@ public class BotController extends ResponseApi {
                                       @RequestPart(value = "height", required = false) String height,
                                       @RequestPart(value = "qr") String qr,
                                       @RequestPart(value = "bot") String bot) {
-        try {
-            return ResponseEntity.ok(botService.checkout(file, width, height, qr, bot));
-        } catch (BadRequestException e) {
-            return error(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (NotFoundException e) {
-            return error(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return error(HttpStatus.INTERNAL_SERVER_ERROR, "Can not action");
-        } catch (Exception e) {
-            return error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        return botService.checkout(file, width, height, qr, bot);
     }
 }

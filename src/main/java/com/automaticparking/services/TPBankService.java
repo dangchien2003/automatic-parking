@@ -1,21 +1,22 @@
 package com.automaticparking.services;
 
-import com.automaticparking.database.entity.Cash;
+import com.automaticparking.Repositorys.CashRepository;
 import com.automaticparking.database.dto.TPBank;
-import com.automaticparking.repositorys.SCashRepository;
+import com.automaticparking.database.entity.Cash;
+import com.automaticparking.exception.AuthorizedException;
+import com.automaticparking.exception.BadRequestException;
 import com.automaticparking.types.ResponseSuccess;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.apache.coyote.BadRequestException;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import response.ResponseApi;
 import util.Generate;
 import util.Timestamp;
 
-import javax.security.sasl.AuthenticationException;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -25,40 +26,42 @@ import java.util.*;
 import java.util.concurrent.Executor;
 
 @Service
-public class TPBankService extends ResponseApi {
+@AllArgsConstructor
+public class TPBankService {
     private Executor asyncExecutor;
-    private SCashRepository cashStaffRepository;
     private Dotenv dotenv;
+    private CashRepository cashRepository;
     private TPBank tpBank = new TPBank();
     private boolean runed = false;
     private String token = "";
     private String staff = "bot";
     private long time;
 
-    private String dvid = "kpVAPvlf34EVbSUJmzPpjURgxxiX1D7CtVbCS8Pt35SQ0";
+    private final String dvid = "kpVAPvlf34EVbSUJmzPpjURgxxiX1D7CtVbCS8Pt35SQ0";
 
     @Autowired
-    public TPBankService(Dotenv dotenv, SCashRepository cashStaffRepository, Executor asyncExecutor) {
+    public TPBankService(Dotenv dotenv, CashRepository cashRepository, Executor asyncExecutor) {
         this.dotenv = dotenv;
-        this.cashStaffRepository = cashStaffRepository;
+        this.cashRepository = cashRepository;
         this.asyncExecutor = asyncExecutor;
         this.time = Long.parseLong(dotenv.get("TP_TIMERELOAD")) * 60 * 1000;
     }
 
-    public ResponseSuccess stopTpbank(String author) throws AuthenticationException, BadRequestException {
+    public ResponseEntity<ResponseSuccess> stopTpbank(String author) {
         if (!author.equals("admin")) {
-            throw new AuthenticationException("Not have access");
+            throw new AuthorizedException("Not have access");
         }
         if (!runed) {
             throw new BadRequestException("Not running automatically yet");
         }
         runed = false;
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    public ResponseSuccess autoTpbank(String author) throws AuthenticationException, BadRequestException {
+    public ResponseEntity<ResponseSuccess> autoTpbank(String author) {
         if (!author.equals("admin")) {
-            throw new AuthenticationException("Not have access");
+            throw new AuthorizedException("Not have access");
         }
         if (runed) {
             throw new BadRequestException("runed");
@@ -86,9 +89,9 @@ public class TPBankService extends ResponseApi {
                 List<Cash> cashNotApproves;
                 Map<String, String> dataDate;
                 List<Map<String, Object>> historys;
-                Long[] listIdCashBanked;
+                List<Long> listIdCashBanked;
                 while (runed) {
-                    cashNotApproves = cashStaffRepository.getAllCashNotApprove();
+                    cashNotApproves = cashRepository.findAllCashNotApprove();
 
                     if (cashNotApproves == null) {
                         throw new Exception("Error get cash");
@@ -97,11 +100,11 @@ public class TPBankService extends ResponseApi {
                     dataDate = getDataDate(cashNotApproves);
                     historys = getHistory(tpBank, dataDate);
                     listIdCashBanked = getCashApprove(cashNotApproves, historys);
-                    if (listIdCashBanked.length > 0) {
+                    if (!listIdCashBanked.isEmpty()) {
                         long now = Generate.getTimeStamp();
-                        int updated = cashStaffRepository.approveListCash(listIdCashBanked, now, staff);
-                        if (updated != listIdCashBanked.length) {
-                            System.out.println(String.format("Error update %d/%d", updated, listIdCashBanked.length));
+                        int updated = cashRepository.approveListCash(now, staff, listIdCashBanked);
+                        if (updated != listIdCashBanked.size()) {
+                            System.out.println(String.format("Error update %d/%d", updated, listIdCashBanked.size()));
                         } else {
                             System.out.println(String.format("Success update %d", updated));
                         }
@@ -123,11 +126,11 @@ public class TPBankService extends ResponseApi {
                 runed = false;
             }
         });
-
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    private Long[] getCashApprove(List<Cash> listCash, List<Map<String, Object>> historys) throws Exception {
+    private List<Long> getCashApprove(List<Cash> listCash, List<Map<String, Object>> historys) throws Exception {
         return listCash.stream()
                 .filter(c -> historys.stream()
                         .anyMatch(h -> {
@@ -140,7 +143,7 @@ public class TPBankService extends ResponseApi {
                             return description.contains(c.getStringCode()) && Integer.parseInt(h.get("amount").toString()) == c.getMoney();
                         }))
                 .map(Cash::getStt)
-                .toArray(Long[]::new);
+                .toList();
     }
 
 

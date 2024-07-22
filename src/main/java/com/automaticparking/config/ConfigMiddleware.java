@@ -3,25 +3,20 @@ package com.automaticparking.config;
 import com.automaticparking.middleware.Admin;
 import com.automaticparking.middleware.TokenCustomer;
 import com.automaticparking.middleware.TokenStaff;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@AllArgsConstructor
 public class ConfigMiddleware implements WebMvcConfigurer {
     private TokenCustomer customer;
-
-    @Autowired
-    public ConfigMiddleware(TokenCustomer tokenCustomer) {
-        this.customer = tokenCustomer;
-    }
+    private TokenStaff staff;
+    private Admin admin;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        TokenStaff staff = new TokenStaff();
-        Admin admin = new Admin();
-
         // staff token
         registry.addInterceptor(staff)
                 .addPathPatterns("/staff/create")

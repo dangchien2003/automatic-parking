@@ -2,7 +2,7 @@ package com.automaticparking.controllers;
 
 import com.automaticparking.database.dto.Redis;
 import com.automaticparking.services.RedisService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,13 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("redis")
+@AllArgsConstructor
 public class RedisController {
     private RedisService redisService;
-
-    @Autowired
-    public RedisController(RedisService redisService) {
-        this.redisService = redisService;
-    }
 
     @GetMapping("get")
     public String get(@RequestParam(name = "key", required = true) String key) {

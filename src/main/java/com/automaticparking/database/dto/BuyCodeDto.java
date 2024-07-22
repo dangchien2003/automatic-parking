@@ -12,5 +12,5 @@ public class BuyCodeDto {
 
     @NotBlank
     @Size(max = 10)
-    public String qrCategory;
+    private String qrCategory;
 }

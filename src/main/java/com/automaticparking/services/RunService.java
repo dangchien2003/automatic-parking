@@ -1,17 +1,19 @@
 package com.automaticparking.services;
 
+import com.automaticparking.exception.BadRequestException;
 import com.automaticparking.types.ResponseSuccess;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import response.ResponseApi;
+
 
 import java.util.concurrent.Executor;
 
 @Service
-public class RunService extends ResponseApi {
+public class RunService  {
     private Executor asyncExecutor;
     private boolean running = false;
     private Dotenv dotenv;
@@ -22,7 +24,7 @@ public class RunService extends ResponseApi {
         this.dotenv = dotenv;
     }
 
-    public ResponseSuccess run() throws BadRequestException {
+    public ResponseEntity<ResponseSuccess> run() {
         if (running == true) {
             throw new BadRequestException("runed");
         }
@@ -51,15 +53,17 @@ public class RunService extends ResponseApi {
                 }
             }
         });
-        return new ResponseSuccess("loading");
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess("loading", status), status);
     }
 
-    public ResponseSuccess stop() throws BadRequestException {
+    public ResponseEntity<ResponseSuccess> stop() throws BadRequestException {
         if (running == false) {
             throw new BadRequestException("not run yet");
         }
 
         running = false;
-        return new ResponseSuccess("stop load ok");
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess("stop load ok", status), status);
     }
 }

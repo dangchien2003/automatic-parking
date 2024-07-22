@@ -1,8 +1,7 @@
 package com.automaticparking.database.entity;
 
+import jakarta.persistence.*;
 import lombok.Data;
-
-import javax.persistence.*;
 
 @Entity
 @Data

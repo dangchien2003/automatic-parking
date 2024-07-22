@@ -5,16 +5,13 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import javax.validation.*;
-
 @Data
 public class LoginDto {
-    @Valid
 
-    @NotBlank
-    @Email
-    public String email;
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email")
+    private String email;
 
-    @NotBlank
-    public String password;
+    @NotBlank(message = "Password cannot be empty")
+    private String password;
 }

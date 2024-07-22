@@ -1,25 +1,31 @@
 package com.automaticparking.services;
 
+import com.automaticparking.Repositorys.CodeRepository;
+import com.automaticparking.Repositorys.QRShopRepository;
+import com.automaticparking.database.dto.BuyCodeDto;
 import com.automaticparking.database.dto.ContentQr;
 import com.automaticparking.database.entity.Code;
-import com.automaticparking.repositorys.CCodeRepository;
-import com.automaticparking.database.dto.BuyCodeDto;
+import com.automaticparking.database.entity.CodeWithBot;
 import com.automaticparking.database.entity.Customer;
 import com.automaticparking.database.entity.QrShop;
-import com.automaticparking.repositorys.QrShopRepository;
+import com.automaticparking.exception.BadRequestException;
+import com.automaticparking.exception.InvalidException;
+import com.automaticparking.exception.LogicException;
+import com.automaticparking.exception.NotFoundException;
 import com.automaticparking.types.ResponseSuccess;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
-import javassist.NotFoundException;
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import util.Generate;
 import util.Json;
 import util.KeyCache;
 import util.Timestamp;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,34 +33,22 @@ import java.util.concurrent.Executor;
 
 
 @Service
+@AllArgsConstructor
 public class CCodeService {
 
-    private QrShopRepository qrShopService;
-    private CCodeRepository codeRepository;
+    private QRShopRepository qrShopRepository;
+    private CodeRepository codeRepository;
     private CCashService cashCustomerService;
     private CacheService cacheService;
     private Executor asyncExecutor;
 
-    @Autowired
-    public CCodeService(Executor asyncExecutor, CacheService cacheService, CCashService cashCustomerService, CCodeRepository codeRepository, QrShopRepository qrShopService) {
-        this.asyncExecutor = asyncExecutor;
-        this.cacheService = cacheService;
-        this.cashCustomerService = cashCustomerService;
-        this.codeRepository = codeRepository;
-        this.qrShopService = qrShopService;
-    }
-
-    public ResponseSuccess buyCode(BuyCodeDto buyCode, HttpServletRequest request) throws SQLException, BadRequestException {
+    public ResponseEntity<ResponseSuccess> buyCode(BuyCodeDto buyCode, HttpServletRequest request) {
 
         Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = customerDataToken.getUid();
 
         // get qr info
-        QrShop qr = qrShopService.getOneQrById(buyCode.qrCategory);
-
-        if (qr == null) {
-            throw new BadRequestException("Qr not exist");
-        }
+        QrShop qr = qrShopRepository.findById(buyCode.getQrCategory()).orElseThrow(() -> new RuntimeException("Not found"));
 
         // get remaining(số dư)
         Integer remaining = cashCustomerService.getRemaining(uid);
@@ -64,7 +58,7 @@ public class CCodeService {
         }
 
         if (remaining < qr.getPrice()) {
-            throw new BadRequestException("The balance is not enough, please add more money");
+            throw new InvalidException("The balance is not enough, please add more money");
         }
 
         Integer discount = 0;
@@ -72,7 +66,7 @@ public class CCodeService {
         long now = Generate.getTimeStamp();
         Code code = new Code(Generate.generateId("CODE_", 4), qr.getQrCategory(), uid, now, qr.getPrice() - discount, now + qr.getMaxAge() * 1000);
 
-        codeRepository.saveCode(code);
+        codeRepository.save(code);
 
         // reset cache remaining
         asyncExecutor.execute(() -> {
@@ -82,15 +76,15 @@ public class CCodeService {
                 cacheService.setCache(keyCache, cacheRemaining - code.getPrice());
             }
         });
-        return new ResponseSuccess(code);
-
+        HttpStatus status = HttpStatus.CREATED;
+        return new ResponseEntity<>(new ResponseSuccess(code, status), status);
     }
 
-    public ResponseSuccess getBoughtCode(HttpServletRequest request, String quantity) throws SQLException {
+    public ResponseEntity<ResponseSuccess> getBoughtCode(HttpServletRequest request, String quantity) {
 
         Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = customerDataToken.getUid();
-
+        int begin = 0;
         Integer quantityLimit;
         try {
             quantityLimit = Integer.parseInt(quantity.trim());
@@ -98,32 +92,26 @@ public class CCodeService {
             quantityLimit = 1000000;
         }
 
-        List<Code> boughtCode = codeRepository.allBoughtCode(uid, quantityLimit);
-        return new ResponseSuccess(boughtCode);
+        Pageable pageable = PageRequest.of(begin, quantityLimit);
+        List<Code> boughtCode = codeRepository.findByUidOrderByBuyAtDesc(uid, pageable);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(boughtCode, status), status);
     }
 
-
-    public ResponseSuccess getInfoCode(String qrid, HttpServletRequest request) throws BadRequestException, NotFoundException, SQLException {
-        if (qrid == null) {
-            throw new BadRequestException("Invalid qr");
+    public ResponseEntity<ResponseSuccess> getInfoCode(String qrid, HttpServletRequest request) {
+        if (qrid.equals("")) {
+            throw new InvalidException("Invalid qr");
         }
 
         Customer customerDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = customerDataToken.getUid();
 
-        Code code = codeRepository.getInfo(uid, qrid);
-
-        if (code == null) {
-            throw new NotFoundException("Not found");
-        }
-
-        if (code.getAcceptBy() != null) {
-            code.setAcceptBy("1");
-        }
-        return new ResponseSuccess(code);
+        CodeWithBot code = codeRepository.findCodeWithBot(uid, qrid).orElseThrow(() -> new NotFoundException());
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(code, status), status);
     }
 
-    public ResponseSuccess getContenQr(String qrid, HttpServletRequest request) throws BadRequestException, NotFoundException, SQLException, JsonProcessingException {
+    public ResponseEntity<ResponseSuccess> getContenQr(String qrid, HttpServletRequest request) {
         if (qrid == null || qrid.trim().isEmpty()) {
             throw new BadRequestException("Invalid qr");
         }
@@ -135,7 +123,7 @@ public class CCodeService {
         String contentQr = cacheService.getCache(keyCache);
 
         if (contentQr == null) {
-            Code code = codeRepository.getInfo(uid, qrid);
+            Code code = codeRepository.findByQridAndUid(uid, qrid).orElseThrow(() -> new NotFoundException("Not found"));
 
             if (code == null) {
                 throw new NotFoundException("Not found");
@@ -166,22 +154,32 @@ public class CCodeService {
             }
 
             Json<ContentQr> json = new Json<>();
-            contentQr = json.convertToJson(content);
+            try {
+                contentQr = json.convertToJson(content);
+            } catch (JsonProcessingException e) {
+                throw new LogicException(e.getMessage());
+            }
 
             if (!cacheService.setCache(keyCache, contentQr)) {
                 System.out.println("Error set cache");
             }
         }
-
-        return new ResponseSuccess(contentQr);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(contentQr, status), status);
     }
 
-    public ResponseSuccess calcPriceExtendCode(String qrid, String date, int indexTime, HttpServletRequest request) throws BadRequestException, NotFoundException, SQLException {
+    public ResponseEntity<ResponseSuccess> calcPriceExtendCode(String qrid, String date, int indexTime, HttpServletRequest request) {
         Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = staffDataToken.getUid();
+        Map<String, Object> dataRes = handleCalcPriceExtendCode(qrid, date, indexTime, uid);
+        cacheService.setCache("PriceExtendCode" + qrid, dataRes);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(dataRes, status), status);
+    }
 
+    private Map<String, Object> handleCalcPriceExtendCode(String qrid, String date, int indexTime, String uid) {
         if (date.trim().isEmpty()) {
-            throw new BadRequestException("Invalid date");
+            throw new InvalidException("Invalid date");
         }
 
         long timestamp = Timestamp.convertDateToTimestamp(date, "dd-MM-yyyy");
@@ -194,11 +192,7 @@ public class CCodeService {
             throw new BadRequestException("Invalid time");
         }
 
-        Code code = codeRepository.getInfo(uid, qrid);
-        if (code == null) {
-            throw new NotFoundException("Code not found");
-        }
-
+        Code code = codeRepository.findByQridAndUid(qrid, uid).orElseThrow(() -> new NotFoundException("Not found"));
         long now = Generate.getTimeStamp();
 
         if (code.getCheckinAt() == 0 || code.getCheckoutAt() != 0 || now < code.getExpireAt()) {
@@ -224,24 +218,16 @@ public class CCodeService {
             }
         };
 
-        cacheService.setCache("PriceExtendCode" + qrid, dataRes);
-
-        return new ResponseSuccess(dataRes);
+        return dataRes;
     }
 
-    public ResponseSuccess extendCode(String qrid, String date, int indexTime, HttpServletRequest request) throws BadRequestException, NotFoundException, SQLException {
+    public ResponseEntity<ResponseSuccess> extendCode(String qrid, String date, int indexTime, HttpServletRequest request) {
         Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = staffDataToken.getUid();
 
         Map<String, Object> data = cacheService.getCache("PriceExtendCode" + qrid);
         if (data == null || !data.get("date").equals(date) || !data.get("indexTime").equals(indexTime)) {
-            ResponseSuccess res = calcPriceExtendCode(qrid, date, indexTime, request);
-            if (res.getSuccess() == true) {
-                data = cacheService.getCache("PriceExtendCode" + qrid);
-            } else {
-                // error calc price extend
-                return res;
-            }
+            data = handleCalcPriceExtendCode(qrid, date, indexTime, uid);
         }
 
         int price = (int) data.get("price");
@@ -257,13 +243,15 @@ public class CCodeService {
         code.setPriceExtend(code.getPriceExtend() + price);
         code.setTimesExtend(code.getTimesExtend() + 1);
 
-        codeRepository.updateCode(code);
+        codeRepository.save(code);
 
         cacheService.setCache("remaining_" + uid, remaining - price);
-        return new ResponseSuccess();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    private int getRemainingUser(String idUser) throws SQLException {
+    private int getRemainingUser(String idUser) {
+
         Integer remaining = cacheService.getCache("remaining_" + idUser);
         if (remaining != null) {
             return remaining;
@@ -272,7 +260,8 @@ public class CCodeService {
         return cashCustomerService.getRemaining(idUser);
     }
 
-    public ResponseSuccess cancleCode(String qrid, HttpServletRequest request) throws BadRequestException, SQLException {
+    public ResponseEntity<ResponseSuccess> cancleCode(String qrid, HttpServletRequest request) {
+
         Customer staffDataToken = (Customer) request.getAttribute("customerDataToken");
         String uid = staffDataToken.getUid();
 
@@ -281,7 +270,7 @@ public class CCodeService {
             throw new BadRequestException("Invalid code");
         }
 
-        Code code = codeRepository.getInfo(uid, qrid);
+        Code code = codeRepository.findByQridAndUid(qrid, uid).orElseThrow(() -> new NotFoundException("Not Found"));
         if (code == null) {
             throw new BadRequestException("Code not exist");
         }
@@ -292,7 +281,8 @@ public class CCodeService {
         long now = Generate.getTimeStamp();
         code.setCancleAt(now);
 
-        codeRepository.updateCode(code);
-        return new ResponseSuccess();
+        codeRepository.save(code);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 }

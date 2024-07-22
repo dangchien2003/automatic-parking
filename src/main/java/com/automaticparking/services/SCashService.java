@@ -1,46 +1,47 @@
 package com.automaticparking.services;
 
-import com.automaticparking.database.entity.Cash;
-import com.automaticparking.repositorys.SCashRepository;
+import com.automaticparking.Repositorys.CashRepository;
 import com.automaticparking.database.dto.ApproveDto;
+import com.automaticparking.database.entity.Cash;
 import com.automaticparking.database.entity.Staff;
+import com.automaticparking.exception.BadRequestException;
+import com.automaticparking.exception.InvalidException;
 import com.automaticparking.types.ResponseSuccess;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import util.Generate;
-import response.ResponseApi;
 
-import java.sql.SQLException;
+import util.Generate;
+
+import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class SCashService extends ResponseApi {
-    private SCashRepository cashStaffRepository;
+@AllArgsConstructor
+public class SCashService {
+    private CashRepository cashRepository;
 
-    @Autowired
-    public SCashService(SCashRepository cashStaffRepository) {
-        this.cashStaffRepository = cashStaffRepository;
+    public ResponseEntity<ResponseSuccess> getAllCashNotApprove() {
+        List<Cash> cashs = cashRepository.findAllCashNotApprove();
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(cashs, status), status);
     }
 
-    public ResponseSuccess getAllCashNotApprove() throws SQLException {
-        List<Cash> cashs = cashStaffRepository.getAllCashNotApprove();
-        return new ResponseSuccess(cashs);
-    }
-
-    public ResponseSuccess approveCash(ApproveDto approve, HttpServletRequest request) throws BadRequestException, SQLException {
-        if (!approve.listIdCash.getClass().isArray()) {
-            throw new BadRequestException("id not array");
+    public ResponseEntity<ResponseSuccess> approveCash(ApproveDto approve, HttpServletRequest request) {
+        if (!approve.getListIdCash().getClass().isArray()) {
+            throw new InvalidException("id not array");
         }
         Staff staffDataToken = (Staff) request.getAttribute("staffDataToken");
 
-        Integer countUpdated = cashStaffRepository.approveListCash(approve.listIdCash, Generate.getTimeStamp(), staffDataToken.getSid());
+        Integer countUpdated = cashRepository.approveListCash(Generate.getTimeStamp(), staffDataToken.getSid(), Arrays.stream(approve.getListIdCash()).toList());
 
-        if (countUpdated != approve.listIdCash.length) {
-            throw new BadRequestException("Update failed " + countUpdated + "/" + approve.listIdCash.length);
+        if (countUpdated != approve.getListIdCash().length) {
+            throw new BadRequestException("Update failed " + countUpdated + "/" + approve.getListIdCash().length);
         }
-        return new ResponseSuccess(countUpdated);
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(countUpdated, status), status);
     }
 
 }

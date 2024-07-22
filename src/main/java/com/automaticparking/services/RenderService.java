@@ -1,22 +1,17 @@
 package com.automaticparking.services;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 @Component
+@AllArgsConstructor
 public class RenderService {
 
     private final TemplateEngine templateEngine;
     private Dotenv dotenv;
-
-    @Autowired
-    public RenderService(TemplateEngine templateEngine, Dotenv dotenv) {
-        this.dotenv = dotenv;
-        this.templateEngine = templateEngine;
-    }
 
     public String customerForget(String forgetToken) {
 

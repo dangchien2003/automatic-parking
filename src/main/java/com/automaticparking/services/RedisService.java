@@ -1,18 +1,14 @@
 package com.automaticparking.services;
 
 import com.automaticparking.database.dto.Redis;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
 @Service
+@AllArgsConstructor
 public class RedisService {
     private Jedis jedis;
-
-    @Autowired
-    public RedisService(Jedis jedis) {
-        this.jedis = jedis;
-    }
 
     public boolean set(Redis redis) {
         try {

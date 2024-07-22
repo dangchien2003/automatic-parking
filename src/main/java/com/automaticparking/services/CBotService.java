@@ -1,44 +1,43 @@
 package com.automaticparking.services;
 
+import com.automaticparking.Repositorys.BotRepository;
 import com.automaticparking.database.entity.Bot;
-import com.automaticparking.repositorys.BotRepository;
+import com.automaticparking.exception.InvalidException;
+import com.automaticparking.exception.NotFoundException;
 import com.automaticparking.types.ResponseSuccess;
-import javassist.NotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 
 @Service
+@AllArgsConstructor
 public class CBotService {
     private BotRepository botRepository;
     private CacheService cacheService;
 
-    @Autowired
-    public CBotService(BotRepository botRepository, CacheService cacheService) {
-        this.botRepository = botRepository;
-        this.cacheService = cacheService;
-
-    }
-
-    public ResponseSuccess geInfoBot(String id) throws SQLException, NotFoundException {
-        Bot bot = getBot(id);
-        if (bot == null || bot.getCancleAt() != null) {
-            throw new NotFoundException("Not found bot");
+    public ResponseEntity<ResponseSuccess> geInfoBot(String id) {
+        if (id.isEmpty()) {
+            throw new InvalidException("Invalid bot");
         }
-
-        return new ResponseSuccess(new HashMap<String, String>() {{
+        Bot bot = getBot(id);
+        if (bot.getCancleAt() != null) {
+            throw new NotFoundException();
+        }
+        HttpStatus status = HttpStatus.OK;
+        return new ResponseEntity<>(new ResponseSuccess(new HashMap<String, String>() {{
             put("id", id);
             put("address", bot.getAddress());
-        }});
+        }}, status), status);
     }
 
-    private Bot getBot(String id) throws SQLException {
+    private Bot getBot(String id) {
         String key = "bot_cache_" + id;
         Bot bot = cacheService.getCache(key);
         if (bot == null) {
-            bot = botRepository.getInfo(id);
+            bot = botRepository.findById(id).orElseThrow(() -> new NotFoundException());
             if (bot != null) {
                 cacheService.setCache(key, bot);
             }
