@@ -1,35 +1,29 @@
 package com.automaticparking.middleware;
 
-import com.automaticparking.model.customer.Customer;
-import com.automaticparking.model.customer.CustomerRepository;
-import com.automaticparking.model.customer.CustomerService;
+import com.automaticparking.database.entity.Customer;
+import com.automaticparking.exception.AuthorizedException;
+import com.automaticparking.exception.BaseError;
+import com.automaticparking.exception.InvalidException;
+import com.automaticparking.services.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import util.Cookies;
-import util.Genarate;
-import response.ResponseApi;
 import util.Json;
 
-import java.util.Map;
-
 @Component
-public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
+@AllArgsConstructor
+public class TokenCustomer extends BaseError implements HandlerInterceptor {
     private CustomerService customerService;
-
-    @Autowired
-    public TokenCustomer(CustomerService customerService) {
-        this.customerService = customerService;
-    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -39,10 +33,10 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
         Cookie Ctoken = CookieUtil.getCookieByName("CToken");
 
         if (Ctoken == null) {
-            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Not found token"), HttpStatus.OK);
+            ResponseEntity<BaseError> errorResponse = new ResponseEntity<>(setError(HttpStatus.BAD_REQUEST, "Not found token"), HttpStatus.OK);
 
             ObjectMapper objectMapper = new ObjectMapper();
-            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
+            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody());
 
             response.setContentType("application/json");
             response.getWriter().write(jsonResponse);
@@ -71,40 +65,35 @@ public class TokenCustomer extends ResponseApi implements HandlerInterceptor {
         }
 
         if (error) {
-            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Invalid token"), HttpStatus.BAD_REQUEST);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
-            response.setContentType("application/json");
-            response.getWriter().write(jsonResponse);
-            response.setStatus(errorResponse.getStatusCodeValue());
-            return false; // endpoint
+            throw new InvalidException("Invalid token");
+//            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Invalid token"), HttpStatus.BAD_REQUEST);
+//
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
+//            response.setContentType("application/json");
+//            response.getWriter().write(jsonResponse);
+//            response.setStatus(errorResponse.getStatusCodeValue());
+//            return false; // endpoint
         }
 
         String uid = customerDataToken.getUid();
         Customer customerInfo = customerService.getCustomer(uid);
         // kiểm tra tài khoản bị block
         if (customerInfo.getBlock() == 1) {
-            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Account Blocked"), HttpStatus.UNAUTHORIZED);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
-            response.setContentType("application/json");
-            response.getWriter().write(jsonResponse);
-            response.setStatus(errorResponse.getStatusCodeValue());
-            return false;
+            throw new AuthorizedException("Account Blocked");
         }
 
         // kiểm tra phiên đăng nhập của tk
         if (!customerInfo.getLastLogin().equals(customerDataToken.getLastLogin())) {
-            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Login session ended"), HttpStatus.BAD_REQUEST);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
-            response.setContentType("application/json");
-            response.getWriter().write(jsonResponse);
-            response.setStatus(errorResponse.getStatusCodeValue());
-            return false;
+            throw new AuthorizedException("Login session ended");
+//            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Login session ended"), HttpStatus.BAD_REQUEST);
+//
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
+//            response.setContentType("application/json");
+//            response.getWriter().write(jsonResponse);
+//            response.setStatus(errorResponse.getStatusCodeValue());
+//            return false;
         }
 
         request.setAttribute("customerDataToken", customerDataToken);
