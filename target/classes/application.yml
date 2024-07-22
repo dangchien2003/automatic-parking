@@ -1,6 +1,8 @@
 spring:
   application:
     name: automatic-parking
+  jpa:
+    open-in-view: false
   # mail
   mail:
     protocol: smtp
