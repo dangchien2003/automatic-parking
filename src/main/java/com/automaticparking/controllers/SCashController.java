@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("api/staff")
+@RequestMapping("/staff")
 @AllArgsConstructor
 public class SCashController  {
     private SCashService cashStaffService;

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("api/customer/cash")
+@RequestMapping("/customer/cash")
 @AllArgsConstructor
 public class CCashController  {
     private CCashService cashCustomerService;

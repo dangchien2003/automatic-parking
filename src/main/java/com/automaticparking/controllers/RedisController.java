@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/redis")
+@RequestMapping("/redis")
 @AllArgsConstructor
 public class RedisController {
     private RedisService redisService;

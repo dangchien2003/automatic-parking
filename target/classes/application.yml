@@ -27,6 +27,8 @@ spring:
       maximum-pool-size: 30
   mvc:
     dispatch-options-request: true
+    servlet:
+      path: /api
   #cache
   cache:
     caffeine:

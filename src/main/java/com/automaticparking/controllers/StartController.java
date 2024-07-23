@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/start")
+@RequestMapping("/start")
 public class StartController {
     @GetMapping("hello")
     ResponseEntity<?> hello() {

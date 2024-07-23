@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.concurrent.Executor;
 
 @Service
-public class RunService  {
+public class RunService {
     private Executor asyncExecutor;
     private boolean running = false;
     private Dotenv dotenv;
@@ -35,7 +35,7 @@ public class RunService  {
             RestTemplate restTemplate = new RestTemplate();
             while (running) {
                 try {
-                    restTemplate.getForEntity("https://autoparking-be-" + version + ".onrender.com/start/hello", String.class);
+                    restTemplate.getForEntity("https://autoparking-be-" + version + ".onrender.com/api/start/hello", String.class);
                     restTemplate.getForEntity("https://autoparking-readplate-" + version + ".onrender.com", String.class);
                     restTemplate.getForEntity("https://autoparking-bot-" + version + ".onrender.com/bot/hello.html", String.class);
                     restTemplate.getForEntity("https://autoparking-" + version + ".onrender.com//helloworld", String.class);

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 
 @Controller
-@RequestMapping("/api/load")
+@RequestMapping("/load")
 @AllArgsConstructor
 public class RunController {
     private RunService runService;

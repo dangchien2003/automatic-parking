@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("api/staff/shop-qr")
+@RequestMapping("/staff/shop-qr")
 @AllArgsConstructor
 public class SQrShopontroller  {
 

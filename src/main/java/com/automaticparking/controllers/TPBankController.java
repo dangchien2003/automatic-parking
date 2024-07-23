@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("api/tpbank")
+@RequestMapping("/tpbank")
 @AllArgsConstructor
 public class TPBankController  {
     private TPBankService tpBankService;
