@@ -101,7 +101,7 @@ public class StaffService {
         cookie.setMaxAge(3600);
         response.addCookie(cookie);
         HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(new ResponseSuccess(cookies, staff, status), status);
+        return new ResponseEntity<>(new ResponseSuccess(null, staff, status), status);
     }
 
     public ResponseEntity<ResponseSuccess> createStaff(CreateStaffDto createStaff, HttpServletRequest request) {

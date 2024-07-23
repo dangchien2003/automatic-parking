@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("customer")
+@RequestMapping("api/customer")
 @AllArgsConstructor
-public class CustomerController  {
+public class CustomerController {
     private CustomerService customerService;
 
     @PostMapping("register")
@@ -40,7 +40,7 @@ public class CustomerController  {
         return customerService.loginGoogle(loginGooleDto.getGoogleToken(), response);
     }
 
-    @GetMapping("refresh/tok")
+    @GetMapping("refresh")
     ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
         return customerService.refresh(request, response);
     }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("customer/bot")
+@RequestMapping("api/customer/bot")
 @AllArgsConstructor
 public class CBotController  {
     private CBotService cBotService;

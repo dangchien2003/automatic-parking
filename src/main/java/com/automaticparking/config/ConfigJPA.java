@@ -32,7 +32,7 @@ public class ConfigJPA {
         em.setJpaVendorAdapter(vendorAdapter);
         em.getJpaPropertyMap().put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
 //        em.getJpaPropertyMap().put("hibernate.hbm2ddl.auto", "update");
-        em.getJpaPropertyMap().put("hibernate.show_sql", "true");
+        em.getJpaPropertyMap().put("hibernate.show_sql", dotenv.get("ACTIVE").equals("prod") ? false : true);
 //        em.getJpaPropertyMap().put("hibernate.format_sql", "true");
         em.getJpaPropertyMap().put("hibernate.use_sql_comments", "true");
 

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("staff")
+@RequestMapping("api/staff")
 @AllArgsConstructor
 public class StaffController  {
     private StaffService staffService;
