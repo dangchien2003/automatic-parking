@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("api/cache")
+@RequestMapping("/cache")
 @AllArgsConstructor
 public class CacheController  {
     private CacheService cacheService;

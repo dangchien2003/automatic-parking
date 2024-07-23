@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
-@RequestMapping("api/bot")
+@RequestMapping("/bot")
 @AllArgsConstructor
 public class BotController  {
     private BotService botService;
