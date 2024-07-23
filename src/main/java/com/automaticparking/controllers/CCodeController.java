@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("customer/code")
+@RequestMapping("api/customer/code")
 @AllArgsConstructor
 public class CCodeController  {
     private CCodeService codeService;

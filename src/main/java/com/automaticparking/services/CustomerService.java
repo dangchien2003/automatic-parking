@@ -9,8 +9,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import encrypt.Hash;
 import encrypt.JWT;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -19,14 +19,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-import util.DotENV;
-import util.Generate;
 import util.Random;
+import util.*;
 import validation.EmailValid;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -36,6 +33,7 @@ public class CustomerService {
     private CustomerRepository customerRepository;
     private CacheService cacheService;
     private GoogleIdTokenVerifier googleIdTokenVerifier;
+    private Dotenv dotenv;
 
     public ResponseEntity<ResponseSuccess> createAccount(RegisterDto registerDto) {
         Long now = Generate.getTimeStamp();
@@ -96,7 +94,7 @@ public class CustomerService {
 
         // check payload
         if (dataToken == null) {
-            throw new BadRequestException("Invalid token");
+            throw new BadRequestException("Invalid accept token");
         }
 
         // get map payload
@@ -146,31 +144,19 @@ public class CustomerService {
             throw new AuthorizedException("Account has been locked");
         }
 
-        JWT<Customer> jwt = new JWT<>();
-        String CToken;
+        int age = Integer.parseInt(dotenv.get("TIME_SECOND_TOKEN"));
+        AccessToken data = getDataAuthen(customer, age);
 
-        CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
-
-        Cookie cookie = new Cookie("CToken", CToken);
-        cookie.setAttribute("Path", "/customer");
-        cookie.setAttribute("HttpOnly", "True");
-        cookie.setAttribute("Secure", "True");
-        cookie.setAttribute("SameSite", "None");
-        cookie.setAttribute("Secure", "True");
-        cookie.setAttribute("Partitioned", "True");
-        cookie.setMaxAge(60 * 6);
-
-        response.addCookie(cookie);
-
-        Long now = Generate.getTimeStamp();
-        Long dieToken = now + 6 * 60 * 1000;
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("ETok", dieToken + "->MA360");
-
-        // setCache
         setCustomerToCache(customer, customer.getUid());
         HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(new ResponseSuccess(cookies, customer, status), status);
+        return new ResponseEntity<>(new ResponseSuccess(data, status), status);
+    }
+
+    private AccessToken getDataAuthen(Customer customer, int age) {
+        JWT<Customer> jwt = new JWT<>();
+        String CToken = jwt.createJWT(customer, age);
+
+        return new AccessToken(CToken, "Bearer", age);
     }
 
     public ResponseEntity<ResponseSuccess> loginGoogle(String googleToken, HttpServletResponse response) {
@@ -181,7 +167,7 @@ public class CustomerService {
             idToken = null;
         }
         if (idToken == null) {
-            throw new BadRequestException("Invalid token");
+            throw new AuthorizedException("Invalid google token");
         }
         GoogleIdToken.Payload payload = idToken.getPayload();
         String email = payload.getEmail();
@@ -205,70 +191,41 @@ public class CustomerService {
             customerRepository.save(customer);
         }
 
-        JWT<Customer> jwt = new JWT<>();
-        String CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
-
-        Cookie cookie1 = new Cookie("CToken", CToken);
-        cookie1.setAttribute("Path", "/customer");
-        cookie1.setAttribute("HttpOnly", "True");
-        cookie1.setAttribute("Secure", "True");
-        cookie1.setAttribute("SameSite", "None");
-        cookie1.setAttribute("Secure", "True");
-        cookie1.setAttribute("Partitioned", "True");
-        cookie1.setMaxAge(60 * 6);
-
-        response.addCookie(cookie1);
-
-        Long now = Generate.getTimeStamp();
-        Long dieToken = now + 6 * 60 * 1000;
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("ETok", dieToken + "->MA360");
+        int age = Integer.parseInt(dotenv.get("TIME_SECOND_TOKEN"));
+        AccessToken data = getDataAuthen(customer, age);
 
         // setCache
         setCustomerToCache(customer, customer.getUid());
         HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(new ResponseSuccess(cookies, customer, status), status);
+        return new ResponseEntity<>(new ResponseSuccess(data, status), status);
     }
 
 
     public ResponseEntity<ResponseSuccess> refresh(HttpServletRequest request, HttpServletResponse response) {
-        Customer data = (Customer) request.getAttribute("customerDataToken");
+        String authorizationHeader = request.getHeader("Authorization");
+        String token = Author.getAuthor(authorizationHeader);
 
         JWT<Customer> jwt = new JWT<>();
-        String newToken = jwt.createJWT(data, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
+        Claims payload = jwt.decodeJWT(token);
 
-        // set cookie
-        Cookie cookie1 = new Cookie("CToken", newToken);
-        cookie1.setAttribute("Path", "/customer");
-        cookie1.setAttribute("HttpOnly", "True");
-        cookie1.setAttribute("Secure", "True");
-        cookie1.setAttribute("SameSite", "None");
-        cookie1.setAttribute("Secure", "True");
-        cookie1.setAttribute("Partitioned", "True");
-        cookie1.setMaxAge(60 * 6);
+        if (payload == null) {
+            throw new AuthorizedException("Invalid token");
+        }
 
-        response.addCookie(cookie1);
+        Json<Customer> json = new Json<>();
+        Customer customer = json.jsonParse(payload.getSubject(), Customer.class);
 
-        Long now = Generate.getTimeStamp();
-        Long dieToken = now + 6 * 60 * 1000;
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("ETok", dieToken + "->MA360");
+        int age = Integer.parseInt(dotenv.get("TIME_SECOND_TOKEN"));
+        AccessToken data = getDataAuthen(customer, age);
+
         HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(new ResponseSuccess(cookies, null, status), status);
+        return new ResponseEntity<>(new ResponseSuccess(data, status), status);
     }
 
     public ResponseEntity<ResponseSuccess> logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie("CToken", "");
-        cookie.setAttribute("Path", "/customer");
-        cookie.setAttribute("HttpOnly", "True");
-        cookie.setAttribute("Secure", "True");
-        cookie.setAttribute("SameSite", "None");
-        cookie.setAttribute("Partitioned", "True");
-        cookie.setMaxAge(0);
-
-        response.addCookie(cookie);
+        String[] deleteCookies = {"nextRefresh"};
         HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(new ResponseSuccess(status), status);
+        return new ResponseEntity<>(new ResponseSuccess(deleteCookies, status), status);
     }
 
     public ResponseEntity<ResponseSuccess> forget(@Valid @RequestBody ForgetPassword forgetPassword) {
@@ -282,7 +239,7 @@ public class CustomerService {
         forgetPassword.lastLogin = customer.getLastLogin();
 
         JWT<ForgetPassword> jwt = new JWT<>();
-        String forgetToken = jwt.createJWT(forgetPassword, Long.parseLong(DotENV.get("FORGET_PASSWORD_SECOND_TOKEN")));
+        String forgetToken = jwt.createJWT(forgetPassword, Long.parseLong(Objects.requireNonNull(dotenv.get("FORGET_PASSWORD_SECOND_TOKEN"))));
 
         // get template
         String html = mailRender.customerForget(forgetToken);
@@ -306,7 +263,7 @@ public class CustomerService {
         Claims dataToken = jwt.decodeJWT(forgetToken);
 
         if (dataToken == null) {
-            throw new BadRequestException("Invalid token");
+            throw new BadRequestException("Invalid accept token");
         }
 
         Map<String, String> dataForget = Generate.getMapFromJson(dataToken.getSubject());
@@ -384,27 +341,13 @@ public class CustomerService {
 
         customerRepository.save(customer);
 
-        JWT<Customer> jwt = new JWT<>();
-        String CToken = jwt.createJWT(customer, Long.parseLong(DotENV.get("TIME_SECOND_TOKEN")));
-
-        Map<String, String> cookies = new HashMap<>();
-        cookies.put("CToken", CToken);
-
-        Cookie cookie = new Cookie("CToken", CToken);
-        cookie.setAttribute("Path", "/customer");
-        cookie.setAttribute("HttpOnly", "True");
-        cookie.setAttribute("Secure", "True");
-        cookie.setAttribute("SameSite", "None");
-        cookie.setAttribute("Secure", "True");
-        cookie.setAttribute("Partitioned", "True");
-
-        cookie.setMaxAge(3600);
-        response.addCookie(cookie);
+        int age = Integer.parseInt(dotenv.get("TIME_SECOND_TOKEN"));
+        AccessToken data = getDataAuthen(customer, age);
 
         // set cache
         setCustomerToCache(customer, customer.getUid());
         HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(new ResponseSuccess(cookies, customer, status), status);
+        return new ResponseEntity<>(new ResponseSuccess(data, status), status);
     }
 
     public ResponseEntity<ResponseSuccess> changeEmail(HttpServletRequest request, ChangeEmailDto dataChange) {
@@ -459,7 +402,7 @@ public class CustomerService {
         JWT<?> jwt = new JWT<>();
         Claims claimsData = jwt.decodeJWT(token);
         if (claimsData == null) {
-            throw new BadRequestException("Invalid token");
+            throw new BadRequestException("Invalid change token");
         }
 
         Map<String, String> mapData = Generate.getMapFromJson(claimsData.getSubject());

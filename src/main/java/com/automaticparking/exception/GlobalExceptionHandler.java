@@ -1,5 +1,6 @@
 package com.automaticparking.exception;
 
+import com.automaticparking.types.ResponseException;
 import lombok.extern.log4j.Log4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @ControllerAdvice
 @Log4j
@@ -33,20 +36,20 @@ public class GlobalExceptionHandler extends BaseError {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> notFound(RuntimeException ex) {
-        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        HttpStatus status = HttpStatus.NOT_FOUND;
         return new ResponseEntity<>(setError(status, ex.getMessage()), status);
     }
 
-    @ExceptionHandler({InvalidException.class, BadRequestException.class})
+    @ExceptionHandler({InvalidException.class, BadRequestException.class, ResponseException.class})
     public ResponseEntity<Object> badRequest(RuntimeException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         return new ResponseEntity<>(setError(status, ex.getMessage()), status);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        HttpStatus status = HttpStatus.BAD_REQUEST;
-        return new ResponseEntity<>(setError(status, ex.getBindingResult().getAllErrors().get(0).getDefaultMessage()), status);
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class, NoHandlerFoundException.class})
+    public ResponseEntity<Object> handleValidationExceptions(Exception ex) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        return new ResponseEntity<>(setError(status, ex.getMessage()), status);
     }
 }

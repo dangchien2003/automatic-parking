@@ -3,12 +3,10 @@ package com.automaticparking.middleware;
 import com.automaticparking.database.entity.Customer;
 import com.automaticparking.exception.AuthorizedException;
 import com.automaticparking.exception.BaseError;
-import com.automaticparking.exception.InvalidException;
 import com.automaticparking.services.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import encrypt.JWT;
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -17,8 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import util.Cookies;
+import util.Author;
 import util.Json;
+import util.Request;
 
 @Component
 @AllArgsConstructor
@@ -28,12 +27,15 @@ public class TokenCustomer extends BaseError implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        Cookie[] cookies = request.getCookies();
-        Cookies CookieUtil = new Cookies(cookies);
-        Cookie Ctoken = CookieUtil.getCookieByName("CToken");
+        if (Request.isPreflightRequest(request) == true) {
+            return true;
+        }
 
-        if (Ctoken == null) {
-            ResponseEntity<BaseError> errorResponse = new ResponseEntity<>(setError(HttpStatus.BAD_REQUEST, "Not found token"), HttpStatus.OK);
+        String authorizationHeader = request.getHeader("Authorization");
+        String token = Author.getAuthor(authorizationHeader);
+
+        if (token == null || token.isEmpty()) {
+            ResponseEntity<BaseError> errorResponse = new ResponseEntity<>(setError(HttpStatus.UNAUTHORIZED, "Invalid token"), HttpStatus.UNAUTHORIZED);
 
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody());
@@ -44,7 +46,6 @@ public class TokenCustomer extends BaseError implements HandlerInterceptor {
             return false; // endpoint
         }
 
-        String token = Ctoken.getValue();
         Boolean error = false;
         if (token.trim() == "") {
             error = true;
@@ -65,15 +66,7 @@ public class TokenCustomer extends BaseError implements HandlerInterceptor {
         }
 
         if (error) {
-            throw new InvalidException("Invalid token");
-//            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Invalid token"), HttpStatus.BAD_REQUEST);
-//
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
-//            response.setContentType("application/json");
-//            response.getWriter().write(jsonResponse);
-//            response.setStatus(errorResponse.getStatusCodeValue());
-//            return false; // endpoint
+            throw new AuthorizedException("Invalid token");
         }
 
         String uid = customerDataToken.getUid();
@@ -86,14 +79,6 @@ public class TokenCustomer extends BaseError implements HandlerInterceptor {
         // kiểm tra phiên đăng nhập của tk
         if (!customerInfo.getLastLogin().equals(customerDataToken.getLastLogin())) {
             throw new AuthorizedException("Login session ended");
-//            ResponseEntity<ResponseEntity> errorResponse = new ResponseEntity<>(badRequestApi("Login session ended"), HttpStatus.BAD_REQUEST);
-//
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            String jsonResponse = objectMapper.writeValueAsString(errorResponse.getBody().getBody());
-//            response.setContentType("application/json");
-//            response.getWriter().write(jsonResponse);
-//            response.setStatus(errorResponse.getStatusCodeValue());
-//            return false;
         }
 
         request.setAttribute("customerDataToken", customerDataToken);
