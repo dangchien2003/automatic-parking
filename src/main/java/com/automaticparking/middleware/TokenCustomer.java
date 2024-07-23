@@ -27,7 +27,7 @@ public class TokenCustomer extends BaseError implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        if (Request.isPreflightRequest(request) == true) {
+        if (Request.isPreflightRequest(request)) {
             return true;
         }
 

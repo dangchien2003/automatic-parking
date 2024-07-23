@@ -26,7 +26,7 @@ spring:
     hikari:
       maximum-pool-size: 30
   mvc:
-    dispatch-options-request: true
+    dispatch-options-request: false
     servlet:
       path: /api
   #cache
