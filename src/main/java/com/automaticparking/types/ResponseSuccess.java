@@ -1,41 +1,31 @@
 package com.automaticparking.types;
 
-import java.util.Map;
+import com.automaticparking.database.dto.Cookie;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.springframework.http.HttpStatus;
 
+import java.util.List;
+
+@Data
+@AllArgsConstructor
 public class ResponseSuccess {
-    private final Boolean success = true;
-    private Map<String, String> cookies;
+    private int status;
+    private List<Cookie> cookies;
     private Object data;
 
-    public ResponseSuccess(Map<String, String> cookies, Object data) {
+    public ResponseSuccess(List<Cookie> cookies, Object data, HttpStatus status) {
         this.cookies = cookies;
         this.data = data;
+        this.status = status.value();
     }
 
-    public ResponseSuccess(Object data) {
+    public ResponseSuccess(Object data, HttpStatus status) {
         this.data = data;
+        this.status = status.value();
     }
 
-    public ResponseSuccess() {
-    }
-
-    public Boolean getSuccess() {
-        return success;
-    }
-
-    public Map<String, String> getCookies() {
-        return cookies;
-    }
-
-    public void setCookies(Map<String, String> cookies) {
-        this.cookies = cookies;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
+    public ResponseSuccess(HttpStatus status) {
+        this.status = status.value();
     }
 }

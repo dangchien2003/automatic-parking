@@ -1,6 +1,8 @@
 spring:
   application:
     name: automatic-parking
+  jpa:
+    open-in-view: false
   # mail
   mail:
     protocol: smtp
@@ -24,7 +26,9 @@ spring:
     hikari:
       maximum-pool-size: 30
   mvc:
-    dispatch-options-request: true
+    dispatch-options-request: false
+    servlet:
+      path: /api
   #cache
   cache:
     caffeine:
@@ -32,3 +36,6 @@ spring:
 
 server:
   port: 8080
+  error:
+    whitelabel:
+      enabled: false
