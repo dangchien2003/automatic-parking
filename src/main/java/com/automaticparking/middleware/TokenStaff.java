@@ -1,9 +1,9 @@
 package com.automaticparking.middleware;
 
 import com.automaticparking.Repositorys.StaffRepository;
+import com.automaticparking.util.JWT;
 import com.automaticparking.database.entity.Staff;
 import com.automaticparking.exception.AuthorizedException;
-import encrypt.JWT;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,8 +12,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import util.Cookies;
-import util.Json;
+import com.automaticparking.util.Cookies;
+import com.automaticparking.util.Json;
 
 import java.util.Objects;
 
@@ -21,6 +21,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class TokenStaff implements HandlerInterceptor {
     private StaffRepository staffRepository;
+    private JWT jwt;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -49,7 +50,6 @@ public class TokenStaff implements HandlerInterceptor {
 
         Staff staffDataToken = new Staff();
         if (!error) {
-            JWT<Staff> jwt = new JWT<>();
             Claims dataToken = jwt.decodeJWT(token);
             if (dataToken == null) {
                 error = true;

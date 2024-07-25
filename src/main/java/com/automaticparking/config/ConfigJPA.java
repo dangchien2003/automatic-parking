@@ -2,6 +2,7 @@ package com.automaticparking.config;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityManagerFactory;
+import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -17,10 +18,9 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @Log4j
+@AllArgsConstructor
 public class ConfigJPA {
-    private Dotenv dotenv = Dotenv.configure()
-            .ignoreIfMissing()
-            .load();
+    private Dotenv dotenv;
 
     @Bean
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {

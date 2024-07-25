@@ -6,24 +6,34 @@ import com.automaticparking.database.dto.InputMoneyDto;
 import com.automaticparking.database.entity.Cash;
 import com.automaticparking.database.entity.Code;
 import com.automaticparking.database.entity.Customer;
+import com.automaticparking.exception.LogicException;
 import com.automaticparking.types.ResponseSuccess;
+import com.automaticparking.util.Generate;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import util.Generate;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 @Service
-@AllArgsConstructor
+
 public class CCashService {
+    @Autowired
     private CashRepository cashRepository;
+    @Autowired
     private CodeRepository codeRepository;
+    @Autowired
     private CacheService cacheService;
+    @Autowired
+    private Executor asyncExecutor;
+    @Autowired
+    private TPBankService tpBankService;
+    private boolean await = false;
 
     public ResponseEntity<ResponseSuccess> inputMoney(InputMoneyDto inputMoney, HttpServletRequest request) {
 
@@ -35,6 +45,22 @@ public class CCashService {
         cash.setMoney(inputMoney.getMoney());
         cash.setStringCode(inputMoney.getStringCode());
         cash.setCashAt(Generate.getTimeStamp());
+
+        asyncExecutor.execute(() -> {
+            if (await == true) {
+                return;
+            }
+            await = true;
+            try {
+                long timeSleep = 60 * 1000;
+                Thread.sleep(timeSleep);
+                tpBankService.autoTpbank();
+            } catch (Exception e) {
+                System.out.println("Lỗi scan: " + e.getMessage());
+                throw new LogicException(e.getMessage());
+            }
+            await = false;
+        });
 
         cashRepository.save(cash);
         HttpStatus status = HttpStatus.CREATED;

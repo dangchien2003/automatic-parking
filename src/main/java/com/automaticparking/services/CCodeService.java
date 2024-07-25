@@ -21,10 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import util.Generate;
-import util.Json;
-import util.KeyCache;
-import util.Timestamp;
+import com.automaticparking.util.Generate;
+import com.automaticparking.util.Json;
+import com.automaticparking.util.KeyCache;
+import com.automaticparking.util.Timestamp;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,25 +1,34 @@
-package encrypt;
+package com.automaticparking.util;
 
 import com.automaticparking.exception.LogicException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import util.DotENV;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Date;
 
-public class JWT<T> {
-    private final Key key = new SecretKeySpec(DotENV.get("KEY_JWT").getBytes(), SignatureAlgorithm.HS256.getJcaName());
-    private ObjectMapper objectMapper = new ObjectMapper();
+@AllArgsConstructor
+@Component
+public class JWT {
+    private Dotenv dotenv;
+    private ObjectMapper objectMapper;
 
-    public String createJWT(T data, long second) {
+    private Key getSigningKey() {
+        String secretKey = dotenv.get("KEY_JWT"); // Lấy khóa bí mật từ biến môi trường
+        return new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+    }
+
+    public String createJWT(Object data, long second) {
         try {
-            long nowMillis = System.currentTimeMillis();
+            long nowMillis = Generate.getTimeStamp();
             Date now = new Date(nowMillis);
 
             long expMillis = nowMillis + second * 1000;
@@ -30,7 +39,7 @@ public class JWT<T> {
                     .setSubject(userJson)
                     .setIssuedAt(now)
                     .setExpiration(exp)
-                    .signWith(key, SignatureAlgorithm.HS256)
+                    .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                     .compact();
             return jwt;
         } catch (JsonProcessingException e) {
@@ -41,7 +50,7 @@ public class JWT<T> {
     public Claims decodeJWT(String jwt) {
         try {
             Jws<Claims> claimsJws = Jwts.parserBuilder()
-                    .setSigningKey(key)
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(jwt);
 

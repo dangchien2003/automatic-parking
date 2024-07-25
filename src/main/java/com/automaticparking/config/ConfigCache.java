@@ -2,19 +2,23 @@ package com.automaticparking.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.github.cdimascio.dotenv.Dotenv;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import util.DotENV;
 
 import java.util.concurrent.TimeUnit;
 
 @Configuration
+@AllArgsConstructor
 public class ConfigCache {
+    private Dotenv dotenv;
+
     @Bean
     public Cache<String, Object> setupCache() {
         long lifeCache = 0;
         try {
-            lifeCache = Long.parseLong(DotENV.get("EXPIRE_CACHE_SECOND"));
+            lifeCache = Long.parseLong(dotenv.get("EXPIRE_CACHE_SECOND"));
         } catch (Exception e) {
             e.printStackTrace();
         }
