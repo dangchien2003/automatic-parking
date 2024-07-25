@@ -123,11 +123,7 @@ public class CCodeService {
         String contentQr = cacheService.getCache(keyCache);
 
         if (contentQr == null) {
-            Code code = codeRepository.findByQridAndUid(uid, qrid).orElseThrow(() -> new NotFoundException("Not found"));
-
-            if (code == null) {
-                throw new NotFoundException("Not found");
-            }
+            Code code = codeRepository.findByQridAndUid(qrid, uid).orElseThrow(() -> new NotFoundException("Not found"));
 
             if (code.getCancleAt() != 0) {
                 throw new BadRequestException("Cancled");

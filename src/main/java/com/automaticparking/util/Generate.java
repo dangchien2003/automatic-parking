@@ -1,5 +1,6 @@
 package com.automaticparking.util;
 
+import com.automaticparking.exception.LogicException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,7 +26,7 @@ public class Generate {
             });
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            data = null;
+            throw new LogicException(e.getMessage());
         }
 
         for (Map.Entry<String, String> entry : data.entrySet()) {
