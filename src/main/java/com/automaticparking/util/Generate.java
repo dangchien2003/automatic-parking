@@ -34,7 +34,7 @@ public class Generate {
         return data;
     }
 
-    public static String randomLetters(Integer length) {
+    public static String randomLettersUpper(Integer length) {
         java.util.Random random = new Random();
         StringBuilder sb = new StringBuilder();
 
@@ -48,7 +48,7 @@ public class Generate {
     }
 
     public static String generateId(String prefix, int lenRandom) {
-        return prefix + Generate.getTimeStamp() + "_" + Generate.randomLetters(lenRandom);
+        return prefix + Generate.getTimeStamp() + "_" + randomLettersUpper(lenRandom);
     }
 
 }

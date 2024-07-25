@@ -188,7 +188,7 @@ public class CustomerService {
             // create not yet
             Hash hash = new Hash();
             long now = Generate.getTimeStamp();
-            customer = new Customer(Generate.generateId("CUSTOMER_", 3), email, hash.hash(Generate.randomLetters(15)), now, now, 0);
+            customer = new Customer(Generate.generateId("CUSTOMER_", 3), email, hash.hash(Random.generateRandomString(15)), now, now, 0);
             customer.setAcceptAt(now);
             customerRepository.save(customer);
         }
