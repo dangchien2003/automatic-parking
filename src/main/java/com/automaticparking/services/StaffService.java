@@ -1,6 +1,7 @@
 package com.automaticparking.services;
 
 import com.automaticparking.Repositorys.StaffRepository;
+import com.automaticparking.util.JWT;
 import com.automaticparking.database.dto.ChangePasswordDto;
 import com.automaticparking.database.dto.CreateStaffDto;
 import com.automaticparking.database.dto.LoginDto;
@@ -11,8 +12,7 @@ import com.automaticparking.exception.BadRequestException;
 import com.automaticparking.exception.ConflictException;
 import com.automaticparking.exception.NotFoundException;
 import com.automaticparking.types.ResponseSuccess;
-import encrypt.Hash;
-import encrypt.JWT;
+import com.automaticparking.encrypt.Hash;
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,8 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import util.Generate;
-import validation.DateValid;
+import com.automaticparking.util.Generate;
+import com.automaticparking.validation.DateValid;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +35,7 @@ import java.util.Map;
 public class StaffService {
     private StaffRepository staffRepository;
     private Dotenv dotenv;
+    private JWT jwt;
 
     public ResponseEntity<ResponseSuccess> createAdmin(CreateStaffDto createStaff) {
         DateValid dateValid = new DateValid();
@@ -87,7 +88,6 @@ public class StaffService {
         }
 
 
-        JWT<Staff> jwt = new JWT<>();
         String stoken = jwt.createJWT(staff, Long.parseLong(dotenv.get("TIME_SECOND_TOKEN")));
 
         Map<String, String> cookies = new HashMap<>();

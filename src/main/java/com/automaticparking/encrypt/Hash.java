@@ -1,4 +1,4 @@
-package encrypt;
+package com.automaticparking.encrypt;
 
 import com.automaticparking.exception.LogicException;
 

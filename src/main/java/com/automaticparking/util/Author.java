@@ -1,4 +1,4 @@
-package util;
+package com.automaticparking.util;
 
 public class Author {
 

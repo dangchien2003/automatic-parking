@@ -1,4 +1,4 @@
-package validation;
+package com.automaticparking.validation;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +10,7 @@ public class DateValid {
             .appendOptional(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             .appendOptional(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
             .toFormatter();
+
     public boolean isValidDate(String dateStr) {
         try {
             LocalDate parsedDate = LocalDate.parse(dateStr, FORMATTER);

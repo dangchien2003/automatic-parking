@@ -1,4 +1,4 @@
-package util;
+package com.automaticparking.util;
 
 import io.github.cdimascio.dotenv.Dotenv;
 

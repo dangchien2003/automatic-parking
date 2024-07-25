@@ -1,4 +1,4 @@
-package util;
+package com.automaticparking.util;
 
 import com.automaticparking.exception.LogicException;
 import com.fasterxml.jackson.core.JsonProcessingException;

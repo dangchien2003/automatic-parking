@@ -17,7 +17,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import util.Generate;
+import com.automaticparking.util.Generate;
 
 import java.util.Arrays;
 import java.util.HashMap;
