@@ -8,6 +8,7 @@ import com.automaticparking.exception.AuthorizedException;
 import com.automaticparking.exception.ConflictException;
 import com.automaticparking.exception.InvalidException;
 import com.automaticparking.exception.NotFoundException;
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.AllArgsConstructor;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.http.*;
@@ -16,7 +17,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import util.DotENV;
 import util.Generate;
 
 import java.util.Arrays;
@@ -33,6 +33,7 @@ public class BotService {
     private CodeRepository codeRepository;
     private CacheService cacheService;
     private BotRepository botRepository;
+    private Dotenv dotenv;
 
     public ResponseEntity<Map<String, String>> checkin(MultipartFile file, String width, String height, String qr, String id) {
 
@@ -201,7 +202,7 @@ public class BotService {
 
         // Gửi yêu cầu POST đến server Python
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(DotENV.get("HOST_READ_PLATE") + "/read-text", HttpMethod.POST, requestEntity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(dotenv.get("HOST_READ_PLATE") + "/read-text", HttpMethod.POST, requestEntity, String.class);
 
         Map<String, String> dataRes = Generate.getMapFromJson(response.getBody());
 
