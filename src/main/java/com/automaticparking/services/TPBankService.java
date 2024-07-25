@@ -4,133 +4,88 @@ import com.automaticparking.Repositorys.CashRepository;
 import com.automaticparking.database.dto.TPBank;
 import com.automaticparking.database.entity.Cash;
 import com.automaticparking.exception.AuthorizedException;
-import com.automaticparking.exception.BadRequestException;
+import com.automaticparking.exception.LogicException;
 import com.automaticparking.types.ResponseSuccess;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.automaticparking.util.Generate;
+import com.automaticparking.util.Timestamp;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import util.Generate;
-import util.Timestamp;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.sql.SQLException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-@AllArgsConstructor
 public class TPBankService {
-    private Executor asyncExecutor;
     private Dotenv dotenv;
     private CashRepository cashRepository;
-    private TPBank tpBank = new TPBank();
-    private boolean runed = false;
+    private TPBank tpBank = new TPBank().getInfoAccount();
     private String token = "";
     private String staff = "bot";
-    private long time;
-
+    private final AtomicReference<Instant> lastGetToken = new AtomicReference<>();
     private final String dvid = "kpVAPvlf34EVbSUJmzPpjURgxxiX1D7CtVbCS8Pt35SQ0";
 
     @Autowired
-    public TPBankService(Dotenv dotenv, CashRepository cashRepository, Executor asyncExecutor) {
+    public TPBankService(Dotenv dotenv, CashRepository cashRepository) {
         this.dotenv = dotenv;
         this.cashRepository = cashRepository;
-        this.asyncExecutor = asyncExecutor;
-        this.time = Long.parseLong(dotenv.get("TP_TIMERELOAD")) * 60 * 1000;
-    }
-
-    public ResponseEntity<ResponseSuccess> stopTpbank(String author) {
-        if (!author.equals("admin")) {
-            throw new AuthorizedException("Not have access");
-        }
-        if (!runed) {
-            throw new BadRequestException("Not running automatically yet");
-        }
-        runed = false;
-        HttpStatus status = HttpStatus.OK;
-        return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
     public ResponseEntity<ResponseSuccess> autoTpbank(String author) {
         if (!author.equals("admin")) {
             throw new AuthorizedException("Not have access");
         }
-        if (runed) {
-            throw new BadRequestException("runed");
-        }
+        return autoTpbank();
+    }
 
-        tpBank = tpBank.getInfoAccount();
+    public ResponseEntity<ResponseSuccess> autoTpbank() {
+        System.out.println("start scan");
         if (tpBank == null) {
-            throw new BadRequestException("Error get info account TPBank");
+            throw new LogicException("Error get info account TPBank");
         }
 
-        int pointLoadToken = getPointReload();
-        if (pointLoadToken <= 0) {
-            throw new BadRequestException("Error get point reload");
-        }
-        Map<String, Object> dataLogin = login(tpBank);
-        if (dataLogin == null) {
-            throw new BadRequestException("Error login");
+        Instant lastTime = lastGetToken.get();
+        if (lastTime == null || ChronoUnit.MILLIS.between(lastTime, Instant.now()) >= Long.parseLong(dotenv.get("TP_TIME_REFRESH")) * 60 * 1000) {
+            Map<String, Object> dataLogin = login(tpBank);
+            token = dataLogin.get("access_token").toString();
+            lastGetToken.set(Instant.now());
         }
 
-        token = dataLogin.get("access_token").toString();
-        runed = true;
-        asyncExecutor.execute(() -> {
-            try {
-                int count = 0;
-                List<Cash> cashNotApproves;
-                Map<String, String> dataDate;
-                List<Map<String, Object>> historys;
-                List<Long> listIdCashBanked;
-                while (runed) {
-                    cashNotApproves = cashRepository.findAllCashNotApprove();
+        List<Cash> cashNotApproves;
+        Map<String, String> dataDate;
+        List<Map<String, Object>> historys;
+        List<Long> listIdCashBanked;
 
-                    if (cashNotApproves == null) {
-                        throw new Exception("Error get cash");
-                    }
+        cashNotApproves = cashRepository.findAllCashNotApprove();
 
-                    dataDate = getDataDate(cashNotApproves);
-                    historys = getHistory(tpBank, dataDate);
-                    listIdCashBanked = getCashApprove(cashNotApproves, historys);
-                    if (!listIdCashBanked.isEmpty()) {
-                        long now = Generate.getTimeStamp();
-                        int updated = cashRepository.approveListCash(now, staff, listIdCashBanked);
-                        if (updated != listIdCashBanked.size()) {
-                            System.out.println(String.format("Error update %d/%d", updated, listIdCashBanked.size()));
-                        } else {
-                            System.out.println(String.format("Success update %d", updated));
-                        }
-                    }
-                    System.out.println("done scan");
-                    try {
-                        Thread.sleep(time);
-                    } catch (InterruptedException e) {
-                        System.out.println("loi sleep");
-                    }
-                    ++count;
-                    if (count >= pointLoadToken) {
-                        token = login(tpBank).get("access_token").toString();
-                        count = 1;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                runed = false;
+        dataDate = getDataDate(cashNotApproves);
+        historys = getHistory(tpBank, dataDate);
+        listIdCashBanked = getCashApprove(cashNotApproves, historys);
+        if (!listIdCashBanked.isEmpty()) {
+            long now = Generate.getTimeStamp();
+            int updated = cashRepository.approveListCash(now, staff, listIdCashBanked);
+            if (updated != listIdCashBanked.size()) {
+                System.out.println(String.format("Error update %d/%d", updated, listIdCashBanked.size()));
+            } else {
+                System.out.println(String.format("Success update %d", updated));
             }
-        });
+        }
+        System.out.println("done scan");
+
         HttpStatus status = HttpStatus.OK;
         return new ResponseEntity<>(new ResponseSuccess(status), status);
     }
 
-    private List<Long> getCashApprove(List<Cash> listCash, List<Map<String, Object>> historys) throws Exception {
+    private List<Long> getCashApprove(List<Cash> listCash, List<Map<String, Object>> historys) {
         return listCash.stream()
                 .filter(c -> historys.stream()
                         .anyMatch(h -> {
@@ -155,25 +110,25 @@ public class TPBankService {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(apiUrl))
                     .header("Content-Type", "application/json")
-                    .header("USER_NAME", "HYD")
-                    .header("APP_VERSION", "2024.07.12")
-                    .header("Accept", "application/json, text/plain, */*")
-                    .header("Accept-Language", "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5")
-                    .header("Authorization", "Bearer")
+//                    .header("USER_NAME", "HYD")
+//                    .header("APP_VERSION", "2024.07.12")
+//                    .header("Accept", "application/json, text/plain, */*")
+//                    .header("Accept-Language", "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5")
+//                    .header("Authorization", "Bearer")
                     .header("DEVICE_ID", dvid)
-                    .header("DEVICE_NAME", "Chrome")
-                    .header("Origin", "https://ebank.tpb.vn")
+//                    .header("DEVICE_NAME", "Chrome")
+//                    .header("Origin", "https://ebank.tpb.vn")
                     .header("PLATFORM_NAME", "WEB")
-                    .header("PLATFORM_VERSION", "126")
-                    .header("Referer", "https://ebank.tpb.vn/retail/vX/")
-                    .header("SOURCE_APP", "HYDRO")
-                    .header("Sec-Fetch-Dest", "empty")
-                    .header("Sec-Fetch-Mode", "cors")
-                    .header("Sec-Fetch-Site", "same-origin")
-                    .header("User-Agent", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-                    .header("sec-ch-ua", "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Google Chrome\";v=\"126\"")
-                    .header("sec-ch-ua-mobile", "?0")
-                    .header("sec-ch-ua-platform", "\"Windows\"")
+//                    .header("PLATFORM_VERSION", "126")
+//                    .header("Referer", "https://ebank.tpb.vn/retail/vX/")
+//                    .header("SOURCE_APP", "HYDRO")
+//                    .header("Sec-Fetch-Dest", "empty")
+//                    .header("Sec-Fetch-Mode", "cors")
+//                    .header("Sec-Fetch-Site", "same-origin")
+//                    .header("User-Agent", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+//                    .header("sec-ch-ua", "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Google Chrome\";v=\"126\"")
+//                    .header("sec-ch-ua-mobile", "?0")
+//                    .header("sec-ch-ua-platform", "\"Windows\"")
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
@@ -185,30 +140,35 @@ public class TPBankService {
                 System.out.println("status: " + status);
                 System.out.println("data: " + jsonDataRes);
                 tpBank.print();
-                return null;
+                throw new LogicException("Can not login");
             }
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Object> map = objectMapper.readValue(jsonDataRes, Map.class);
             return map;
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new LogicException(e.getMessage());
         }
-        return null;
     }
 
-    private List<Map<String, Object>> getHistory(TPBank tpBank, Map<String, String> date) throws Exception {
+    private List<Map<String, Object>> getHistory(TPBank tpBank, Map<String, String> date) {
         String requestBody = "{\"pageNumber\":1,\"pageSize\":400,\"accountNo\": \"" + tpBank.getAccountNo() + "\",\"currency\":\"VND\",\"fromDate\":\"" + date.get("fromDate") + "\", \"toDate\":\"" + date.get("toDate") + "\",\"keyword\":\"\"  }";
         String apiUrl = "https://ebank.tpb.vn/gateway/api/smart-search-presentation-service/v2/account-transactions/find";
 
         HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(apiUrl))
-                .header("Authorization", "Bearer " + token)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
+        HttpResponse<String> response;
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(apiUrl))
+                    .header("Authorization", "Bearer " + token)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                    .build();
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            throw new LogicException(e.getMessage());
+        }
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
         int status = response.statusCode();
         String jsonDataRes = response.body();
 
@@ -221,19 +181,7 @@ public class TPBankService {
         return historys;
     }
 
-    public int getPointReload() {
-        String reloadDefault = dotenv.get("TP_TIMERELOAD");
-        int timeReload;
-        try {
-            timeReload = Integer.parseInt(reloadDefault);
-            return 10 / timeReload;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
-    public Map<String, String> getDataDate(List<Cash> list) throws Exception {
+    public Map<String, String> getDataDate(List<Cash> list) {
         Optional<Cash> minCash = list.stream().min(Comparator.comparing(Cash::getCashAt));
         long minCashAt = minCash.get().getCashAt();
         String fromDate = Timestamp.convertTimestampToDate(minCashAt, "yyyyMMdd");
@@ -247,12 +195,17 @@ public class TPBankService {
         return date;
     }
 
-    public List<Map<String, Object>> getArrayHistory(String data) throws SQLException, JsonProcessingException {
+    public List<Map<String, Object>> getArrayHistory(String data) {
         int startIndexList = data.indexOf('[');
         int endIndexList = data.lastIndexOf(']') + 1;
         String jsonArrayString = data.substring(startIndexList, endIndexList);
         ObjectMapper objectMapper = new ObjectMapper();
-        List<Map<String, Object>> list = objectMapper.readValue(jsonArrayString, List.class);
+        List<Map<String, Object>> list;
+        try {
+            list = objectMapper.readValue(jsonArrayString, List.class);
+        } catch (Exception e) {
+            throw new LogicException(e.getMessage());
+        }
         return list;
     }
 }

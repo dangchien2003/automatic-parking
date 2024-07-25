@@ -3,12 +3,13 @@ package com.automaticparking.services;
 import com.automaticparking.Repositorys.CustomerRepository;
 import com.automaticparking.database.dto.*;
 import com.automaticparking.database.entity.Customer;
+import com.automaticparking.encrypt.Hash;
 import com.automaticparking.exception.*;
 import com.automaticparking.types.ResponseSuccess;
+import com.automaticparking.util.*;
+import com.automaticparking.validation.EmailValid;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import encrypt.Hash;
-import encrypt.JWT;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,11 +20,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-import util.Random;
-import util.*;
-import validation.EmailValid;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -34,6 +35,7 @@ public class CustomerService {
     private CacheService cacheService;
     private GoogleIdTokenVerifier googleIdTokenVerifier;
     private Dotenv dotenv;
+    private JWT jwt;
 
     public ResponseEntity<ResponseSuccess> createAccount(RegisterDto registerDto) {
         Long now = Generate.getTimeStamp();
@@ -58,7 +60,7 @@ public class CustomerService {
         payload.put("start", customer.getCreateAt().toString());
 
         // get token
-        JWT<Map<String, String>> jwt = new JWT<>();
+
         token = jwt.createJWT(payload, 3600);
 
         // get template
@@ -89,7 +91,7 @@ public class CustomerService {
         }
 
         // decode
-        JWT<?> jwt = new JWT<>();
+
         Claims dataToken = jwt.decodeJWT(token);
 
         // check payload
@@ -153,7 +155,7 @@ public class CustomerService {
     }
 
     private AccessToken getDataAuthen(Customer customer, int age) {
-        JWT<Customer> jwt = new JWT<>();
+
         String CToken = jwt.createJWT(customer, age);
 
         return new AccessToken(CToken, "Bearer", age);
@@ -186,7 +188,7 @@ public class CustomerService {
             // create not yet
             Hash hash = new Hash();
             long now = Generate.getTimeStamp();
-            customer = new Customer(Generate.generateId("CUSTOMER_", 3), email, hash.hash(Generate.randomLetters(15)), now, now, 0);
+            customer = new Customer(Generate.generateId("CUSTOMER_", 3), email, hash.hash(Random.generateRandomString(15)), now, now, 0);
             customer.setAcceptAt(now);
             customerRepository.save(customer);
         }
@@ -205,7 +207,7 @@ public class CustomerService {
         String authorizationHeader = request.getHeader("Authorization");
         String token = Author.getAuthor(authorizationHeader);
 
-        JWT<Customer> jwt = new JWT<>();
+
         Claims payload = jwt.decodeJWT(token);
 
         if (payload == null) {
@@ -238,7 +240,7 @@ public class CustomerService {
         // set data token
         forgetPassword.lastLogin = customer.getLastLogin();
 
-        JWT<ForgetPassword> jwt = new JWT<>();
+
         String forgetToken = jwt.createJWT(forgetPassword, Long.parseLong(Objects.requireNonNull(dotenv.get("FORGET_PASSWORD_SECOND_TOKEN"))));
 
         // get template
@@ -259,7 +261,7 @@ public class CustomerService {
     }
 
     public ResponseEntity<ResponseSuccess> acceptForget(String forgetToken) {
-        JWT<ForgetPassword> jwt = new JWT<>();
+
         Claims dataToken = jwt.decodeJWT(forgetToken);
 
         if (dataToken == null) {
@@ -377,7 +379,7 @@ public class CustomerService {
         payload.put("lastLogin", lastLogin.toString());
         payload.put("newEmail", dataChange.getNewEmail());
         // token
-        JWT<Map<String, String>> jwt = new JWT<>();
+
         String tokenChange = jwt.createJWT(payload, 60 * 10);
 
         // html
@@ -399,7 +401,7 @@ public class CustomerService {
     public ResponseEntity<ResponseSuccess> acceptChangeEmail(AcceptChangeEmailDto data) {
         String token = data.tokenChange;
 
-        JWT<?> jwt = new JWT<>();
+
         Claims claimsData = jwt.decodeJWT(token);
         if (claimsData == null) {
             throw new BadRequestException("Invalid change token");

@@ -2,7 +2,7 @@ package com.automaticparking.exception;
 
 import lombok.Data;
 import org.springframework.http.HttpStatus;
-import util.Generate;
+import com.automaticparking.util.Generate;
 
 @Data
 public class BaseError {

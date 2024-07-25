@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import util.Generate;
+import com.automaticparking.util.Generate;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,11 +1,11 @@
 package com.automaticparking.middleware;
 
+import com.automaticparking.util.JWT;
 import com.automaticparking.database.entity.Customer;
 import com.automaticparking.exception.AuthorizedException;
 import com.automaticparking.exception.BaseError;
 import com.automaticparking.services.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import encrypt.JWT;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,14 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-import util.Author;
-import util.Json;
-import util.Request;
+import com.automaticparking.util.Author;
+import com.automaticparking.util.Json;
+import com.automaticparking.util.Request;
 
 @Component
 @AllArgsConstructor
 public class TokenCustomer extends BaseError implements HandlerInterceptor {
     private CustomerService customerService;
+    private JWT jwt;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -54,7 +55,6 @@ public class TokenCustomer extends BaseError implements HandlerInterceptor {
         Customer customerDataToken = null;
 
         if (!error) {
-            JWT<Customer> jwt = new JWT<>();
             Claims dataToken = jwt.decodeJWT(token);
             if (dataToken == null) {
                 error = true;
