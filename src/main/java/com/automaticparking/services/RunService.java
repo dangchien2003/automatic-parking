@@ -30,7 +30,7 @@ public class RunService {
         }
         System.out.println("starting");
         running = true;
-        String version = dotenv.get("VERSION");
+        String version = dotenv.get("VERSION_RUN");
         asyncExecutor.execute(() -> {
             RestTemplate restTemplate = new RestTemplate();
             while (running) {
@@ -47,7 +47,7 @@ public class RunService {
                         System.out.println("loi sleep");
                     }
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    System.out.println("run error: " + e.getMessage());
                     running = false;
                     break;
                 }
