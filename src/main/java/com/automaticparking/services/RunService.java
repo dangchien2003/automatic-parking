@@ -40,7 +40,7 @@ public class RunService {
                     restTemplate.getForEntity("https://autoparking-bot-" + version + ".onrender.com/bot/hello.html", String.class);
                     restTemplate.getForEntity("https://autoparking-" + version + ".onrender.com//helloworld", String.class);
                     System.out.println("done");
-                    long time = 120000;
+                    long time = 5 * 60 * 1000;
                     try {
                         Thread.sleep(time);
                     } catch (InterruptedException e) {
