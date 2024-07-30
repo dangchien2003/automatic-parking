@@ -18,6 +18,7 @@ public class GlobalExceptionHandler extends BaseError {
     @ExceptionHandler({Exception.class, LogicException.class})
     ResponseEntity<?> server(Exception ex) {
         log.error(ex.getMessage(), ex);
+        System.out.println("server error: " + ex.getMessage());
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         return new ResponseEntity<>(setError(status, "An error occurred"), status);
     }

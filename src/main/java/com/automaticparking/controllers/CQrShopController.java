@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/customer/shop-qr")
+@RequestMapping("/public/shop-qr")
 @AllArgsConstructor
-public class CQrShopController  {
+public class CQrShopController {
     private CQrShopService cQrShopService;
 
     @GetMapping("all")
