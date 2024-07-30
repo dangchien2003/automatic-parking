@@ -30,7 +30,7 @@ public class RunService {
         }
         System.out.println("starting");
         running = true;
-        String version = dotenv.get("VERSION_RUN");
+        String version = dotenv.get("VERSION");
         asyncExecutor.execute(() -> {
             RestTemplate restTemplate = new RestTemplate();
             while (running) {

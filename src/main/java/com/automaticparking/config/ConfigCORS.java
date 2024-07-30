@@ -17,10 +17,8 @@ public class ConfigCORS implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         String[] applyCORS = {
-                String.format("https://autoparking-bot-%s.onrender.com", dotenv.get("VERSION_TEST")),
-                String.format("https://autoparking-%s.onrender.com", dotenv.get("VERSION_TEST")),
-                String.format("https://autoparking-bot-%s.onrender.com", dotenv.get("VERSION_PROD")),
-                String.format("https://autoparking-%s.onrender.com", dotenv.get("VERSION_PROD")),
+                String.format("https://autoparking-bot-%s.onrender.com", dotenv.get("VERSION")),
+                String.format("https://autoparking-%s.onrender.com", dotenv.get("VERSION")),
                 "https://localhost:3000",
                 "http://localhost:3000",
                 "https://localhost:3001",
